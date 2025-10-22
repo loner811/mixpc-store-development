@@ -484,7 +484,7 @@ export default function Index() {
           </div>
         </div>
 
-        <nav className="mt-4 flex gap-2 overflow-x-auto pb-2">
+        <nav className="mt-4 flex gap-2 overflow-x-auto pb-2 justify-center">
           <Button
             variant={currentPage === 'home' && !selectedCategory ? 'default' : 'outline'}
             onClick={() => {
@@ -976,36 +976,36 @@ export default function Index() {
   );
 
   const renderFooter = () => (
-    <footer className="gradient-teal text-white mt-16">
+    <footer className="footer-dark text-white mt-16">
       <div className="container mx-auto px-4 py-12">
         <div className="grid md:grid-cols-4 gap-8 mb-8">
           <div>
             <h3 className="font-bold text-xl mb-4">MIX PC</h3>
-            <p className="text-white/80 text-sm">
+            <p className="text-white/70 text-sm">
               Ваш надежный поставщик компьютерной техники с 2015 года
             </p>
           </div>
           <div>
             <h4 className="font-semibold mb-4">Информация</h4>
             <div className="space-y-2 text-sm">
-              <button onClick={() => setCurrentPage('about')} className="block text-white/80 hover:text-white transition-colors">О нас</button>
-              <button onClick={() => setCurrentPage('delivery')} className="block text-white/80 hover:text-white transition-colors">Доставка и оплата</button>
-              <button onClick={() => setCurrentPage('warranty')} className="block text-white/80 hover:text-white transition-colors">Гарантия и возврат</button>
-              <button onClick={() => setCurrentPage('contact')} className="block text-white/80 hover:text-white transition-colors">Контакты</button>
+              <button onClick={() => setCurrentPage('about')} className="block text-white/70 hover:text-white transition-colors">О нас</button>
+              <button onClick={() => setCurrentPage('delivery')} className="block text-white/70 hover:text-white transition-colors">Доставка и оплата</button>
+              <button onClick={() => setCurrentPage('warranty')} className="block text-white/70 hover:text-white transition-colors">Гарантия и возврат</button>
+              <button onClick={() => setCurrentPage('contact')} className="block text-white/70 hover:text-white transition-colors">Контакты</button>
             </div>
           </div>
           <div>
             <h4 className="font-semibold mb-4">Каталог</h4>
             <div className="space-y-2 text-sm">
-              <button onClick={() => { setSelectedCategory('Процессоры'); setCurrentPage('category'); }} className="block text-white/80 hover:text-white transition-colors">Процессоры</button>
-              <button onClick={() => { setSelectedCategory('Видеокарты'); setCurrentPage('category'); }} className="block text-white/80 hover:text-white transition-colors">Видеокарты</button>
-              <button onClick={() => { setSelectedCategory('Материнские платы'); setCurrentPage('category'); }} className="block text-white/80 hover:text-white transition-colors">Материнские платы</button>
-              <button onClick={() => { setSelectedCategory('Оперативная память'); setCurrentPage('category'); }} className="block text-white/80 hover:text-white transition-colors">Оперативная память</button>
+              <button onClick={() => { setSelectedCategory('Процессоры'); setCurrentPage('category'); }} className="block text-white/70 hover:text-white transition-colors">Процессоры</button>
+              <button onClick={() => { setSelectedCategory('Видеокарты'); setCurrentPage('category'); }} className="block text-white/70 hover:text-white transition-colors">Видеокарты</button>
+              <button onClick={() => { setSelectedCategory('Материнские платы'); setCurrentPage('category'); }} className="block text-white/70 hover:text-white transition-colors">Материнские платы</button>
+              <button onClick={() => { setSelectedCategory('Оперативная память'); setCurrentPage('category'); }} className="block text-white/70 hover:text-white transition-colors">Оперативная память</button>
             </div>
           </div>
           <div>
             <h4 className="font-semibold mb-4">Контакты</h4>
-            <div className="space-y-2 text-sm text-white/80">
+            <div className="space-y-2 text-sm text-white/70">
               <p>8 (800) 555-35-35</p>
               <p>info@mixpc.ru</p>
               <p>г. Москва, ул. Примерная, д. 123</p>
@@ -1020,7 +1020,7 @@ export default function Index() {
             </div>
           </div>
         </div>
-        <div className="border-t border-white/20 pt-8 text-center text-sm text-white/80">
+        <div className="border-t border-white/10 pt-8 text-center text-sm text-white/60">
           <p>© 2024 MIX PC. Все права защищены.</p>
         </div>
       </div>
