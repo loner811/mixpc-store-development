@@ -376,23 +376,37 @@ export default function Index() {
                     <TabsTrigger value="register">Регистрация</TabsTrigger>
                   </TabsList>
                   <TabsContent value="login" className="space-y-4 mt-4">
-                    <div className="space-y-2">
-                      <Label>Логин</Label>
-                      <Input placeholder="Введите логин" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Пароль</Label>
-                      <Input type="password" placeholder="Введите пароль" />
-                    </div>
-                    <Button 
-                      className="w-full bg-primary hover:bg-primary/90 h-11"
-                      onClick={() => {
+                    <form onSubmit={(e) => {
+                      e.preventDefault();
+                      const formData = new FormData(e.target as HTMLFormElement);
+                      const login = formData.get('login') as string;
+                      const password = formData.get('password') as string;
+                      
+                      if (login === 'admin' && password === '123') {
+                        setIsAdmin(true);
                         setIsLoggedIn(true);
                         setLoginOpen(false);
-                      }}
-                    >
-                      Войти
-                    </Button>
+                        alert('Добро пожаловать, администратор!');
+                      } else {
+                        setIsLoggedIn(true);
+                        setLoginOpen(false);
+                      }
+                    }}>
+                      <div className="space-y-2">
+                        <Label>Логин</Label>
+                        <Input name="login" placeholder="Введите логин" required />
+                      </div>
+                      <div className="space-y-2 mt-4">
+                        <Label>Пароль</Label>
+                        <Input name="password" type="password" placeholder="Введите пароль" required />
+                      </div>
+                      <Button 
+                        type="submit"
+                        className="w-full bg-primary hover:bg-primary/90 h-11 mt-4"
+                      >
+                        Войти
+                      </Button>
+                    </form>
                   </TabsContent>
                   <TabsContent value="register" className="space-y-4 mt-4">
                     <div className="space-y-2">
@@ -589,6 +603,16 @@ export default function Index() {
           >
             Контакты
           </Button>
+          {isAdmin && (
+            <Button
+              variant={currentPage === 'admin' ? 'default' : 'outline'}
+              onClick={() => setCurrentPage('admin')}
+              className={currentPage === 'admin' ? 'gradient-teal' : ''}
+            >
+              <Icon name="Settings" size={16} className="mr-2" />
+              Админка
+            </Button>
+          )}
         </nav>
       </div>
     </header>
@@ -1100,7 +1124,6 @@ export default function Index() {
               <button onClick={() => setCurrentPage('delivery')} className="block text-white/70 hover:text-white transition-colors">Доставка и оплата</button>
               <button onClick={() => setCurrentPage('warranty')} className="block text-white/70 hover:text-white transition-colors">Гарантия и возврат</button>
               <button onClick={() => setCurrentPage('contact')} className="block text-white/70 hover:text-white transition-colors">Контакты</button>
-              <button onClick={() => setCurrentPage('admin-login')} className="block text-white/70 hover:text-white transition-colors">Админка</button>
             </div>
           </div>
           <div>
@@ -1291,62 +1314,13 @@ export default function Index() {
     );
   };
 
-  const renderAdminLogin = () => {
-    const [login, setLogin] = useState('');
-    const [password, setPassword] = useState('');
 
-    const handleLogin = () => {
-      if (login === 'admin' && password === '123') {
-        setIsAdmin(true);
-        setCurrentPage('admin');
-      } else {
-        alert('Неверный логин или пароль');
-      }
-    };
-
-    return (
-      <div className="container mx-auto px-4 py-16 max-w-md">
-        <Card>
-          <CardContent className="p-8">
-            <h1 className="text-3xl font-bold mb-6 text-center">Вход в админ-панель</h1>
-            <div className="space-y-4">
-              <div>
-                <Label>Логин</Label>
-                <Input 
-                  value={login}
-                  onChange={(e) => setLogin(e.target.value)}
-                  placeholder="admin"
-                />
-              </div>
-              <div>
-                <Label>Пароль</Label>
-                <Input 
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="123"
-                  onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
-                />
-              </div>
-              <Button 
-                className="w-full gradient-teal h-12"
-                onClick={handleLogin}
-              >
-                Войти
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {renderHeader()}
       <div className="flex-1">
-        {currentPage === 'admin-login' ? renderAdminLogin() :
-         currentPage === 'admin' && isAdmin ? renderAdminPage() :
+        {currentPage === 'admin' && isAdmin ? renderAdminPage() :
          selectedCategory ? renderCategoryPage() :
          currentPage === 'home' ? renderHomePage() :
          currentPage === 'catalog' ? renderCatalogPage() :
