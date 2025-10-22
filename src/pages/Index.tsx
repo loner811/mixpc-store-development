@@ -382,7 +382,7 @@ export default function Index() {
 
           <div className="flex items-center gap-4">
             <div className="text-sm text-center hidden md:block">
-              <div className="font-semibold text-base text-primary">8 (800) 555-35-35</div>
+              <div className="font-semibold text-base text-primary">8 (800) 555-77-30</div>
               <div className="flex gap-2 mt-1 justify-center">
                 <a href="https://t.me" target="_blank" rel="noopener" className="text-primary hover:opacity-80 transition-opacity">
                   <Icon name="Send" size={20} />
