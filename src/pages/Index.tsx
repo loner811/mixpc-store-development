@@ -182,6 +182,12 @@ export default function Index() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
   
+  // Admin
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminProducts, setAdminProducts] = useState<any[]>([]);
+  const [adminMessages, setAdminMessages] = useState<any[]>([]);
+  const [editingProduct, setEditingProduct] = useState<any>(null);
+  
   // Filters
   const [priceRange, setPriceRange] = useState([0, 200000]);
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
@@ -853,20 +859,37 @@ export default function Index() {
         <Card>
           <CardContent className="p-6">
             <h3 className="text-xl font-semibold mb-4">Напишите нам</h3>
-            <form className="space-y-4">
+            <form className="space-y-4" onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.target as HTMLFormElement);
+              const message = {
+                name: formData.get('name') as string,
+                email: formData.get('email') as string,
+                message: formData.get('message') as string,
+                created_at: new Date().toISOString(),
+                is_read: false
+              };
+              
+              const messages = JSON.parse(localStorage.getItem('contactMessages') || '[]');
+              messages.push(message);
+              localStorage.setItem('contactMessages', JSON.stringify(messages));
+              
+              alert('Сообщение отправлено!');
+              (e.target as HTMLFormElement).reset();
+            }}>
               <div>
                 <Label>Имя</Label>
-                <Input placeholder="Ваше имя" />
+                <Input name="name" placeholder="Ваше имя" required />
               </div>
               <div>
                 <Label>Email</Label>
-                <Input type="email" placeholder="your@email.com" />
+                <Input name="email" type="email" placeholder="your@email.com" required />
               </div>
               <div>
                 <Label>Сообщение</Label>
-                <Textarea placeholder="Ваше сообщение..." rows={4} />
+                <Textarea name="message" placeholder="Ваше сообщение..." rows={4} required />
               </div>
-              <Button className="w-full gradient-teal">
+              <Button type="submit" className="w-full gradient-teal">
                 Отправить
               </Button>
             </form>
@@ -1027,6 +1050,7 @@ export default function Index() {
               <button onClick={() => setCurrentPage('delivery')} className="block text-white/70 hover:text-white transition-colors">Доставка и оплата</button>
               <button onClick={() => setCurrentPage('warranty')} className="block text-white/70 hover:text-white transition-colors">Гарантия и возврат</button>
               <button onClick={() => setCurrentPage('contact')} className="block text-white/70 hover:text-white transition-colors">Контакты</button>
+              <button onClick={() => setCurrentPage('admin-login')} className="block text-white/70 hover:text-white transition-colors">Админка</button>
             </div>
           </div>
           <div>
@@ -1062,11 +1086,269 @@ export default function Index() {
     </footer>
   );
 
+  const renderAdminPage = () => {
+    const [activeTab, setActiveTab] = useState('products');
+    
+    const loadAdminData = async () => {
+      try {
+        const productsRes = await fetch('https://functions.poehali.dev/858f5e57-c172-4ef7-9a49-0a25a2e84cc5', {
+          headers: { 'X-Admin-Auth': 'admin:123' }
+        });
+        const products = await productsRes.json();
+        setAdminProducts(products);
+
+        const localMessages = JSON.parse(localStorage.getItem('contactMessages') || '[]');
+        setAdminMessages(localMessages);
+      } catch (error) {
+        console.error('Failed to load admin data:', error);
+      }
+    };
+
+    useEffect(() => {
+      if (isAdmin) {
+        loadAdminData();
+      }
+    }, [isAdmin]);
+
+    const handleSaveProduct = async (product: any) => {
+      const url = 'https://functions.poehali.dev/858f5e57-c172-4ef7-9a49-0a25a2e84cc5';
+      const method = product.id ? 'PUT' : 'POST';
+      
+      await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Admin-Auth': 'admin:123'
+        },
+        body: JSON.stringify(product)
+      });
+      
+      loadAdminData();
+      setEditingProduct(null);
+    };
+
+    const handleDeleteProduct = async (id: number) => {
+      if (!confirm('Удалить товар?')) return;
+      
+      await fetch(`https://functions.poehali.dev/858f5e57-c172-4ef7-9a49-0a25a2e84cc5?id=${id}`, {
+        method: 'DELETE',
+        headers: { 'X-Admin-Auth': 'admin:123' }
+      });
+      
+      loadAdminData();
+    };
+
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-4xl font-bold mb-8">Админ-панель</h1>
+        
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid w-full grid-cols-2 max-w-md">
+            <TabsTrigger value="products">Товары</TabsTrigger>
+            <TabsTrigger value="messages">Сообщения ({adminMessages.length})</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="products" className="mt-6">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-semibold">Управление товарами</h2>
+              <Button onClick={() => setEditingProduct({ name: '', price: 0, brand: '', category: '', image_url: '' })} className="gradient-teal">
+                <Icon name="Plus" size={18} className="mr-2" />
+                Добавить товар
+              </Button>
+            </div>
+
+            {editingProduct && (
+              <Card className="mb-6">
+                <CardContent className="p-6">
+                  <h3 className="text-xl font-semibold mb-4">{editingProduct.id ? 'Редактировать товар' : 'Новый товар'}</h3>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <Label>Название</Label>
+                      <Input 
+                        value={editingProduct.name} 
+                        onChange={(e) => setEditingProduct({...editingProduct, name: e.target.value})}
+                      />
+                    </div>
+                    <div>
+                      <Label>Цена</Label>
+                      <Input 
+                        type="number"
+                        value={editingProduct.price} 
+                        onChange={(e) => setEditingProduct({...editingProduct, price: Number(e.target.value)})}
+                      />
+                    </div>
+                    <div>
+                      <Label>Бренд</Label>
+                      <Input 
+                        value={editingProduct.brand} 
+                        onChange={(e) => setEditingProduct({...editingProduct, brand: e.target.value})}
+                      />
+                    </div>
+                    <div>
+                      <Label>Категория</Label>
+                      <select 
+                        className="w-full h-11 rounded-md border border-input bg-background px-3"
+                        value={editingProduct.category}
+                        onChange={(e) => setEditingProduct({...editingProduct, category: e.target.value})}
+                      >
+                        <option value="">Выберите категорию</option>
+                        {categories.map(cat => (
+                          <option key={cat.id} value={cat.name}>{cat.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="md:col-span-2">
+                      <Label>URL изображения</Label>
+                      <Input 
+                        value={editingProduct.image_url} 
+                        onChange={(e) => setEditingProduct({...editingProduct, image_url: e.target.value})}
+                        placeholder="https://example.com/image.jpg"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex gap-2 mt-4">
+                    <Button onClick={() => handleSaveProduct(editingProduct)} className="gradient-teal">
+                      Сохранить
+                    </Button>
+                    <Button onClick={() => setEditingProduct(null)} variant="outline">
+                      Отмена
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            <div className="grid gap-4">
+              {adminProducts.map(product => (
+                <Card key={product.id}>
+                  <CardContent className="p-4">
+                    <div className="flex gap-4 items-center">
+                      <div className="w-20 h-20 bg-muted rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Icon name="Package" size={32} className="text-muted-foreground" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold">{product.name}</h3>
+                        <p className="text-sm text-muted-foreground">{product.brand} • {product.category}</p>
+                        <p className="text-lg font-bold text-primary">{Number(product.price).toLocaleString()} ₽</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button 
+                          size="icon" 
+                          variant="outline"
+                          onClick={() => setEditingProduct(product)}
+                        >
+                          <Icon name="Pencil" size={18} />
+                        </Button>
+                        <Button 
+                          size="icon" 
+                          variant="destructive"
+                          onClick={() => handleDeleteProduct(product.id)}
+                        >
+                          <Icon name="Trash2" size={18} />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="messages" className="mt-6">
+            <h2 className="text-2xl font-semibold mb-6">Сообщения от пользователей</h2>
+            
+            <div className="grid gap-4">
+              {adminMessages.length === 0 ? (
+                <Card>
+                  <CardContent className="p-8 text-center text-muted-foreground">
+                    Сообщений пока нет
+                  </CardContent>
+                </Card>
+              ) : (
+                adminMessages.map(msg => (
+                  <Card key={msg.id} className={msg.is_read ? 'opacity-60' : ''}>
+                    <CardContent className="p-6">
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <h3 className="font-semibold text-lg">{msg.name}</h3>
+                          <p className="text-sm text-muted-foreground">{msg.email}</p>
+                        </div>
+                        <Badge variant={msg.is_read ? 'secondary' : 'default'}>
+                          {msg.is_read ? 'Прочитано' : 'Новое'}
+                        </Badge>
+                      </div>
+                      <p className="mt-4 whitespace-pre-wrap">{msg.message}</p>
+                      <p className="text-xs text-muted-foreground mt-4">
+                        {new Date(msg.created_at).toLocaleString('ru-RU')}
+                      </p>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
+    );
+  };
+
+  const renderAdminLogin = () => {
+    const [login, setLogin] = useState('');
+    const [password, setPassword] = useState('');
+
+    const handleLogin = () => {
+      if (login === 'admin' && password === '123') {
+        setIsAdmin(true);
+        setCurrentPage('admin');
+      } else {
+        alert('Неверный логин или пароль');
+      }
+    };
+
+    return (
+      <div className="container mx-auto px-4 py-16 max-w-md">
+        <Card>
+          <CardContent className="p-8">
+            <h1 className="text-3xl font-bold mb-6 text-center">Вход в админ-панель</h1>
+            <div className="space-y-4">
+              <div>
+                <Label>Логин</Label>
+                <Input 
+                  value={login}
+                  onChange={(e) => setLogin(e.target.value)}
+                  placeholder="admin"
+                />
+              </div>
+              <div>
+                <Label>Пароль</Label>
+                <Input 
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="123"
+                  onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+                />
+              </div>
+              <Button 
+                className="w-full gradient-teal h-12"
+                onClick={handleLogin}
+              >
+                Войти
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {renderHeader()}
       <div className="flex-1">
-        {selectedCategory ? renderCategoryPage() :
+        {currentPage === 'admin-login' ? renderAdminLogin() :
+         currentPage === 'admin' && isAdmin ? renderAdminPage() :
+         selectedCategory ? renderCategoryPage() :
          currentPage === 'home' ? renderHomePage() :
          currentPage === 'catalog' ? renderCatalogPage() :
          currentPage === 'about' ? renderAboutPage() :
