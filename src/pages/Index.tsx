@@ -1084,7 +1084,7 @@ export default function Index() {
             </h3>
             <div className="space-y-4">
               <div>
-                <h4 className="font-semibold mb-2">Курьерская доставка по Москве</h4>
+                <h4 className="font-semibold mb-2">Курьерская доставка по Ростову-на-Дону</h4>
                 <p className="text-muted-foreground">Стоимость: 500 ₽ | Срок: 1-2 дня</p>
               </div>
               <div>
