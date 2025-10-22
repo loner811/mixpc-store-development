@@ -1363,7 +1363,7 @@ export default function Index() {
             <div className="space-y-2 text-sm text-white/70">
               <p>8 (800) 555-35-35</p>
               <p>info@mixpc.ru</p>
-              <p>г. Москва, ул. Примерная, д. 123</p>
+              <p>г. Ростов-на-дону, Ворошиловский проспект, д. 123</p>
               <div className="flex gap-3 mt-4">
                 <a href="https://t.me" target="_blank" rel="noopener" className="text-white hover:opacity-80 transition-opacity">
                   <Icon name="Send" size={20} />
