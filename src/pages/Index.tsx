@@ -614,87 +614,25 @@ export default function Index() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredProducts.map(product => (
-                <Card key={product.id} className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                  <CardContent className="p-4">
-                    <div className="aspect-square bg-gradient-to-br from-primary/10 to-secondary/10 rounded-lg mb-4 flex items-center justify-center relative overflow-hidden">
-                      <Icon name="Package" size={64} className="text-primary/30" />
-                      <Button
-                        size="icon"
-                        variant="secondary"
-                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => addToFavorites(product)}
-                      >
-                        <Icon name="Heart" size={18} />
-                      </Button>
-                    </div>
-                    <Badge className="mb-2">{product.brand}</Badge>
-                    <h3 className="font-semibold mb-2 line-clamp-2 min-h-[3em]">{product.name}</h3>
-                    <p className="text-2xl font-bold text-primary mb-4">{product.price.toLocaleString()} ₽</p>
-                  </CardContent>
-                  <CardFooter className="p-4 pt-0">
-                    <Button 
-                      className="w-full gradient-teal"
-                      onClick={() => addToCart(product)}
-                    >
-                      <Icon name="ShoppingCart" size={18} className="mr-2" />
-                      В корзину
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
+              {filteredProducts.map(product => {
+                const getProductImage = (productId: number) => {
+                  const images = [
+                    'https://cdn.poehali.dev/projects/f7df5c93-3ffb-476e-bc55-4da98f7f2c0a/files/bb10f9c9-ec03-4dae-852d-ab8eb7cb81c7.jpg',
+                    'https://cdn.poehali.dev/projects/f7df5c93-3ffb-476e-bc55-4da98f7f2c0a/files/11810e39-9f5c-43b4-979a-e723f231c489.jpg',
+                    'https://cdn.poehali.dev/projects/f7df5c93-3ffb-476e-bc55-4da98f7f2c0a/files/825e48c1-6cd6-4d1f-9d28-ff9464fff64f.jpg',
+                  ];
+                  return images[productId % images.length];
+                };
 
-  const renderHomePage = () => {
-    const popularProducts = allProducts.slice(0, 20);
-    const duplicatedProducts = [...popularProducts, ...popularProducts, ...popularProducts];
-
-    return (
-      <div className="min-h-screen">
-        <section className="gradient-teal text-white py-20">
-          <div className="container mx-auto px-4 text-center">
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 animate-fade-in">
-              MIX PC - Ваш надежный поставщик компьютерной техники
-            </h1>
-            <p className="text-xl md:text-2xl mb-8 opacity-90">
-              Широкий ассортимент комплектующих и готовых решений по выгодным ценам
-            </p>
-            <Button 
-              size="lg" 
-              className="bg-white text-primary hover:bg-white/90 h-14 px-8 text-lg"
-              onClick={() => setCurrentPage('catalog')}
-            >
-              Перейти в каталог
-              <Icon name="ArrowRight" className="ml-2" size={20} />
-            </Button>
-          </div>
-        </section>
-
-        <section className="py-16 bg-muted/30">
-          <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold mb-8 text-center">Популярные товары</h2>
-            <div className="relative overflow-hidden">
-              <div 
-                className="flex gap-6 transition-none"
-                style={{
-                  transform: `translateX(${sliderOffset}px)`,
-                  width: `${duplicatedProducts.length * 320}px`
-                }}
-              >
-                {duplicatedProducts.map((product, index) => (
-                  <Card 
-                    key={`${product.id}-${index}`} 
-                    className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex-shrink-0"
-                    style={{ width: '300px' }}
-                  >
+                return (
+                  <Card key={product.id} className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                     <CardContent className="p-4">
-                      <div className="aspect-square bg-gradient-to-br from-primary/10 to-secondary/10 rounded-lg mb-4 flex items-center justify-center relative overflow-hidden">
-                        <Icon name="Package" size={64} className="text-primary/30" />
+                      <div className="aspect-square rounded-lg mb-4 relative overflow-hidden bg-gradient-to-br from-primary/5 to-secondary/5">
+                        <img 
+                          src={getProductImage(product.id)} 
+                          alt={product.name}
+                          className="w-full h-full object-cover"
+                        />
                         <Button
                           size="icon"
                           variant="secondary"
@@ -718,7 +656,104 @@ export default function Index() {
                       </Button>
                     </CardFooter>
                   </Card>
-                ))}
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderHomePage = () => {
+    const popularProducts = allProducts.slice(0, 20);
+    const duplicatedProducts = [...popularProducts, ...popularProducts, ...popularProducts];
+
+    return (
+      <div className="min-h-screen">
+        <section 
+          className="relative text-white py-32 bg-cover bg-center"
+          style={{
+            backgroundImage: 'linear-gradient(rgba(13, 71, 161, 0.85), rgba(21, 101, 192, 0.85)), url(https://cdn.poehali.dev/projects/f7df5c93-3ffb-476e-bc55-4da98f7f2c0a/files/aace088c-460f-4ba7-b0f1-3f2975047791.jpg)',
+          }}
+        >
+          <div className="container mx-auto px-4 text-center relative z-10">
+            <h1 className="text-5xl md:text-6xl font-bold mb-6 animate-fade-in drop-shadow-lg">
+              MIX PC - Ваш надежный поставщик компьютерной техники
+            </h1>
+            <p className="text-xl md:text-2xl mb-8 opacity-90 drop-shadow-md">
+              Широкий ассортимент комплектующих и готовых решений по выгодным ценам
+            </p>
+            <Button 
+              size="lg" 
+              className="bg-white text-primary hover:bg-white/90 h-14 px-8 text-lg shadow-2xl"
+              onClick={() => setCurrentPage('catalog')}
+            >
+              Перейти в каталог
+              <Icon name="ArrowRight" className="ml-2" size={20} />
+            </Button>
+          </div>
+        </section>
+
+        <section className="py-16 bg-muted/30">
+          <div className="container mx-auto px-4">
+            <h2 className="text-3xl font-bold mb-8 text-center">Популярные товары</h2>
+            <div className="relative overflow-hidden">
+              <div 
+                className="flex gap-6 transition-none"
+                style={{
+                  transform: `translateX(${sliderOffset}px)`,
+                  width: `${duplicatedProducts.length * 320}px`
+                }}
+              >
+                {duplicatedProducts.map((product, index) => {
+                  const getProductImage = (productId: number) => {
+                    const images = [
+                      'https://cdn.poehali.dev/projects/f7df5c93-3ffb-476e-bc55-4da98f7f2c0a/files/bb10f9c9-ec03-4dae-852d-ab8eb7cb81c7.jpg',
+                      'https://cdn.poehali.dev/projects/f7df5c93-3ffb-476e-bc55-4da98f7f2c0a/files/11810e39-9f5c-43b4-979a-e723f231c489.jpg',
+                      'https://cdn.poehali.dev/projects/f7df5c93-3ffb-476e-bc55-4da98f7f2c0a/files/825e48c1-6cd6-4d1f-9d28-ff9464fff64f.jpg',
+                    ];
+                    return images[productId % images.length];
+                  };
+
+                  return (
+                    <Card 
+                      key={`${product.id}-${index}`} 
+                      className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex-shrink-0"
+                      style={{ width: '300px' }}
+                    >
+                      <CardContent className="p-4">
+                        <div className="aspect-square rounded-lg mb-4 relative overflow-hidden bg-gradient-to-br from-primary/5 to-secondary/5">
+                          <img 
+                            src={getProductImage(product.id)} 
+                            alt={product.name}
+                            className="w-full h-full object-cover"
+                          />
+                          <Button
+                            size="icon"
+                            variant="secondary"
+                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => addToFavorites(product)}
+                          >
+                            <Icon name="Heart" size={18} />
+                          </Button>
+                        </div>
+                        <Badge className="mb-2">{product.brand}</Badge>
+                        <h3 className="font-semibold mb-2 line-clamp-2 min-h-[3em]">{product.name}</h3>
+                        <p className="text-2xl font-bold text-primary mb-4">{product.price.toLocaleString()} ₽</p>
+                      </CardContent>
+                      <CardFooter className="p-4 pt-0">
+                        <Button 
+                          className="w-full gradient-teal"
+                          onClick={() => addToCart(product)}
+                        >
+                          <Icon name="ShoppingCart" size={18} className="mr-2" />
+                          В корзину
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  );
+                })}
               </div>
             </div>
           </div>
