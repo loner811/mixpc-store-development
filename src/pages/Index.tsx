@@ -1338,9 +1338,7 @@ export default function Index() {
         <div className="grid md:grid-cols-4 gap-8 mb-8">
           <div>
             <h3 className="font-bold text-xl mb-4">MIX PC</h3>
-            <p className="text-white/70 text-sm">
-              Ваш надежный поставщик компьютерной техники с 2015 года
-            </p>
+            <p className="text-white/70 text-sm">Ваш надежный поставщик компьютерной техники с 2025 года</p>
           </div>
           <div>
             <h4 className="font-semibold mb-4">Информация</h4>
