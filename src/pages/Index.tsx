@@ -75,11 +75,11 @@ export default function Index() {
   };
 
   const renderHeader = () => (
-    <header className="sticky top-0 z-50 bg-white shadow-md">
+    <header className="sticky top-0 z-50 gradient-teal shadow-lg">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-2">
-            <div className="gradient-orange-blue text-white px-6 py-3 rounded-xl font-bold text-2xl shadow-lg">
+            <div className="bg-white text-primary px-6 py-3 rounded-xl font-bold text-2xl shadow-lg">
               MIX PC
             </div>
           </div>
@@ -98,12 +98,12 @@ export default function Index() {
 
           <div className="flex items-center gap-4">
             <div className="text-sm text-center hidden md:block">
-              <div className="font-semibold text-base">8 (800) 555-35-35</div>
+              <div className="font-semibold text-base text-white">8 (800) 555-35-35</div>
               <div className="flex gap-2 mt-1 justify-center">
-                <a href="https://t.me" target="_blank" rel="noopener" className="text-primary hover:opacity-80 transition-opacity">
+                <a href="https://t.me" target="_blank" rel="noopener" className="text-white hover:opacity-80 transition-opacity">
                   <Icon name="Send" size={20} />
                 </a>
-                <a href="https://wa.me" target="_blank" rel="noopener" className="text-primary hover:opacity-80 transition-opacity">
+                <a href="https://wa.me" target="_blank" rel="noopener" className="text-white hover:opacity-80 transition-opacity">
                   <Icon name="MessageCircle" size={20} />
                 </a>
               </div>
@@ -111,7 +111,7 @@ export default function Index() {
 
             <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
               <DialogTrigger asChild>
-                <Button variant="outline" className="gap-2">
+                <Button className="gap-2 bg-white text-primary hover:bg-white/90 border-0">
                   <Icon name="User" size={18} />
                   <span className="hidden sm:inline">Войти</span>
                 </Button>
@@ -167,10 +167,10 @@ export default function Index() {
 
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="outline" size="icon" className="relative">
+                <Button size="icon" className="relative bg-white text-primary hover:bg-white/90 border-0">
                   <Icon name="Heart" size={20} />
                   {favorites.length > 0 && (
-                    <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center bg-primary text-white">
+                    <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center bg-secondary text-white">
                       {favorites.length}
                     </Badge>
                   )}
@@ -222,10 +222,10 @@ export default function Index() {
 
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="outline" size="icon" className="relative">
+                <Button size="icon" className="relative bg-white text-primary hover:bg-white/90 border-0">
                   <Icon name="ShoppingCart" size={20} />
                   {cart.length > 0 && (
-                    <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center bg-primary text-white">
+                    <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center bg-secondary text-white">
                       {cart.length}
                     </Badge>
                   )}
@@ -279,14 +279,16 @@ export default function Index() {
           </div>
         </div>
 
-        <nav className="mt-4 border-t pt-4">
+        <nav className="mt-4 border-t border-white/20 pt-4">
           <ul className="flex gap-6 justify-center flex-wrap">
             {['О Компании', 'Каталог', 'Доставка', 'Гарантия', 'Оплата', 'Контакты'].map(item => (
               <li key={item}>
                 <button
                   onClick={() => setCurrentPage(item.toLowerCase().replace(' ', '-'))}
-                  className={`font-medium transition-colors hover:text-primary ${
-                    currentPage === item.toLowerCase().replace(' ', '-') ? 'text-primary' : ''
+                  className={`font-medium transition-colors ${
+                    currentPage === item.toLowerCase().replace(' ', '-') 
+                      ? 'text-white font-bold' 
+                      : 'text-white/80 hover:text-white'
                   }`}
                 >
                   {item}
@@ -300,11 +302,11 @@ export default function Index() {
   );
 
   const renderHomePage = () => (
-    <div className="py-12 md:py-20">
+    <div className="py-12 md:py-20 bg-gradient-to-br from-teal-50 to-cyan-50">
       <div className="container mx-auto px-4">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div className="flex justify-center order-2 md:order-1">
-            <div className="w-72 h-72 gradient-orange-blue rounded-3xl flex items-center justify-center text-white shadow-2xl hover-scale">
+            <div className="w-72 h-72 gradient-teal rounded-3xl flex items-center justify-center text-white shadow-2xl hover-scale">
               <Icon name="MonitorSmartphone" size={140} />
             </div>
           </div>
@@ -338,9 +340,9 @@ export default function Index() {
             { icon: 'CreditCard', title: 'Оплата', desc: 'Любым способом' },
             { icon: 'Headphones', title: 'Поддержка', desc: '24/7' }
           ].map((item, idx) => (
-            <Card key={idx} className="hover-scale">
+            <Card key={idx} className="hover-scale border-primary/20 bg-white/80 backdrop-blur">
               <CardContent className="p-6 text-center">
-                <div className="w-14 h-14 mx-auto mb-3 gradient-orange-blue rounded-xl flex items-center justify-center text-white">
+                <div className="w-14 h-14 mx-auto mb-3 gradient-teal rounded-xl flex items-center justify-center text-white shadow-lg">
                   <Icon name={item.icon} size={28} />
                 </div>
                 <h3 className="font-bold text-lg mb-1">{item.title}</h3>
@@ -354,14 +356,14 @@ export default function Index() {
   );
 
   const renderCatalogPage = () => (
-    <div className="py-12">
+    <div className="py-12 bg-gradient-to-br from-teal-50 to-cyan-50">
       <div className="container mx-auto px-4">
-        <h1 className="text-4xl md:text-5xl font-bold mb-8 text-center">Каталог товаров</h1>
+        <h1 className="text-4xl md:text-5xl font-bold mb-8 text-center text-primary">Каталог товаров</h1>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 mb-16">
           {categories.map(category => (
-            <Card key={category.id} className="hover-scale cursor-pointer group border-2 hover:border-primary transition-colors">
+            <Card key={category.id} className="hover-scale cursor-pointer group border-2 hover:border-primary transition-colors bg-white/80 backdrop-blur">
               <CardContent className="p-6 text-center">
-                <div className="w-16 h-16 mx-auto mb-4 gradient-orange-blue rounded-2xl flex items-center justify-center text-white group-hover:scale-110 transition-transform shadow-lg">
+                <div className="w-16 h-16 mx-auto mb-4 gradient-teal rounded-2xl flex items-center justify-center text-white group-hover:scale-110 transition-transform shadow-lg">
                   <Icon name={category.icon} size={32} />
                 </div>
                 <h3 className="font-semibold text-sm md:text-base">{category.name}</h3>
@@ -370,8 +372,8 @@ export default function Index() {
           ))}
         </div>
 
-        <div className="border-t pt-12">
-          <h2 className="text-3xl md:text-4xl font-bold mb-8">
+        <div className="border-t border-primary/20 pt-12">
+          <h2 className="text-3xl md:text-4xl font-bold mb-8 text-primary">
             {searchQuery ? `Результаты поиска: ${searchQuery}` : 'Популярные товары'}
           </h2>
           {filteredProducts.length === 0 ? (
@@ -382,10 +384,10 @@ export default function Index() {
           ) : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredProducts.map(product => (
-                <Card key={product.id} className="group relative overflow-hidden hover-scale">
+                <Card key={product.id} className="group relative overflow-hidden hover-scale bg-white/80 backdrop-blur border-primary/20">
                   <CardContent className="p-0">
-                    <div className="h-52 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center relative">
-                      <Icon name="Cpu" size={80} className="text-gray-400" />
+                    <div className="h-52 gradient-light-teal flex items-center justify-center relative">
+                      <Icon name="Cpu" size={80} className="text-primary/40" />
                       <button
                         onClick={() => addToFavorites(product)}
                         className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-lg hover:scale-110 transition-transform"
@@ -393,12 +395,12 @@ export default function Index() {
                         <Icon 
                           name="Heart" 
                           size={20} 
-                          className={favorites.find(f => f.id === product.id) ? 'fill-red-500 text-red-500' : ''} 
+                          className={favorites.find(f => f.id === product.id) ? 'fill-red-500 text-red-500' : 'text-primary'} 
                         />
                       </button>
                     </div>
                     <div className="p-4">
-                      <Badge className="mb-2">{product.brand}</Badge>
+                      <Badge className="mb-2 bg-primary">{product.brand}</Badge>
                       <h3 className="font-semibold mb-2 min-h-[3rem]">{product.name}</h3>
                       <p className="text-2xl font-bold text-primary mb-4">
                         {product.price.toLocaleString()} ₽
@@ -422,14 +424,14 @@ export default function Index() {
   );
 
   const renderDeliveryPage = () => (
-    <div className="py-12">
+    <div className="py-12 bg-gradient-to-br from-teal-50 to-cyan-50 min-h-[calc(100vh-300px)]">
       <div className="container mx-auto px-4 max-w-4xl">
-        <h1 className="text-4xl md:text-5xl font-bold mb-8">Доставка</h1>
+        <h1 className="text-4xl md:text-5xl font-bold mb-8 text-primary">Доставка</h1>
         <div className="space-y-6">
-          <Card className="hover-scale">
+          <Card className="hover-scale bg-white/80 backdrop-blur border-primary/20">
             <CardContent className="p-6">
               <div className="flex items-start gap-4">
-                <div className="gradient-orange-blue p-3 rounded-xl text-white flex-shrink-0">
+                <div className="gradient-teal p-3 rounded-xl text-white flex-shrink-0 shadow-lg">
                   <Icon name="Truck" size={32} />
                 </div>
                 <div>
@@ -439,10 +441,10 @@ export default function Index() {
               </div>
             </CardContent>
           </Card>
-          <Card className="hover-scale">
+          <Card className="hover-scale bg-white/80 backdrop-blur border-primary/20">
             <CardContent className="p-6">
               <div className="flex items-start gap-4">
-                <div className="gradient-orange-blue p-3 rounded-xl text-white flex-shrink-0">
+                <div className="gradient-teal p-3 rounded-xl text-white flex-shrink-0 shadow-lg">
                   <Icon name="MapPin" size={32} />
                 </div>
                 <div>
@@ -452,10 +454,10 @@ export default function Index() {
               </div>
             </CardContent>
           </Card>
-          <Card className="hover-scale">
+          <Card className="hover-scale bg-white/80 backdrop-blur border-primary/20">
             <CardContent className="p-6">
               <div className="flex items-start gap-4">
-                <div className="gradient-orange-blue p-3 rounded-xl text-white flex-shrink-0">
+                <div className="gradient-teal p-3 rounded-xl text-white flex-shrink-0 shadow-lg">
                   <Icon name="DollarSign" size={32} />
                 </div>
                 <div>
@@ -471,14 +473,14 @@ export default function Index() {
   );
 
   const renderWarrantyPage = () => (
-    <div className="py-12">
+    <div className="py-12 bg-gradient-to-br from-teal-50 to-cyan-50 min-h-[calc(100vh-300px)]">
       <div className="container mx-auto px-4 max-w-4xl">
-        <h1 className="text-4xl md:text-5xl font-bold mb-8">Гарантия</h1>
+        <h1 className="text-4xl md:text-5xl font-bold mb-8 text-primary">Гарантия</h1>
         <div className="space-y-6">
-          <Card className="hover-scale">
+          <Card className="hover-scale bg-white/80 backdrop-blur border-primary/20">
             <CardContent className="p-6">
               <div className="flex items-start gap-4">
-                <div className="gradient-orange-blue p-3 rounded-xl text-white flex-shrink-0">
+                <div className="gradient-teal p-3 rounded-xl text-white flex-shrink-0 shadow-lg">
                   <Icon name="Shield" size={32} />
                 </div>
                 <div>
@@ -488,10 +490,10 @@ export default function Index() {
               </div>
             </CardContent>
           </Card>
-          <Card className="hover-scale">
+          <Card className="hover-scale bg-white/80 backdrop-blur border-primary/20">
             <CardContent className="p-6">
               <div className="flex items-start gap-4">
-                <div className="gradient-orange-blue p-3 rounded-xl text-white flex-shrink-0">
+                <div className="gradient-teal p-3 rounded-xl text-white flex-shrink-0 shadow-lg">
                   <Icon name="RotateCcw" size={32} />
                 </div>
                 <div>
@@ -501,10 +503,10 @@ export default function Index() {
               </div>
             </CardContent>
           </Card>
-          <Card className="hover-scale">
+          <Card className="hover-scale bg-white/80 backdrop-blur border-primary/20">
             <CardContent className="p-6">
               <div className="flex items-start gap-4">
-                <div className="gradient-orange-blue p-3 rounded-xl text-white flex-shrink-0">
+                <div className="gradient-teal p-3 rounded-xl text-white flex-shrink-0 shadow-lg">
                   <Icon name="Wrench" size={32} />
                 </div>
                 <div>
@@ -520,14 +522,14 @@ export default function Index() {
   );
 
   const renderPaymentPage = () => (
-    <div className="py-12">
+    <div className="py-12 bg-gradient-to-br from-teal-50 to-cyan-50 min-h-[calc(100vh-300px)]">
       <div className="container mx-auto px-4 max-w-4xl">
-        <h1 className="text-4xl md:text-5xl font-bold mb-8">Оплата</h1>
+        <h1 className="text-4xl md:text-5xl font-bold mb-8 text-primary">Оплата</h1>
         <div className="space-y-6">
-          <Card className="hover-scale">
+          <Card className="hover-scale bg-white/80 backdrop-blur border-primary/20">
             <CardContent className="p-6">
               <div className="flex items-start gap-4">
-                <div className="gradient-orange-blue p-3 rounded-xl text-white flex-shrink-0">
+                <div className="gradient-teal p-3 rounded-xl text-white flex-shrink-0 shadow-lg">
                   <Icon name="CreditCard" size={32} />
                 </div>
                 <div>
@@ -537,10 +539,10 @@ export default function Index() {
               </div>
             </CardContent>
           </Card>
-          <Card className="hover-scale">
+          <Card className="hover-scale bg-white/80 backdrop-blur border-primary/20">
             <CardContent className="p-6">
               <div className="flex items-start gap-4">
-                <div className="gradient-orange-blue p-3 rounded-xl text-white flex-shrink-0">
+                <div className="gradient-teal p-3 rounded-xl text-white flex-shrink-0 shadow-lg">
                   <Icon name="Wallet" size={32} />
                 </div>
                 <div>
@@ -550,10 +552,10 @@ export default function Index() {
               </div>
             </CardContent>
           </Card>
-          <Card className="hover-scale">
+          <Card className="hover-scale bg-white/80 backdrop-blur border-primary/20">
             <CardContent className="p-6">
               <div className="flex items-start gap-4">
-                <div className="gradient-orange-blue p-3 rounded-xl text-white flex-shrink-0">
+                <div className="gradient-teal p-3 rounded-xl text-white flex-shrink-0 shadow-lg">
                   <Icon name="Banknote" size={32} />
                 </div>
                 <div>
@@ -569,15 +571,15 @@ export default function Index() {
   );
 
   const renderContactsPage = () => (
-    <div className="py-12">
+    <div className="py-12 bg-gradient-to-br from-teal-50 to-cyan-50 min-h-[calc(100vh-300px)]">
       <div className="container mx-auto px-4 max-w-5xl">
-        <h1 className="text-4xl md:text-5xl font-bold mb-8">Контакты</h1>
+        <h1 className="text-4xl md:text-5xl font-bold mb-8 text-primary">Контакты</h1>
         <div className="grid md:grid-cols-2 gap-8">
           <div className="space-y-6">
-            <Card className="hover-scale">
+            <Card className="hover-scale bg-white/80 backdrop-blur border-primary/20">
               <CardContent className="p-6">
                 <div className="flex items-center gap-3">
-                  <div className="gradient-orange-blue p-3 rounded-xl text-white flex-shrink-0">
+                  <div className="gradient-teal p-3 rounded-xl text-white flex-shrink-0 shadow-lg">
                     <Icon name="Phone" size={28} />
                   </div>
                   <div>
@@ -587,10 +589,10 @@ export default function Index() {
                 </div>
               </CardContent>
             </Card>
-            <Card className="hover-scale">
+            <Card className="hover-scale bg-white/80 backdrop-blur border-primary/20">
               <CardContent className="p-6">
                 <div className="flex items-center gap-3">
-                  <div className="gradient-orange-blue p-3 rounded-xl text-white flex-shrink-0">
+                  <div className="gradient-teal p-3 rounded-xl text-white flex-shrink-0 shadow-lg">
                     <Icon name="Mail" size={28} />
                   </div>
                   <div>
@@ -600,10 +602,10 @@ export default function Index() {
                 </div>
               </CardContent>
             </Card>
-            <Card className="hover-scale">
+            <Card className="hover-scale bg-white/80 backdrop-blur border-primary/20">
               <CardContent className="p-6">
                 <div className="flex items-center gap-3">
-                  <div className="gradient-orange-blue p-3 rounded-xl text-white flex-shrink-0">
+                  <div className="gradient-teal p-3 rounded-xl text-white flex-shrink-0 shadow-lg">
                     <Icon name="Clock" size={28} />
                   </div>
                   <div>
@@ -615,10 +617,12 @@ export default function Index() {
             </Card>
           </div>
 
-          <Card className="hover-scale">
+          <Card className="hover-scale bg-white/80 backdrop-blur border-primary/20">
             <div className="p-6">
               <h3 className="font-bold text-2xl mb-6 flex items-center gap-2">
-                <Icon name="MessageSquare" size={28} className="text-primary" />
+                <div className="gradient-teal p-2 rounded-lg">
+                  <Icon name="MessageSquare" size={28} className="text-white" />
+                </div>
                 Задать вопрос
               </h3>
               <form className="space-y-4" onSubmit={(e) => {
