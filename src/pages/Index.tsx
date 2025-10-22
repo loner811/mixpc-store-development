@@ -506,6 +506,27 @@ export default function Index() {
             Каталог
           </Button>
           <Button
+            variant={currentPage === 'about' ? 'default' : 'outline'}
+            onClick={() => setCurrentPage('about')}
+            className={currentPage === 'about' ? 'gradient-teal' : ''}
+          >
+            О нас
+          </Button>
+          <Button
+            variant={currentPage === 'delivery' ? 'default' : 'outline'}
+            onClick={() => setCurrentPage('delivery')}
+            className={currentPage === 'delivery' ? 'gradient-teal' : ''}
+          >
+            Доставка
+          </Button>
+          <Button
+            variant={currentPage === 'warranty' ? 'default' : 'outline'}
+            onClick={() => setCurrentPage('warranty')}
+            className={currentPage === 'warranty' ? 'gradient-teal' : ''}
+          >
+            Гарантия
+          </Button>
+          <Button
             variant={currentPage === 'contact' ? 'default' : 'outline'}
             onClick={() => setCurrentPage('contact')}
             className={currentPage === 'contact' ? 'gradient-teal' : ''}
@@ -820,13 +841,205 @@ export default function Index() {
     </div>
   );
 
+  const renderAboutPage = () => (
+    <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <h1 className="text-4xl font-bold mb-8 text-center">О нас</h1>
+      <Card>
+        <CardContent className="p-8 space-y-4">
+          <p className="text-lg">
+            <strong>MIX PC</strong> — это современный интернет-магазин компьютерной техники и комплектующих, 
+            который работает на рынке с 2015 года.
+          </p>
+          <p>
+            Мы специализируемся на продаже высококачественных комплектующих для сборки компьютеров, 
+            ноутбуков, периферии и игровых устройств. Наша миссия — предоставить каждому клиенту 
+            доступ к современным технологиям по доступным ценам.
+          </p>
+          <p>
+            В нашем каталоге представлено более 10 000 товаров от ведущих мировых производителей: 
+            AMD, Intel, NVIDIA, ASUS, MSI, Corsair, Kingston и многих других.
+          </p>
+          <div className="grid md:grid-cols-3 gap-6 mt-8">
+            <div className="text-center">
+              <div className="text-4xl font-bold text-primary mb-2">50 000+</div>
+              <div className="text-muted-foreground">Довольных клиентов</div>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl font-bold text-primary mb-2">10 000+</div>
+              <div className="text-muted-foreground">Товаров в каталоге</div>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl font-bold text-primary mb-2">8 лет</div>
+              <div className="text-muted-foreground">На рынке</div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
+  const renderDeliveryPage = () => (
+    <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <h1 className="text-4xl font-bold mb-8 text-center">Доставка и оплата</h1>
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="p-6">
+            <h3 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+              <Icon name="Truck" className="text-primary" />
+              Способы доставки
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <h4 className="font-semibold mb-2">Курьерская доставка по Москве</h4>
+                <p className="text-muted-foreground">Стоимость: 500 ₽ | Срок: 1-2 дня</p>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-2">Доставка по России (СДЭК, Boxberry)</h4>
+                <p className="text-muted-foreground">Стоимость: от 300 ₽ | Срок: 3-7 дней</p>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-2">Самовывоз из пункта выдачи</h4>
+                <p className="text-muted-foreground">Бесплатно | г. Москва, ул. Примерная, д. 123</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <h3 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+              <Icon name="CreditCard" className="text-primary" />
+              Способы оплаты
+            </h3>
+            <div className="space-y-2">
+              <p>• Банковской картой онлайн (Visa, MasterCard, МИР)</p>
+              <p>• Наличными при получении</p>
+              <p>• Банковским переводом (для юридических лиц)</p>
+              <p>• Электронными деньгами (ЮMoney, QIWI)</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+
+  const renderWarrantyPage = () => (
+    <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <h1 className="text-4xl font-bold mb-8 text-center">Гарантия и возврат</h1>
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="p-6">
+            <h3 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+              <Icon name="Shield" className="text-primary" />
+              Гарантийные обязательства
+            </h3>
+            <div className="space-y-4">
+              <p>
+                На все товары, приобретенные в нашем магазине, распространяется официальная гарантия производителя.
+              </p>
+              <div>
+                <h4 className="font-semibold mb-2">Сроки гарантии:</h4>
+                <p>• Комплектующие (процессоры, видеокарты, память) — от 1 до 3 лет</p>
+                <p>• Периферия (клавиатуры, мыши, мониторы) — от 1 до 2 лет</p>
+                <p>• Готовые компьютеры — 1 год</p>
+              </div>
+              <p>
+                Гарантийный ремонт осуществляется в авторизованных сервисных центрах производителей.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <h3 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+              <Icon name="RotateCcw" className="text-primary" />
+              Возврат товара
+            </h3>
+            <div className="space-y-4">
+              <p>
+                Вы можете вернуть товар надлежащего качества в течение 14 дней с момента покупки, 
+                если товар не был в употреблении, сохранены его товарный вид, потребительские свойства, 
+                пломбы, ярлыки.
+              </p>
+              <p>
+                Товар ненадлежащего качества может быть возвращен в течение всего гарантийного срока.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                * Подробные условия возврата и обмена товаров регулируются Законом РФ "О защите прав потребителей".
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+
+  const renderFooter = () => (
+    <footer className="gradient-teal text-white mt-16">
+      <div className="container mx-auto px-4 py-12">
+        <div className="grid md:grid-cols-4 gap-8 mb-8">
+          <div>
+            <h3 className="font-bold text-xl mb-4">MIX PC</h3>
+            <p className="text-white/80 text-sm">
+              Ваш надежный поставщик компьютерной техники с 2015 года
+            </p>
+          </div>
+          <div>
+            <h4 className="font-semibold mb-4">Информация</h4>
+            <div className="space-y-2 text-sm">
+              <button onClick={() => setCurrentPage('about')} className="block text-white/80 hover:text-white transition-colors">О нас</button>
+              <button onClick={() => setCurrentPage('delivery')} className="block text-white/80 hover:text-white transition-colors">Доставка и оплата</button>
+              <button onClick={() => setCurrentPage('warranty')} className="block text-white/80 hover:text-white transition-colors">Гарантия и возврат</button>
+              <button onClick={() => setCurrentPage('contact')} className="block text-white/80 hover:text-white transition-colors">Контакты</button>
+            </div>
+          </div>
+          <div>
+            <h4 className="font-semibold mb-4">Каталог</h4>
+            <div className="space-y-2 text-sm">
+              <button onClick={() => { setSelectedCategory('Процессоры'); setCurrentPage('category'); }} className="block text-white/80 hover:text-white transition-colors">Процессоры</button>
+              <button onClick={() => { setSelectedCategory('Видеокарты'); setCurrentPage('category'); }} className="block text-white/80 hover:text-white transition-colors">Видеокарты</button>
+              <button onClick={() => { setSelectedCategory('Материнские платы'); setCurrentPage('category'); }} className="block text-white/80 hover:text-white transition-colors">Материнские платы</button>
+              <button onClick={() => { setSelectedCategory('Оперативная память'); setCurrentPage('category'); }} className="block text-white/80 hover:text-white transition-colors">Оперативная память</button>
+            </div>
+          </div>
+          <div>
+            <h4 className="font-semibold mb-4">Контакты</h4>
+            <div className="space-y-2 text-sm text-white/80">
+              <p>8 (800) 555-35-35</p>
+              <p>info@mixpc.ru</p>
+              <p>г. Москва, ул. Примерная, д. 123</p>
+              <div className="flex gap-3 mt-4">
+                <a href="https://t.me" target="_blank" rel="noopener" className="text-white hover:opacity-80 transition-opacity">
+                  <Icon name="Send" size={20} />
+                </a>
+                <a href="https://wa.me" target="_blank" rel="noopener" className="text-white hover:opacity-80 transition-opacity">
+                  <Icon name="MessageCircle" size={20} />
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="border-t border-white/20 pt-8 text-center text-sm text-white/80">
+          <p>© 2024 MIX PC. Все права защищены.</p>
+        </div>
+      </div>
+    </footer>
+  );
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       {renderHeader()}
-      {selectedCategory ? renderCategoryPage() :
-       currentPage === 'home' ? renderHomePage() :
-       currentPage === 'catalog' ? renderCatalogPage() :
-       currentPage === 'contact' ? renderContactPage() : null}
+      <div className="flex-1">
+        {selectedCategory ? renderCategoryPage() :
+         currentPage === 'home' ? renderHomePage() :
+         currentPage === 'catalog' ? renderCatalogPage() :
+         currentPage === 'about' ? renderAboutPage() :
+         currentPage === 'delivery' ? renderDeliveryPage() :
+         currentPage === 'warranty' ? renderWarrantyPage() :
+         currentPage === 'contact' ? renderContactPage() : null}
+      </div>
+      {renderFooter()}
     </div>
   );
 }
