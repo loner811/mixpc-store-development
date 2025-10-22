@@ -187,6 +187,7 @@ export default function Index() {
   const [adminProducts, setAdminProducts] = useState<any[]>([]);
   const [adminMessages, setAdminMessages] = useState<any[]>([]);
   const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [adminActiveTab, setAdminActiveTab] = useState('products');
   
   // Filters
   const [priceRange, setPriceRange] = useState([0, 200000]);
@@ -202,6 +203,55 @@ export default function Index() {
     }, 30);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    if (isAdmin) {
+      loadAdminData();
+    }
+  }, [isAdmin]);
+
+  const loadAdminData = async () => {
+    try {
+      const productsRes = await fetch('https://functions.poehali.dev/858f5e57-c172-4ef7-9a49-0a25a2e84cc5', {
+        headers: { 'X-Admin-Auth': 'admin:123' }
+      });
+      const products = await productsRes.json();
+      setAdminProducts(products);
+
+      const localMessages = JSON.parse(localStorage.getItem('contactMessages') || '[]');
+      setAdminMessages(localMessages);
+    } catch (error) {
+      console.error('Failed to load admin data:', error);
+    }
+  };
+
+  const handleSaveProduct = async (product: any) => {
+    const url = 'https://functions.poehali.dev/858f5e57-c172-4ef7-9a49-0a25a2e84cc5';
+    const method = product.id ? 'PUT' : 'POST';
+    
+    await fetch(url, {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Admin-Auth': 'admin:123'
+      },
+      body: JSON.stringify(product)
+    });
+    
+    loadAdminData();
+    setEditingProduct(null);
+  };
+
+  const handleDeleteProduct = async (id: number) => {
+    if (!confirm('Удалить товар?')) return;
+    
+    await fetch(`https://functions.poehali.dev/858f5e57-c172-4ef7-9a49-0a25a2e84cc5?id=${id}`, {
+      method: 'DELETE',
+      headers: { 'X-Admin-Auth': 'admin:123' }
+    });
+    
+    loadAdminData();
+  };
 
   const getFilteredProducts = () => {
     let products = selectedCategory 
@@ -1087,62 +1137,11 @@ export default function Index() {
   );
 
   const renderAdminPage = () => {
-    const [activeTab, setActiveTab] = useState('products');
-    
-    const loadAdminData = async () => {
-      try {
-        const productsRes = await fetch('https://functions.poehali.dev/858f5e57-c172-4ef7-9a49-0a25a2e84cc5', {
-          headers: { 'X-Admin-Auth': 'admin:123' }
-        });
-        const products = await productsRes.json();
-        setAdminProducts(products);
-
-        const localMessages = JSON.parse(localStorage.getItem('contactMessages') || '[]');
-        setAdminMessages(localMessages);
-      } catch (error) {
-        console.error('Failed to load admin data:', error);
-      }
-    };
-
-    useEffect(() => {
-      if (isAdmin) {
-        loadAdminData();
-      }
-    }, [isAdmin]);
-
-    const handleSaveProduct = async (product: any) => {
-      const url = 'https://functions.poehali.dev/858f5e57-c172-4ef7-9a49-0a25a2e84cc5';
-      const method = product.id ? 'PUT' : 'POST';
-      
-      await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Admin-Auth': 'admin:123'
-        },
-        body: JSON.stringify(product)
-      });
-      
-      loadAdminData();
-      setEditingProduct(null);
-    };
-
-    const handleDeleteProduct = async (id: number) => {
-      if (!confirm('Удалить товар?')) return;
-      
-      await fetch(`https://functions.poehali.dev/858f5e57-c172-4ef7-9a49-0a25a2e84cc5?id=${id}`, {
-        method: 'DELETE',
-        headers: { 'X-Admin-Auth': 'admin:123' }
-      });
-      
-      loadAdminData();
-    };
-
     return (
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-4xl font-bold mb-8">Админ-панель</h1>
         
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <Tabs value={adminActiveTab} onValueChange={setAdminActiveTab}>
           <TabsList className="grid w-full grid-cols-2 max-w-md">
             <TabsTrigger value="products">Товары</TabsTrigger>
             <TabsTrigger value="messages">Сообщения ({adminMessages.length})</TabsTrigger>
