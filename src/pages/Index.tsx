@@ -1363,7 +1363,7 @@ export default function Index() {
           <TabsContent value="products" className="mt-6">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-semibold">Управление товарами</h2>
-              <Button onClick={() => setEditingProduct({ name: '', price: 0, brand: '', category: '', image_url: '' })} className="gradient-teal">
+              <Button onClick={() => setEditingProduct({ name: '', price: 0, brand: '', category: '', image_url: '', description: '', specifications: [] })} className="gradient-teal">
                 <Icon name="Plus" size={18} className="mr-2" />
                 Добавить товар
               </Button>
@@ -1449,7 +1449,84 @@ export default function Index() {
                         )}
                       </div>
                     </div>
+                    
+                    <div className="md:col-span-2">
+                      <Label>Описание</Label>
+                      <Textarea 
+                        value={editingProduct.description || ''} 
+                        onChange={(e) => setEditingProduct({...editingProduct, description: e.target.value})}
+                        placeholder="Краткое описание товара"
+                        rows={3}
+                      />
+                    </div>
+                    
+                    <div className="md:col-span-2">
+                      <div className="flex justify-between items-center mb-2">
+                        <Label>Характеристики товара</Label>
+                        <Button 
+                          size="sm"
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            const specs = editingProduct.specifications || [];
+                            setEditingProduct({
+                              ...editingProduct, 
+                              specifications: [...specs, { name: '', value: '' }]
+                            });
+                          }}
+                        >
+                          <Icon name="Plus" size={16} className="mr-1" />
+                          Добавить характеристику
+                        </Button>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        {(editingProduct.specifications || []).map((spec: any, idx: number) => (
+                          <div key={idx} className="flex gap-2">
+                            <Input 
+                              placeholder="Название (например, Гарантия)"
+                              value={spec.spec_name || spec.name || ''}
+                              onChange={(e) => {
+                                const specs = [...(editingProduct.specifications || [])];
+                                specs[idx] = { ...specs[idx], name: e.target.value, spec_name: e.target.value };
+                                setEditingProduct({...editingProduct, specifications: specs});
+                              }}
+                              className="flex-1"
+                            />
+                            <Input 
+                              placeholder="Значение (например, 36 мес.)"
+                              value={spec.spec_value || spec.value || ''}
+                              onChange={(e) => {
+                                const specs = [...(editingProduct.specifications || [])];
+                                specs[idx] = { ...specs[idx], value: e.target.value, spec_value: e.target.value };
+                                setEditingProduct({...editingProduct, specifications: specs});
+                              }}
+                              className="flex-1"
+                            />
+                            <Button 
+                              size="icon"
+                              type="button"
+                              variant="ghost"
+                              onClick={() => {
+                                const specs = [...(editingProduct.specifications || [])];
+                                specs.splice(idx, 1);
+                                setEditingProduct({...editingProduct, specifications: specs});
+                              }}
+                            >
+                              <Icon name="Trash2" size={16} />
+                            </Button>
+                          </div>
+                        ))}
+                        
+                        {(!editingProduct.specifications || editingProduct.specifications.length === 0) && (
+                          <p className="text-sm text-muted-foreground">
+                            Характеристик пока нет. Нажмите "Добавить характеристику" чтобы добавить.
+                          </p>
+                        )}
+                      </div>
+                    </div>
                   </div>
+                  
                   <div className="flex gap-2 mt-4">
                     <Button onClick={() => handleSaveProduct(editingProduct)} className="gradient-teal">
                       Сохранить
