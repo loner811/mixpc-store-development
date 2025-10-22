@@ -274,7 +274,7 @@ export default function Index() {
   };
 
   const renderHeader = () => (
-    <header className="sticky top-0 z-50 gradient-teal shadow-lg">
+    <header className="sticky top-0 z-50 bg-white shadow-lg border-b border-gray-200">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-2">
@@ -292,12 +292,12 @@ export default function Index() {
 
           <div className="flex items-center gap-4">
             <div className="text-sm text-center hidden md:block">
-              <div className="font-semibold text-base text-white">8 (800) 555-35-35</div>
+              <div className="font-semibold text-base text-primary">8 (800) 555-35-35</div>
               <div className="flex gap-2 mt-1 justify-center">
-                <a href="https://t.me" target="_blank" rel="noopener" className="text-white hover:opacity-80 transition-opacity">
+                <a href="https://t.me" target="_blank" rel="noopener" className="text-primary hover:opacity-80 transition-opacity">
                   <Icon name="Send" size={20} />
                 </a>
-                <a href="https://wa.me" target="_blank" rel="noopener" className="text-white hover:opacity-80 transition-opacity">
+                <a href="https://wa.me" target="_blank" rel="noopener" className="text-primary hover:opacity-80 transition-opacity">
                   <Icon name="MessageCircle" size={20} />
                 </a>
               </div>
@@ -305,7 +305,7 @@ export default function Index() {
 
             <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
               <DialogTrigger asChild>
-                <Button className="gap-2 bg-white text-primary hover:bg-white/90 border-0">
+                <Button className="gap-2 gradient-teal text-white hover:opacity-90">
                   <Icon name="User" size={18} />
                   <span className="hidden sm:inline">Войти</span>
                 </Button>
@@ -361,7 +361,7 @@ export default function Index() {
 
             <Sheet>
               <SheetTrigger asChild>
-                <Button size="icon" className="relative bg-white text-primary hover:bg-white/90 border-0">
+                <Button size="icon" className="relative gradient-teal text-white hover:opacity-90">
                   <Icon name="Heart" size={20} />
                   {favorites.length > 0 && (
                     <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center bg-secondary text-white">
@@ -410,7 +410,7 @@ export default function Index() {
 
             <Sheet>
               <SheetTrigger asChild>
-                <Button size="icon" className="relative bg-white text-primary hover:bg-white/90 border-0">
+                <Button size="icon" className="relative gradient-teal text-white hover:opacity-90">
                   <Icon name="ShoppingCart" size={20} />
                   {cart.length > 0 && (
                     <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center bg-secondary text-white">
