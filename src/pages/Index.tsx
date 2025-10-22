@@ -958,9 +958,7 @@ export default function Index() {
               <Icon name="MapPin" className="text-primary" />
               Адрес
             </h3>
-            <p className="text-muted-foreground mb-4">
-              г. Москва, ул. Примерная, д. 123
-            </p>
+            <p className="text-muted-foreground mb-4">г. Ростов-на-дону, Ворошиловский проспект, д. 123</p>
             <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
               <Icon name="Phone" className="text-primary" />
               Телефон
