@@ -1361,7 +1361,7 @@ export default function Index() {
           <div>
             <h4 className="font-semibold mb-4">Контакты</h4>
             <div className="space-y-2 text-sm text-white/70">
-              <p>8 (800) 555-35-35</p>
+              <p>8 (800) 555-77-30</p>
               <p>info@mixpc.ru</p>
               <p>г. Ростов-на-дону, Ворошиловский проспект, д. 123</p>
               <div className="flex gap-3 mt-4">
