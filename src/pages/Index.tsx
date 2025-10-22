@@ -1410,12 +1410,44 @@ export default function Index() {
                       </select>
                     </div>
                     <div className="md:col-span-2">
-                      <Label>URL изображения</Label>
-                      <Input 
-                        value={editingProduct.image_url} 
-                        onChange={(e) => setEditingProduct({...editingProduct, image_url: e.target.value})}
-                        placeholder="https://example.com/image.jpg"
-                      />
+                      <Label>Изображение товара</Label>
+                      <div className="space-y-2">
+                        <Input 
+                          type="file"
+                          accept="image/*"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            
+                            const reader = new FileReader();
+                            reader.onload = async (event) => {
+                              const base64 = event.target?.result as string;
+                              
+                              try {
+                                const response = await fetch('https://api.poehali.dev/upload-image', {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ image: base64 })
+                                });
+                                
+                                const data = await response.json();
+                                setEditingProduct({...editingProduct, image_url: data.url});
+                                alert('Изображение загружено!');
+                              } catch (error) {
+                                console.error('Upload error:', error);
+                                alert('Ошибка загрузки изображения');
+                              }
+                            };
+                            reader.readAsDataURL(file);
+                          }}
+                        />
+                        {editingProduct.image_url && (
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Icon name="Check" size={16} className="text-green-600" />
+                            <span>Изображение загружено</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                   <div className="flex gap-2 mt-4">
