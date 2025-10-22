@@ -959,40 +959,54 @@ export default function Index() {
         <Card>
           <CardContent className="p-6">
             <h3 className="text-xl font-semibold mb-4">Напишите нам</h3>
-            <form className="space-y-4" onSubmit={(e) => {
-              e.preventDefault();
-              const formData = new FormData(e.target as HTMLFormElement);
-              const message = {
-                name: formData.get('name') as string,
-                email: formData.get('email') as string,
-                message: formData.get('message') as string,
-                created_at: new Date().toISOString(),
-                is_read: false
-              };
-              
-              const messages = JSON.parse(localStorage.getItem('contactMessages') || '[]');
-              messages.push(message);
-              localStorage.setItem('contactMessages', JSON.stringify(messages));
-              
-              alert('Сообщение отправлено!');
-              (e.target as HTMLFormElement).reset();
-            }}>
-              <div>
-                <Label>Имя</Label>
-                <Input name="name" placeholder="Ваше имя" required />
+            
+            {!user ? (
+              <div className="text-center py-8 space-y-4">
+                <Icon name="Lock" size={48} className="mx-auto text-muted-foreground" />
+                <p className="text-lg text-muted-foreground">
+                  Для отправки сообщений необходимо войти в систему
+                </p>
+                <Button onClick={() => setShowAuthModal(true)} className="gradient-teal">
+                  <Icon name="LogIn" size={18} className="mr-2" />
+                  Войти
+                </Button>
               </div>
-              <div>
-                <Label>Email</Label>
-                <Input name="email" type="email" placeholder="your@email.com" required />
-              </div>
-              <div>
-                <Label>Сообщение</Label>
-                <Textarea name="message" placeholder="Ваше сообщение..." rows={4} required />
-              </div>
-              <Button type="submit" className="w-full gradient-teal">
-                Отправить
-              </Button>
-            </form>
+            ) : (
+              <form className="space-y-4" onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target as HTMLFormElement);
+                const message = {
+                  name: user.name,
+                  email: user.email,
+                  message: formData.get('message') as string,
+                  created_at: new Date().toISOString(),
+                  is_read: false
+                };
+                
+                const messages = JSON.parse(localStorage.getItem('contactMessages') || '[]');
+                messages.push(message);
+                localStorage.setItem('contactMessages', JSON.stringify(messages));
+                
+                alert('Сообщение отправлено!');
+                (e.target as HTMLFormElement).reset();
+              }}>
+                <div>
+                  <Label>Имя</Label>
+                  <Input value={user.name} disabled className="bg-muted" />
+                </div>
+                <div>
+                  <Label>Email</Label>
+                  <Input value={user.email} disabled className="bg-muted" />
+                </div>
+                <div>
+                  <Label>Сообщение</Label>
+                  <Textarea name="message" placeholder="Ваше сообщение..." rows={4} required />
+                </div>
+                <Button type="submit" className="w-full gradient-teal">
+                  Отправить
+                </Button>
+              </form>
+            )}
           </CardContent>
         </Card>
       </div>
