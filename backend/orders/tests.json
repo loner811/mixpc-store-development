@@ -1,0 +1,43 @@
+{
+  "tests": [
+    {
+      "name": "Get all orders (admin)",
+      "method": "GET",
+      "path": "/",
+      "headers": {
+        "X-Admin-Auth": "admin:123"
+      },
+      "expectedStatus": 200,
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Create new order",
+      "method": "POST",
+      "path": "/",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": {
+        "user_id": 2,
+        "full_name": "Иван Иванов",
+        "email": "ivan@example.com",
+        "phone": "+7 999 123-45-67",
+        "delivery_type": "delivery",
+        "delivery_address": "г. Москва, ул. Примерная, д. 1",
+        "total_amount": 89990,
+        "items": [
+          {
+            "id": 1,
+            "name": "AMD Ryzen 7 7700X",
+            "price": 29990
+          }
+        ]
+      },
+      "expectedStatus": 201,
+      "expectedBody": {
+        "message": "string"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

@@ -181,6 +181,16 @@ export default function Index() {
   const [favorites, setFavorites] = useState<any[]>([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  
+  // Checkout
+  const [checkoutData, setCheckoutData] = useState({
+    fullName: '',
+    email: '',
+    phone: '',
+    deliveryType: 'delivery',
+    address: ''
+  });
   
   // Admin
   const [isAdmin, setIsAdmin] = useState(false);
@@ -188,6 +198,7 @@ export default function Index() {
   const [adminMessages, setAdminMessages] = useState<any[]>([]);
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [adminActiveTab, setAdminActiveTab] = useState('products');
+  const [adminOrders, setAdminOrders] = useState<any[]>([]);
   
   // Filters
   const [priceRange, setPriceRange] = useState([0, 200000]);
@@ -217,6 +228,12 @@ export default function Index() {
       });
       const products = await productsRes.json();
       setAdminProducts(products);
+
+      const ordersRes = await fetch('https://functions.poehali.dev/55d2462d-02a8-4732-91f6-95271b22efe9', {
+        headers: { 'X-Admin-Auth': 'admin:123' }
+      });
+      const orders = await ordersRes.json();
+      setAdminOrders(orders);
 
       const localMessages = JSON.parse(localStorage.getItem('contactMessages') || '[]');
       setAdminMessages(localMessages);
@@ -376,20 +393,26 @@ export default function Index() {
                     <TabsTrigger value="register">Регистрация</TabsTrigger>
                   </TabsList>
                   <TabsContent value="login" className="space-y-4 mt-4">
-                    <form onSubmit={(e) => {
+                    <form onSubmit={async (e) => {
                       e.preventDefault();
                       const formData = new FormData(e.target as HTMLFormElement);
-                      const login = formData.get('login') as string;
+                      const username = formData.get('login') as string;
                       const password = formData.get('password') as string;
                       
-                      if (login === 'admin' && password === '123') {
-                        setIsAdmin(true);
+                      if (username === 'admin' && password === '123') {
+                        setCurrentUser({ id: 1, username: 'admin', role: 'admin', email: 'admin@mixpc.ru' });
                         setIsLoggedIn(true);
+                        setIsAdmin(true);
                         setLoginOpen(false);
                         alert('Добро пожаловать, администратор!');
-                      } else {
+                      } else if (username === 'login' && password === '123') {
+                        setCurrentUser({ id: 2, username: 'login', role: 'user', email: 'user@example.com' });
                         setIsLoggedIn(true);
+                        setIsAdmin(false);
                         setLoginOpen(false);
+                        alert('Вход выполнен успешно!');
+                      } else {
+                        alert('Неверный логин или пароль');
                       }
                     }}>
                       <div className="space-y-2">
@@ -530,8 +553,11 @@ export default function Index() {
                             {cart.reduce((sum, p) => sum + p.price, 0).toLocaleString()} ₽
                           </span>
                         </div>
-                        <Button className="w-full h-12 text-lg gradient-teal">
-                          Оформить заказ
+                        <Button 
+                          className="w-full h-12 text-lg gradient-teal"
+                          onClick={() => setCurrentPage('checkout')}
+                        >
+                          Перейти к оформлению
                         </Button>
                       </div>
                     </>
@@ -1107,6 +1133,169 @@ export default function Index() {
     </div>
   );
 
+  const renderCheckoutPage = () => (
+    <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <h1 className="text-4xl font-bold mb-8">Оформление заказа</h1>
+      
+      <div className="grid lg:grid-cols-2 gap-8">
+        <Card>
+          <CardContent className="p-6">
+            <h2 className="text-2xl font-semibold mb-6">Ваши данные</h2>
+            <form className="space-y-4" onSubmit={async (e) => {
+              e.preventDefault();
+              
+              if (!currentUser) {
+                alert('Войдите в систему для оформления заказа');
+                return;
+              }
+              
+              try {
+                const response = await fetch('https://functions.poehali.dev/55d2462d-02a8-4732-91f6-95271b22efe9', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    user_id: currentUser.id,
+                    full_name: checkoutData.fullName,
+                    email: checkoutData.email,
+                    phone: checkoutData.phone,
+                    delivery_type: checkoutData.deliveryType,
+                    delivery_address: checkoutData.address,
+                    total_amount: cart.reduce((sum, p) => sum + p.price, 0),
+                    items: cart
+                  })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                  alert(`Заказ №${data.order_id} успешно оформлен!`);
+                  setCart([]);
+                  setCurrentPage('home');
+                } else {
+                  alert('Ошибка при оформлении заказа');
+                }
+              } catch (error) {
+                console.error('Order error:', error);
+                alert('Ошибка при оформлении заказа');
+              }
+            }}>
+              <div>
+                <Label>ФИО</Label>
+                <Input 
+                  value={checkoutData.fullName}
+                  onChange={(e) => setCheckoutData({...checkoutData, fullName: e.target.value})}
+                  placeholder="Иванов Иван Иванович"
+                  required 
+                />
+              </div>
+              
+              <div>
+                <Label>Email</Label>
+                <Input 
+                  type="email"
+                  value={checkoutData.email}
+                  onChange={(e) => setCheckoutData({...checkoutData, email: e.target.value})}
+                  placeholder="your@email.com"
+                  required 
+                />
+              </div>
+              
+              <div>
+                <Label>Номер телефона</Label>
+                <Input 
+                  type="tel"
+                  value={checkoutData.phone}
+                  onChange={(e) => setCheckoutData({...checkoutData, phone: e.target.value})}
+                  placeholder="+7 (999) 123-45-67"
+                  required 
+                />
+              </div>
+              
+              <div>
+                <Label>Способ получения</Label>
+                <div className="flex gap-4 mt-2">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="delivery" 
+                      value="delivery"
+                      checked={checkoutData.deliveryType === 'delivery'}
+                      onChange={(e) => setCheckoutData({...checkoutData, deliveryType: e.target.value})}
+                    />
+                    <span>Доставка</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="delivery" 
+                      value="pickup"
+                      checked={checkoutData.deliveryType === 'pickup'}
+                      onChange={(e) => setCheckoutData({...checkoutData, deliveryType: e.target.value})}
+                    />
+                    <span>Самовывоз</span>
+                  </label>
+                </div>
+              </div>
+              
+              {checkoutData.deliveryType === 'delivery' && (
+                <div>
+                  <Label>Адрес доставки</Label>
+                  <Textarea 
+                    value={checkoutData.address}
+                    onChange={(e) => setCheckoutData({...checkoutData, address: e.target.value})}
+                    placeholder="г. Москва, ул. Примерная, д. 1, кв. 1"
+                    rows={3}
+                    required 
+                  />
+                </div>
+              )}
+              
+              <Button type="submit" className="w-full h-12 gradient-teal">
+                Оформить заказ
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+        
+        <div className="space-y-4">
+          <Card>
+            <CardContent className="p-6">
+              <h2 className="text-2xl font-semibold mb-4">Ваш заказ</h2>
+              <div className="space-y-3 mb-4">
+                {cart.map(product => (
+                  <div key={product.id} className="flex justify-between">
+                    <span className="text-sm">{product.name}</span>
+                    <span className="font-semibold">{product.price.toLocaleString()} ₽</span>
+                  </div>
+                ))}
+              </div>
+              <div className="border-t pt-4">
+                <div className="flex justify-between text-xl font-bold">
+                  <span>Итого:</span>
+                  <span className="text-primary">{cart.reduce((sum, p) => sum + p.price, 0).toLocaleString()} ₽</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-6">
+              <h3 className="font-semibold mb-2 flex items-center gap-2">
+                <Icon name="Info" size={18} className="text-primary" />
+                Информация
+              </h3>
+              <div className="text-sm text-muted-foreground space-y-1">
+                <p>• Доставка по Москве — 1-2 дня</p>
+                <p>• Самовывоз — бесплатно</p>
+                <p>• Гарантия на все товары</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+
   const renderFooter = () => (
     <footer className="footer-dark text-white mt-16">
       <div className="container mx-auto px-4 py-12">
@@ -1165,8 +1354,9 @@ export default function Index() {
         <h1 className="text-4xl font-bold mb-8">Админ-панель</h1>
         
         <Tabs value={adminActiveTab} onValueChange={setAdminActiveTab}>
-          <TabsList className="grid w-full grid-cols-2 max-w-md">
+          <TabsList className="grid w-full grid-cols-3 max-w-2xl">
             <TabsTrigger value="products">Товары</TabsTrigger>
+            <TabsTrigger value="orders">Заказы ({adminOrders.length})</TabsTrigger>
             <TabsTrigger value="messages">Сообщения ({adminMessages.length})</TabsTrigger>
           </TabsList>
 
@@ -1276,6 +1466,90 @@ export default function Index() {
             </div>
           </TabsContent>
 
+          <TabsContent value="orders" className="mt-6">
+            <h2 className="text-2xl font-semibold mb-6">Заказы клиентов</h2>
+            
+            <div className="grid gap-4">
+              {adminOrders.length === 0 ? (
+                <Card>
+                  <CardContent className="p-8 text-center text-muted-foreground">
+                    Заказов пока нет
+                  </CardContent>
+                </Card>
+              ) : (
+                adminOrders.map(order => (
+                  <Card key={order.id}>
+                    <CardContent className="p-6">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <h3 className="font-semibold text-lg">Заказ №{order.id}</h3>
+                          <p className="text-sm text-muted-foreground">
+                            {new Date(order.created_at).toLocaleString('ru-RU')}
+                          </p>
+                        </div>
+                        <Badge variant={order.status === 'pending' ? 'default' : 'secondary'}>
+                          {order.status === 'pending' ? 'Новый' : order.status === 'completed' ? 'Выполнен' : order.status}
+                        </Badge>
+                      </div>
+                      
+                      <div className="grid md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Клиент</p>
+                          <p className="font-semibold">{order.full_name}</p>
+                          <p className="text-sm">{order.email}</p>
+                          <p className="text-sm">{order.phone}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">Доставка</p>
+                          <p className="font-semibold">
+                            {order.delivery_type === 'delivery' ? 'Доставка' : 'Самовывоз'}
+                          </p>
+                          {order.delivery_address && (
+                            <p className="text-sm">{order.delivery_address}</p>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <div className="border-t pt-4">
+                        <p className="text-sm text-muted-foreground mb-2">Товары:</p>
+                        {order.items && order.items.map((item: any, idx: number) => (
+                          <div key={idx} className="flex justify-between text-sm mb-1">
+                            <span>{item.product_name}</span>
+                            <span className="font-semibold">{Number(item.product_price).toLocaleString()} ₽</span>
+                          </div>
+                        ))}
+                        <div className="flex justify-between font-bold text-lg mt-3 pt-3 border-t">
+                          <span>Итого:</span>
+                          <span className="text-primary">{Number(order.total_amount).toLocaleString()} ₽</span>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-4 flex gap-2">
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={async () => {
+                            await fetch('https://functions.poehali.dev/55d2462d-02a8-4732-91f6-95271b22efe9', {
+                              method: 'PUT',
+                              headers: {
+                                'Content-Type': 'application/json',
+                                'X-Admin-Auth': 'admin:123'
+                              },
+                              body: JSON.stringify({ id: order.id, status: 'completed' })
+                            });
+                            loadAdminData();
+                          }}
+                        >
+                          Отметить выполненным
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
+          </TabsContent>
+
           <TabsContent value="messages" className="mt-6">
             <h2 className="text-2xl font-semibold mb-6">Сообщения от пользователей</h2>
             
@@ -1321,6 +1595,7 @@ export default function Index() {
       {renderHeader()}
       <div className="flex-1">
         {currentPage === 'admin' && isAdmin ? renderAdminPage() :
+         currentPage === 'checkout' ? renderCheckoutPage() :
          selectedCategory ? renderCategoryPage() :
          currentPage === 'home' ? renderHomePage() :
          currentPage === 'catalog' ? renderCatalogPage() :
