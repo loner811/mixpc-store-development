@@ -15,16 +15,16 @@
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 10%;
 
-    --primary: 174 72% 56%;
+    --primary: 221 83% 53%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 189 85% 48%;
+    --secondary: 217 91% 60%;
     --secondary-foreground: 0 0% 100%;
 
     --muted: 0 0% 97%;
     --muted-foreground: 0 0% 45%;
 
-    --accent: 174 72% 56%;
+    --accent: 221 83% 53%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
@@ -32,7 +32,7 @@
 
     --border: 0 0% 90%;
     --input: 0 0% 90%;
-    --ring: 174 72% 56%;
+    --ring: 221 83% 53%;
 
     --radius: 0.75rem;
 
@@ -113,20 +113,20 @@
 }
 
 @layer utilities {
-  .gradient-teal {
-    background: linear-gradient(135deg, #06d6a0 0%, #118ab2 100%);
+  .gradient-blue {
+    background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
   }
 
-  .gradient-teal-purple {
-    background: linear-gradient(135deg, #06d6a0 0%, #118ab2 50%, #073b4c 100%);
+  .gradient-blue-purple {
+    background: linear-gradient(135deg, #3b82f6 0%, #6366f1 50%, #8b5cf6 100%);
   }
 
-  .gradient-light-teal {
-    background: linear-gradient(135deg, #e0fbfc 0%, #c7f9ee 100%);
+  .gradient-light-blue {
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
   }
 
-  .bg-teal-soft {
-    background-color: #e8f8f5;
+  .bg-blue-soft {
+    background-color: #eff6ff;
   }
 }
 
