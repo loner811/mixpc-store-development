@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
@@ -8,6 +8,8 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Slider } from '@/components/ui/slider';
 import Icon from '@/components/ui/icon';
 
 const categories = [
@@ -25,28 +27,225 @@ const categories = [
   { id: 12, name: 'Компьютерные мыши', icon: 'Mouse' }
 ];
 
-const sampleProducts = [
-  { id: 1, name: 'AMD Ryzen 9 7950X', price: 45990, brand: 'AMD', category: 'Процессоры', image: '' },
-  { id: 2, name: 'Intel Core i9-13900K', price: 52990, brand: 'Intel', category: 'Процессоры', image: '' },
-  { id: 3, name: 'NVIDIA GeForce RTX 4090', price: 159990, brand: 'NVIDIA', category: 'Видеокарты', image: '' },
-  { id: 4, name: 'AMD Radeon RX 7900 XTX', price: 89990, brand: 'AMD', category: 'Видеокарты', image: '' },
-  { id: 5, name: 'Kingston Fury 32GB DDR5', price: 12990, brand: 'Kingston', category: 'Оперативная память', image: '' },
-  { id: 6, name: 'Samsung 980 PRO 2TB', price: 18990, brand: 'Samsung', category: 'Накопители SSD', image: '' },
-  { id: 7, name: 'ASUS ROG Strix B650', price: 24990, brand: 'ASUS', category: 'Материнские платы', image: '' },
-  { id: 8, name: 'Corsair RM850x', price: 14990, brand: 'Corsair', category: 'Блоки питания', image: '' }
+const allProducts = [
+  // Компьютеры
+  { id: 1, name: 'Игровой ПК AMD Ryzen 7', price: 89990, brand: 'Custom Build', category: 'Компьютеры', image: '/images/products/1.jpg' },
+  { id: 2, name: 'Офисный ПК Intel Core i5', price: 45990, brand: 'Custom Build', category: 'Компьютеры', image: '/images/products/2.jpg' },
+  { id: 3, name: 'Рабочая станция Intel Xeon', price: 159990, brand: 'HP', category: 'Компьютеры', image: '/images/products/3.jpg' },
+  { id: 4, name: 'Игровой ПК Intel Core i9', price: 189990, brand: 'MSI', category: 'Компьютеры', image: '/images/products/4.jpg' },
+  { id: 5, name: 'Мини-ПК AMD Ryzen 5', price: 39990, brand: 'ASUS', category: 'Компьютеры', image: '/images/products/5.jpg' },
+  { id: 6, name: 'Игровой ПК AMD Ryzen 9', price: 219990, brand: 'Custom Build', category: 'Компьютеры', image: '/images/products/6.jpg' },
+  { id: 7, name: 'Офисный ПК Intel Core i3', price: 29990, brand: 'Dell', category: 'Компьютеры', image: '/images/products/7.jpg' },
+  { id: 8, name: 'Стример ПК AMD Ryzen 7', price: 129990, brand: 'Custom Build', category: 'Компьютеры', image: '/images/products/8.jpg' },
+  { id: 9, name: 'Рабочий ПК Intel Core i7', price: 79990, brand: 'Lenovo', category: 'Компьютеры', image: '/images/products/9.jpg' },
+  { id: 10, name: 'Игровой ПК RTX 4090', price: 349990, brand: 'Custom Build', category: 'Компьютеры', image: '/images/products/10.jpg' },
+
+  // Процессоры
+  { id: 11, name: 'AMD Ryzen 9 7950X', price: 45990, brand: 'AMD', category: 'Процессоры', image: '/images/products/11.jpg' },
+  { id: 12, name: 'Intel Core i9-13900K', price: 52990, brand: 'Intel', category: 'Процессоры', image: '/images/products/12.jpg' },
+  { id: 13, name: 'AMD Ryzen 7 7700X', price: 29990, brand: 'AMD', category: 'Процессоры', image: '/images/products/13.jpg' },
+  { id: 14, name: 'Intel Core i7-13700K', price: 38990, brand: 'Intel', category: 'Процессоры', image: '/images/products/14.jpg' },
+  { id: 15, name: 'AMD Ryzen 5 7600X', price: 22990, brand: 'AMD', category: 'Процессоры', image: '/images/products/15.jpg' },
+  { id: 16, name: 'Intel Core i5-13600K', price: 28990, brand: 'Intel', category: 'Процессоры', image: '/images/products/16.jpg' },
+  { id: 17, name: 'AMD Ryzen 9 7900X', price: 39990, brand: 'AMD', category: 'Процессоры', image: '/images/products/17.jpg' },
+  { id: 18, name: 'Intel Core i9-12900K', price: 44990, brand: 'Intel', category: 'Процессоры', image: '/images/products/18.jpg' },
+  { id: 19, name: 'AMD Ryzen 7 5800X3D', price: 31990, brand: 'AMD', category: 'Процессоры', image: '/images/products/19.jpg' },
+  { id: 20, name: 'Intel Core i5-12400F', price: 15990, brand: 'Intel', category: 'Процессоры', image: '/images/products/20.jpg' },
+
+  // Видеокарты
+  { id: 21, name: 'NVIDIA GeForce RTX 4090', price: 159990, brand: 'NVIDIA', category: 'Видеокарты', image: '/images/products/21.jpg' },
+  { id: 22, name: 'AMD Radeon RX 7900 XTX', price: 89990, brand: 'AMD', category: 'Видеокарты', image: '/images/products/22.jpg' },
+  { id: 23, name: 'NVIDIA GeForce RTX 4080', price: 119990, brand: 'NVIDIA', category: 'Видеокарты', image: '/images/products/23.jpg' },
+  { id: 24, name: 'AMD Radeon RX 7900 XT', price: 74990, brand: 'AMD', category: 'Видеокарты', image: '/images/products/24.jpg' },
+  { id: 25, name: 'NVIDIA GeForce RTX 4070 Ti', price: 79990, brand: 'NVIDIA', category: 'Видеокарты', image: '/images/products/25.jpg' },
+  { id: 26, name: 'AMD Radeon RX 7800 XT', price: 59990, brand: 'AMD', category: 'Видеокарты', image: '/images/products/26.jpg' },
+  { id: 27, name: 'NVIDIA GeForce RTX 4070', price: 64990, brand: 'NVIDIA', category: 'Видеокарты', image: '/images/products/27.jpg' },
+  { id: 28, name: 'AMD Radeon RX 7700 XT', price: 49990, brand: 'AMD', category: 'Видеокарты', image: '/images/products/28.jpg' },
+  { id: 29, name: 'NVIDIA GeForce RTX 4060 Ti', price: 44990, brand: 'NVIDIA', category: 'Видеокарты', image: '/images/products/29.jpg' },
+  { id: 30, name: 'AMD Radeon RX 7600', price: 29990, brand: 'AMD', category: 'Видеокарты', image: '/images/products/30.jpg' },
+
+  // Материнские платы
+  { id: 31, name: 'ASUS ROG Strix B650-E', price: 24990, brand: 'ASUS', category: 'Материнские платы', image: '/images/products/31.jpg' },
+  { id: 32, name: 'MSI MAG B760 Tomahawk', price: 18990, brand: 'MSI', category: 'Материнские платы', image: '/images/products/32.jpg' },
+  { id: 33, name: 'Gigabyte X670 AORUS Elite', price: 29990, brand: 'Gigabyte', category: 'Материнские платы', image: '/images/products/33.jpg' },
+  { id: 34, name: 'ASRock Z790 Steel Legend', price: 21990, brand: 'ASRock', category: 'Материнские платы', image: '/images/products/34.jpg' },
+  { id: 35, name: 'ASUS TUF Gaming B650', price: 16990, brand: 'ASUS', category: 'Материнские платы', image: '/images/products/35.jpg' },
+  { id: 36, name: 'MSI MPG Z790 Carbon', price: 34990, brand: 'MSI', category: 'Материнские платы', image: '/images/products/36.jpg' },
+  { id: 37, name: 'Gigabyte B660M DS3H', price: 12990, brand: 'Gigabyte', category: 'Материнские платы', image: '/images/products/37.jpg' },
+  { id: 38, name: 'ASUS Prime X670-P', price: 27990, brand: 'ASUS', category: 'Материнские платы', image: '/images/products/38.jpg' },
+  { id: 39, name: 'MSI PRO B650-P', price: 14990, brand: 'MSI', category: 'Материнские платы', image: '/images/products/39.jpg' },
+  { id: 40, name: 'ASRock B760M Pro RS', price: 11990, brand: 'ASRock', category: 'Материнские платы', image: '/images/products/40.jpg' },
+
+  // Оперативная память
+  { id: 41, name: 'Kingston Fury 32GB DDR5', price: 12990, brand: 'Kingston', category: 'Оперативная память', image: '/images/products/41.jpg' },
+  { id: 42, name: 'Corsair Vengeance 32GB DDR5', price: 14990, brand: 'Corsair', category: 'Оперативная память', image: '/images/products/42.jpg' },
+  { id: 43, name: 'G.Skill Trident Z5 32GB DDR5', price: 16990, brand: 'G.Skill', category: 'Оперативная память', image: '/images/products/43.jpg' },
+  { id: 44, name: 'Kingston Fury 16GB DDR4', price: 5990, brand: 'Kingston', category: 'Оперативная память', image: '/images/products/44.jpg' },
+  { id: 45, name: 'Corsair Vengeance RGB 32GB DDR4', price: 9990, brand: 'Corsair', category: 'Оперативная память', image: '/images/products/45.jpg' },
+  { id: 46, name: 'G.Skill Ripjaws V 16GB DDR4', price: 4990, brand: 'G.Skill', category: 'Оперативная память', image: '/images/products/46.jpg' },
+  { id: 47, name: 'Crucial 32GB DDR5', price: 11990, brand: 'Crucial', category: 'Оперативная память', image: '/images/products/47.jpg' },
+  { id: 48, name: 'TeamGroup T-Force 32GB DDR4', price: 8990, brand: 'TeamGroup', category: 'Оперативная память', image: '/images/products/48.jpg' },
+  { id: 49, name: 'Kingston Fury Beast 64GB DDR5', price: 24990, brand: 'Kingston', category: 'Оперативная память', image: '/images/products/49.jpg' },
+  { id: 50, name: 'Corsair Dominator 64GB DDR5', price: 29990, brand: 'Corsair', category: 'Оперативная память', image: '/images/products/50.jpg' },
+
+  // Накопители SSD
+  { id: 51, name: 'Samsung 980 PRO 2TB', price: 18990, brand: 'Samsung', category: 'Накопители SSD', image: '/images/products/51.jpg' },
+  { id: 52, name: 'WD Black SN850X 2TB', price: 17990, brand: 'Western Digital', category: 'Накопители SSD', image: '/images/products/52.jpg' },
+  { id: 53, name: 'Kingston KC3000 1TB', price: 9990, brand: 'Kingston', category: 'Накопители SSD', image: '/images/products/53.jpg' },
+  { id: 54, name: 'Crucial P5 Plus 1TB', price: 8990, brand: 'Crucial', category: 'Накопители SSD', image: '/images/products/54.jpg' },
+  { id: 55, name: 'Samsung 990 PRO 1TB', price: 11990, brand: 'Samsung', category: 'Накопители SSD', image: '/images/products/55.jpg' },
+  { id: 56, name: 'Seagate FireCuda 530 2TB', price: 19990, brand: 'Seagate', category: 'Накопители SSD', image: '/images/products/56.jpg' },
+  { id: 57, name: 'ADATA XPG Gammix S70 1TB', price: 10990, brand: 'ADATA', category: 'Накопители SSD', image: '/images/products/57.jpg' },
+  { id: 58, name: 'WD Blue SN570 500GB', price: 5990, brand: 'Western Digital', category: 'Накопители SSD', image: '/images/products/58.jpg' },
+  { id: 59, name: 'Kingston NV2 1TB', price: 7990, brand: 'Kingston', category: 'Накопители SSD', image: '/images/products/59.jpg' },
+  { id: 60, name: 'Samsung 870 EVO 1TB', price: 9990, brand: 'Samsung', category: 'Накопители SSD', image: '/images/products/60.jpg' },
+
+  // Блоки питания
+  { id: 61, name: 'Corsair RM850x', price: 14990, brand: 'Corsair', category: 'Блоки питания', image: '/images/products/61.jpg' },
+  { id: 62, name: 'Seasonic Focus GX-750', price: 12990, brand: 'Seasonic', category: 'Блоки питания', image: '/images/products/62.jpg' },
+  { id: 63, name: 'be quiet! Straight Power 11 750W', price: 13990, brand: 'be quiet!', category: 'Блоки питания', image: '/images/products/63.jpg' },
+  { id: 64, name: 'Thermaltake Toughpower GF1 850W', price: 11990, brand: 'Thermaltake', category: 'Блоки питания', image: '/images/products/64.jpg' },
+  { id: 65, name: 'ASUS ROG Thor 1200W', price: 29990, brand: 'ASUS', category: 'Блоки питания', image: '/images/products/65.jpg' },
+  { id: 66, name: 'Cooler Master V850 SFX Gold', price: 15990, brand: 'Cooler Master', category: 'Блоки питания', image: '/images/products/66.jpg' },
+  { id: 67, name: 'EVGA SuperNOVA 750 G6', price: 12990, brand: 'EVGA', category: 'Блоки питания', image: '/images/products/67.jpg' },
+  { id: 68, name: 'MSI MPG A850GF', price: 13990, brand: 'MSI', category: 'Блоки питания', image: '/images/products/68.jpg' },
+  { id: 69, name: 'DeepCool PX1000G', price: 11990, brand: 'DeepCool', category: 'Блоки питания', image: '/images/products/69.jpg' },
+  { id: 70, name: 'Corsair HX1000i', price: 24990, brand: 'Corsair', category: 'Блоки питания', image: '/images/products/70.jpg' },
+
+  // Корпуса
+  { id: 71, name: 'NZXT H510 Elite', price: 14990, brand: 'NZXT', category: 'Корпуса', image: '/images/products/71.jpg' },
+  { id: 72, name: 'Corsair 4000D Airflow', price: 9990, brand: 'Corsair', category: 'Корпуса', image: '/images/products/72.jpg' },
+  { id: 73, name: 'Fractal Design Meshify 2', price: 12990, brand: 'Fractal Design', category: 'Корпуса', image: '/images/products/73.jpg' },
+  { id: 74, name: 'Lian Li O11 Dynamic EVO', price: 17990, brand: 'Lian Li', category: 'Корпуса', image: '/images/products/74.jpg' },
+  { id: 75, name: 'be quiet! Pure Base 500DX', price: 11990, brand: 'be quiet!', category: 'Корпуса', image: '/images/products/75.jpg' },
+  { id: 76, name: 'Cooler Master MasterBox TD500', price: 8990, brand: 'Cooler Master', category: 'Корпуса', image: '/images/products/76.jpg' },
+  { id: 77, name: 'Thermaltake View 51', price: 19990, brand: 'Thermaltake', category: 'Корпуса', image: '/images/products/77.jpg' },
+  { id: 78, name: 'Phanteks Eclipse P400A', price: 10990, brand: 'Phanteks', category: 'Корпуса', image: '/images/products/78.jpg' },
+  { id: 79, name: 'DeepCool CC560', price: 6990, brand: 'DeepCool', category: 'Корпуса', image: '/images/products/79.jpg' },
+  { id: 80, name: 'ASUS TUF Gaming GT501', price: 15990, brand: 'ASUS', category: 'Корпуса', image: '/images/products/80.jpg' },
+
+  // Куллеры
+  { id: 81, name: 'Noctua NH-D15', price: 9990, brand: 'Noctua', category: 'Куллеры', image: '/images/products/81.jpg' },
+  { id: 82, name: 'be quiet! Dark Rock Pro 4', price: 8990, brand: 'be quiet!', category: 'Куллеры', image: '/images/products/82.jpg' },
+  { id: 83, name: 'Cooler Master Hyper 212', price: 3990, brand: 'Cooler Master', category: 'Куллеры', image: '/images/products/83.jpg' },
+  { id: 84, name: 'Arctic Liquid Freezer II 280', price: 11990, brand: 'Arctic', category: 'Куллеры', image: '/images/products/84.jpg' },
+  { id: 85, name: 'Corsair iCUE H150i Elite', price: 17990, brand: 'Corsair', category: 'Куллеры', image: '/images/products/85.jpg' },
+  { id: 86, name: 'DeepCool AK620', price: 5990, brand: 'DeepCool', category: 'Куллеры', image: '/images/products/86.jpg' },
+  { id: 87, name: 'NZXT Kraken X63', price: 14990, brand: 'NZXT', category: 'Куллеры', image: '/images/products/87.jpg' },
+  { id: 88, name: 'Thermaltake TOUGHAIR 510', price: 6990, brand: 'Thermaltake', category: 'Куллеры', image: '/images/products/88.jpg' },
+  { id: 89, name: 'Noctua NH-U12S', price: 7990, brand: 'Noctua', category: 'Куллеры', image: '/images/products/89.jpg' },
+  { id: 90, name: 'be quiet! Pure Loop 2', price: 12990, brand: 'be quiet!', category: 'Куллеры', image: '/images/products/90.jpg' },
+
+  // Мониторы
+  { id: 91, name: 'Samsung Odyssey G7 32"', price: 49990, brand: 'Samsung', category: 'Мониторы', image: '/images/products/91.jpg' },
+  { id: 92, name: 'LG UltraGear 27" 144Hz', price: 29990, brand: 'LG', category: 'Мониторы', image: '/images/products/92.jpg' },
+  { id: 93, name: 'ASUS TUF Gaming VG27AQ', price: 34990, brand: 'ASUS', category: 'Мониторы', image: '/images/products/93.jpg' },
+  { id: 94, name: 'Dell S2721DGF 27"', price: 39990, brand: 'Dell', category: 'Мониторы', image: '/images/products/94.jpg' },
+  { id: 95, name: 'AOC 24G2 24" 144Hz', price: 19990, brand: 'AOC', category: 'Мониторы', image: '/images/products/95.jpg' },
+  { id: 96, name: 'MSI Optix MAG274QRF', price: 44990, brand: 'MSI', category: 'Мониторы', image: '/images/products/96.jpg' },
+  { id: 97, name: 'BenQ ZOWIE XL2546K', price: 54990, brand: 'BenQ', category: 'Мониторы', image: '/images/products/97.jpg' },
+  { id: 98, name: 'Gigabyte M27Q 27"', price: 32990, brand: 'Gigabyte', category: 'Мониторы', image: '/images/products/98.jpg' },
+  { id: 99, name: 'ViewSonic Elite XG270', price: 37990, brand: 'ViewSonic', category: 'Мониторы', image: '/images/products/99.jpg' },
+  { id: 100, name: 'Acer Predator XB273U', price: 47990, brand: 'Acer', category: 'Мониторы', image: '/images/products/100.jpg' },
+
+  // Клавиатуры
+  { id: 101, name: 'Logitech G Pro X', price: 12990, brand: 'Logitech', category: 'Клавиатуры', image: '/images/products/101.jpg' },
+  { id: 102, name: 'Razer BlackWidow V3', price: 11990, brand: 'Razer', category: 'Клавиатуры', image: '/images/products/102.jpg' },
+  { id: 103, name: 'SteelSeries Apex Pro', price: 19990, brand: 'SteelSeries', category: 'Клавиатуры', image: '/images/products/103.jpg' },
+  { id: 104, name: 'Corsair K70 RGB', price: 13990, brand: 'Corsair', category: 'Клавиатуры', image: '/images/products/104.jpg' },
+  { id: 105, name: 'HyperX Alloy Origins', price: 9990, brand: 'HyperX', category: 'Клавиатуры', image: '/images/products/105.jpg' },
+  { id: 106, name: 'Keychron K8 Pro', price: 10990, brand: 'Keychron', category: 'Клавиатуры', image: '/images/products/106.jpg' },
+  { id: 107, name: 'ASUS ROG Strix Scope', price: 14990, brand: 'ASUS', category: 'Клавиатуры', image: '/images/products/107.jpg' },
+  { id: 108, name: 'Ducky One 2 Mini', price: 11990, brand: 'Ducky', category: 'Клавиатуры', image: '/images/products/108.jpg' },
+  { id: 109, name: 'Cooler Master CK530', price: 7990, brand: 'Cooler Master', category: 'Клавиатуры', image: '/images/products/109.jpg' },
+  { id: 110, name: 'MSI Vigor GK50 Elite', price: 8990, brand: 'MSI', category: 'Клавиатуры', image: '/images/products/110.jpg' },
+
+  // Компьютерные мыши
+  { id: 111, name: 'Logitech G Pro X Superlight', price: 12990, brand: 'Logitech', category: 'Компьютерные мыши', image: '/images/products/111.jpg' },
+  { id: 112, name: 'Razer DeathAdder V3', price: 8990, brand: 'Razer', category: 'Компьютерные мыши', image: '/images/products/112.jpg' },
+  { id: 113, name: 'SteelSeries Rival 5', price: 6990, brand: 'SteelSeries', category: 'Компьютерные мыши', image: '/images/products/113.jpg' },
+  { id: 114, name: 'Corsair Dark Core RGB', price: 9990, brand: 'Corsair', category: 'Компьютерные мыши', image: '/images/products/114.jpg' },
+  { id: 115, name: 'HyperX Pulsefire Haste', price: 4990, brand: 'HyperX', category: 'Компьютерные мыши', image: '/images/products/115.jpg' },
+  { id: 116, name: 'Logitech G502 Hero', price: 7990, brand: 'Logitech', category: 'Компьютерные мыши', image: '/images/products/116.jpg' },
+  { id: 117, name: 'Razer Viper Ultimate', price: 11990, brand: 'Razer', category: 'Компьютерные мыши', image: '/images/products/117.jpg' },
+  { id: 118, name: 'ASUS ROG Gladius III', price: 8990, brand: 'ASUS', category: 'Компьютерные мыши', image: '/images/products/118.jpg' },
+  { id: 119, name: 'Cooler Master MM731', price: 5990, brand: 'Cooler Master', category: 'Компьютерные мыши', image: '/images/products/119.jpg' },
+  { id: 120, name: 'MSI Clutch GM41', price: 6990, brand: 'MSI', category: 'Компьютерные мыши', image: '/images/products/120.jpg' },
 ];
 
 export default function Index() {
   const [currentPage, setCurrentPage] = useState('home');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [cart, setCart] = useState<any[]>([]);
   const [favorites, setFavorites] = useState<any[]>([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
+  
+  // Filters
+  const [priceRange, setPriceRange] = useState([0, 200000]);
+  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
+  const [sortBy, setSortBy] = useState('default');
 
-  const filteredProducts = searchQuery
-    ? sampleProducts.filter(p => p.brand.toLowerCase().includes(searchQuery.toLowerCase()) || p.name.toLowerCase().includes(searchQuery.toLowerCase()))
-    : sampleProducts;
+  // Auto-slider
+  const [sliderOffset, setSliderOffset] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setSliderOffset((prev) => prev - 1);
+    }, 30);
+    return () => clearInterval(interval);
+  }, []);
+
+  const getFilteredProducts = () => {
+    let products = selectedCategory 
+      ? allProducts.filter(p => p.category === selectedCategory)
+      : allProducts;
+
+    if (searchQuery) {
+      products = products.filter(p => 
+        p.brand.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        p.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    if (selectedCategory) {
+      products = products.filter(p => 
+        p.price >= priceRange[0] && p.price <= priceRange[1]
+      );
+
+      if (selectedBrands.length > 0) {
+        products = products.filter(p => selectedBrands.includes(p.brand));
+      }
+
+      if (sortBy === 'price-asc') {
+        products.sort((a, b) => a.price - b.price);
+      } else if (sortBy === 'price-desc') {
+        products.sort((a, b) => b.price - a.price);
+      } else if (sortBy === 'name') {
+        products.sort((a, b) => a.name.localeCompare(b.name));
+      }
+    }
+
+    return products;
+  };
+
+  const filteredProducts = getFilteredProducts();
+
+  const getBrandsForCategory = () => {
+    if (!selectedCategory) return [];
+    const products = allProducts.filter(p => p.category === selectedCategory);
+    const brands = [...new Set(products.map(p => p.brand))];
+    return brands.sort();
+  };
+
+  const toggleBrand = (brand: string) => {
+    setSelectedBrands(prev => 
+      prev.includes(brand) 
+        ? prev.filter(b => b !== brand)
+        : [...prev, brand]
+    );
+  };
 
   const addToCart = (product: any) => {
     if (!isLoggedIn) {
@@ -79,7 +278,14 @@ export default function Index() {
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-2">
-            <div className="bg-white text-primary px-6 py-3 rounded-xl font-bold text-2xl shadow-lg">
+            <div 
+              className="bg-white text-primary px-6 py-3 rounded-xl font-bold text-2xl shadow-lg cursor-pointer hover:scale-105 transition-transform"
+              onClick={() => {
+                setCurrentPage('home');
+                setSelectedCategory(null);
+                setSearchQuery('');
+              }}
+            >
               MIX PC
             </div>
           </div>
@@ -184,32 +390,26 @@ export default function Index() {
                   {favorites.length === 0 ? (
                     <div className="text-center py-12">
                       <Icon name="Heart" size={64} className="mx-auto text-muted-foreground mb-4" />
-                      <p className="text-center text-muted-foreground text-lg">
-                        В вашем избранном нет товаров.<br />Перейдите в каталог.
-                      </p>
+                      <p className="text-muted-foreground">Избранное пусто</p>
                     </div>
                   ) : (
                     favorites.map(product => (
                       <Card key={product.id}>
                         <CardContent className="p-4">
-                          <h4 className="font-semibold text-lg">{product.name}</h4>
-                          <Badge className="mt-2">{product.brand}</Badge>
-                          <p className="text-primary font-bold text-xl mt-2">{product.price.toLocaleString()} ₽</p>
-                          <div className="flex gap-2 mt-3">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="flex-1"
-                              onClick={() => addToCart(product)}
-                            >
-                              В корзину
-                            </Button>
-                            <Button
-                              variant="destructive"
-                              size="sm"
+                          <div className="flex gap-4">
+                            <div className="w-20 h-20 bg-muted rounded-lg flex items-center justify-center">
+                              <Icon name="Package" size={32} className="text-muted-foreground" />
+                            </div>
+                            <div className="flex-1">
+                              <h4 className="font-semibold mb-1">{product.name}</h4>
+                              <p className="text-lg font-bold text-primary">{product.price.toLocaleString()} ₽</p>
+                            </div>
+                            <Button 
+                              size="icon" 
+                              variant="ghost"
                               onClick={() => removeFromFavorites(product.id)}
                             >
-                              <Icon name="Trash2" size={16} />
+                              <Icon name="X" size={20} />
                             </Button>
                           </div>
                         </CardContent>
@@ -235,424 +435,387 @@ export default function Index() {
                 <SheetHeader>
                   <SheetTitle>Корзина</SheetTitle>
                 </SheetHeader>
-                <div className="mt-6 space-y-4 overflow-y-auto max-h-[calc(100vh-200px)]">
+                <div className="mt-6 space-y-4 overflow-y-auto max-h-[calc(100vh-120px)]">
                   {cart.length === 0 ? (
                     <div className="text-center py-12">
                       <Icon name="ShoppingCart" size={64} className="mx-auto text-muted-foreground mb-4" />
-                      <p className="text-center text-muted-foreground text-lg">Корзина пуста</p>
+                      <p className="text-muted-foreground">Корзина пуста</p>
                     </div>
                   ) : (
                     <>
-                      {cart.map((product, idx) => (
-                        <Card key={idx}>
+                      {cart.map(product => (
+                        <Card key={product.id}>
                           <CardContent className="p-4">
-                            <h4 className="font-semibold text-lg">{product.name}</h4>
-                            <Badge className="mt-2">{product.brand}</Badge>
-                            <p className="text-primary font-bold text-xl mt-2">{product.price.toLocaleString()} ₽</p>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              className="mt-3 w-full"
-                              onClick={() => removeFromCart(product.id)}
-                            >
-                              <Icon name="Trash2" size={16} className="mr-2" />
-                              Удалить
-                            </Button>
+                            <div className="flex gap-4">
+                              <div className="w-20 h-20 bg-muted rounded-lg flex items-center justify-center">
+                                <Icon name="Package" size={32} className="text-muted-foreground" />
+                              </div>
+                              <div className="flex-1">
+                                <h4 className="font-semibold mb-1">{product.name}</h4>
+                                <p className="text-lg font-bold text-primary">{product.price.toLocaleString()} ₽</p>
+                              </div>
+                              <Button 
+                                size="icon" 
+                                variant="ghost"
+                                onClick={() => removeFromCart(product.id)}
+                              >
+                                <Icon name="X" size={20} />
+                              </Button>
+                            </div>
                           </CardContent>
                         </Card>
                       ))}
+                      <div className="sticky bottom-0 bg-background pt-4 border-t">
+                        <div className="flex justify-between mb-4">
+                          <span className="text-lg font-semibold">Итого:</span>
+                          <span className="text-2xl font-bold text-primary">
+                            {cart.reduce((sum, p) => sum + p.price, 0).toLocaleString()} ₽
+                          </span>
+                        </div>
+                        <Button className="w-full h-12 text-lg gradient-teal">
+                          Оформить заказ
+                        </Button>
+                      </div>
                     </>
                   )}
                 </div>
-                {cart.length > 0 && (
-                  <div className="absolute bottom-0 left-0 right-0 p-6 bg-white border-t">
-                    <p className="text-xl font-bold mb-3">
-                      Итого: {cart.reduce((sum, p) => sum + p.price, 0).toLocaleString()} ₽
-                    </p>
-                    <Button className="w-full bg-secondary hover:bg-secondary/90 h-12 text-base">
-                      Перейти к оформлению
-                    </Button>
-                  </div>
-                )}
               </SheetContent>
             </Sheet>
           </div>
         </div>
 
-        <nav className="mt-4 border-t border-white/20 pt-4">
-          <ul className="flex gap-6 justify-center flex-wrap">
-            {['О Компании', 'Каталог', 'Доставка', 'Гарантия', 'Оплата', 'Контакты'].map(item => (
-              <li key={item}>
-                <button
-                  onClick={() => setCurrentPage(item.toLowerCase().replace(' ', '-'))}
-                  className={`font-medium transition-colors ${
-                    currentPage === item.toLowerCase().replace(' ', '-') 
-                      ? 'text-white font-bold' 
-                      : 'text-white/80 hover:text-white'
-                  }`}
-                >
-                  {item}
-                </button>
-              </li>
-            ))}
-          </ul>
+        <nav className="mt-4 flex gap-2 overflow-x-auto pb-2">
+          <Button
+            variant={currentPage === 'home' && !selectedCategory ? 'default' : 'outline'}
+            onClick={() => {
+              setCurrentPage('home');
+              setSelectedCategory(null);
+            }}
+            className={currentPage === 'home' && !selectedCategory ? 'gradient-teal' : ''}
+          >
+            Главная
+          </Button>
+          <Button
+            variant={currentPage === 'catalog' && !selectedCategory ? 'default' : 'outline'}
+            onClick={() => {
+              setCurrentPage('catalog');
+              setSelectedCategory(null);
+            }}
+            className={currentPage === 'catalog' && !selectedCategory ? 'gradient-teal' : ''}
+          >
+            Каталог
+          </Button>
+          <Button
+            variant={currentPage === 'contact' ? 'default' : 'outline'}
+            onClick={() => setCurrentPage('contact')}
+            className={currentPage === 'contact' ? 'gradient-teal' : ''}
+          >
+            Контакты
+          </Button>
         </nav>
       </div>
     </header>
   );
 
-  const renderHomePage = () => (
-    <div className="py-12 md:py-20 bg-gradient-to-br from-teal-50 to-cyan-50">
-      <div className="container mx-auto px-4">
-        <div className="grid md:grid-cols-2 gap-12 items-center">
-          <div className="flex justify-center order-2 md:order-1">
-            <div className="w-72 h-72 gradient-teal rounded-3xl flex items-center justify-center text-white shadow-2xl hover-scale">
-              <Icon name="MonitorSmartphone" size={140} />
+  const renderCategoryPage = () => {
+    const brands = getBrandsForCategory();
+    const minPrice = Math.min(...allProducts.filter(p => p.category === selectedCategory).map(p => p.price));
+    const maxPrice = Math.max(...allProducts.filter(p => p.category === selectedCategory).map(p => p.price));
+
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex gap-6">
+          <aside className="w-64 flex-shrink-0 space-y-6">
+            <Card>
+              <CardContent className="p-4">
+                <h3 className="font-semibold mb-4">Цена</h3>
+                <Slider
+                  value={priceRange}
+                  onValueChange={setPriceRange}
+                  min={0}
+                  max={maxPrice}
+                  step={1000}
+                  className="mb-4"
+                />
+                <div className="flex justify-between text-sm text-muted-foreground">
+                  <span>{priceRange[0].toLocaleString()} ₽</span>
+                  <span>{priceRange[1].toLocaleString()} ₽</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-4">
+                <h3 className="font-semibold mb-4">Бренд</h3>
+                <div className="space-y-3 max-h-64 overflow-y-auto">
+                  {brands.map(brand => (
+                    <div key={brand} className="flex items-center gap-2">
+                      <Checkbox
+                        id={brand}
+                        checked={selectedBrands.includes(brand)}
+                        onCheckedChange={() => toggleBrand(brand)}
+                      />
+                      <label htmlFor={brand} className="text-sm cursor-pointer flex-1">
+                        {brand}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => {
+                setPriceRange([0, maxPrice]);
+                setSelectedBrands([]);
+                setSortBy('default');
+              }}
+            >
+              Сбросить фильтры
+            </Button>
+          </aside>
+
+          <div className="flex-1">
+            <div className="flex justify-between items-center mb-6">
+              <h1 className="text-3xl font-bold">{selectedCategory}</h1>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="px-4 py-2 rounded-lg border border-input bg-background"
+              >
+                <option value="default">По умолчанию</option>
+                <option value="price-asc">Сначала дешевле</option>
+                <option value="price-desc">Сначала дороже</option>
+                <option value="name">По названию</option>
+              </select>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredProducts.map(product => (
+                <Card key={product.id} className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                  <CardContent className="p-4">
+                    <div className="aspect-square bg-gradient-to-br from-primary/10 to-secondary/10 rounded-lg mb-4 flex items-center justify-center relative overflow-hidden">
+                      <Icon name="Package" size={64} className="text-primary/30" />
+                      <Button
+                        size="icon"
+                        variant="secondary"
+                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => addToFavorites(product)}
+                      >
+                        <Icon name="Heart" size={18} />
+                      </Button>
+                    </div>
+                    <Badge className="mb-2">{product.brand}</Badge>
+                    <h3 className="font-semibold mb-2 line-clamp-2 min-h-[3em]">{product.name}</h3>
+                    <p className="text-2xl font-bold text-primary mb-4">{product.price.toLocaleString()} ₽</p>
+                  </CardContent>
+                  <CardFooter className="p-4 pt-0">
+                    <Button 
+                      className="w-full gradient-teal"
+                      onClick={() => addToCart(product)}
+                    >
+                      <Icon name="ShoppingCart" size={18} className="mr-2" />
+                      В корзину
+                    </Button>
+                  </CardFooter>
+                </Card>
+              ))}
             </div>
           </div>
-          <div className="space-y-6 order-1 md:order-2">
-            <h1 className="text-5xl md:text-6xl font-bold">MIX PC</h1>
-            <h2 className="text-3xl md:text-4xl font-semibold text-primary">Компьютерные комплектующие</h2>
-            <p className="text-lg leading-relaxed">
-              Мы — современный интернет-магазин компьютерной техники и комплектующих. 
-              Предлагаем широкий ассортимент процессоров, видеокарт, материнских плат, 
-              оперативной памяти и других компонентов от ведущих производителей.
-            </p>
-            <p className="text-lg leading-relaxed">
-              Наша цель — предоставить вам качественное оборудование по выгодным ценам 
-              с гарантией и профессиональной поддержкой. Доставка по всей России!
+        </div>
+      </div>
+    );
+  };
+
+  const renderHomePage = () => {
+    const popularProducts = allProducts.slice(0, 20);
+    const duplicatedProducts = [...popularProducts, ...popularProducts, ...popularProducts];
+
+    return (
+      <div className="min-h-screen">
+        <section className="gradient-teal text-white py-20">
+          <div className="container mx-auto px-4 text-center">
+            <h1 className="text-5xl md:text-6xl font-bold mb-6 animate-fade-in">
+              MIX PC - Ваш надежный поставщик компьютерной техники
+            </h1>
+            <p className="text-xl md:text-2xl mb-8 opacity-90">
+              Широкий ассортимент комплектующих и готовых решений по выгодным ценам
             </p>
             <Button 
               size="lg" 
-              className="bg-primary hover:bg-primary/90 text-lg px-8 h-14 shadow-lg"
-              onClick={() => setCurrentPage('каталог')}
+              className="bg-white text-primary hover:bg-white/90 h-14 px-8 text-lg"
+              onClick={() => setCurrentPage('catalog')}
             >
               Перейти в каталог
-              <Icon name="ArrowRight" size={20} className="ml-2" />
+              <Icon name="ArrowRight" className="ml-2" size={20} />
             </Button>
           </div>
-        </div>
+        </section>
 
-        <div className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-6">
-          {[
-            { icon: 'Truck', title: 'Доставка', desc: 'По всей России' },
-            { icon: 'Shield', title: 'Гарантия', desc: 'До 3 лет' },
-            { icon: 'CreditCard', title: 'Оплата', desc: 'Любым способом' },
-            { icon: 'Headphones', title: 'Поддержка', desc: '24/7' }
-          ].map((item, idx) => (
-            <Card key={idx} className="hover-scale border-primary/20 bg-white/80 backdrop-blur">
-              <CardContent className="p-6 text-center">
-                <div className="w-14 h-14 mx-auto mb-3 gradient-teal rounded-xl flex items-center justify-center text-white shadow-lg">
-                  <Icon name={item.icon} size={28} />
-                </div>
-                <h3 className="font-bold text-lg mb-1">{item.title}</h3>
-                <p className="text-muted-foreground text-sm">{item.desc}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderCatalogPage = () => (
-    <div className="py-12 bg-gradient-to-br from-teal-50 to-cyan-50">
-      <div className="container mx-auto px-4">
-        <h1 className="text-4xl md:text-5xl font-bold mb-8 text-center text-primary">Каталог товаров</h1>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 mb-16">
-          {categories.map(category => (
-            <Card key={category.id} className="hover-scale cursor-pointer group border-2 hover:border-primary transition-colors bg-white/80 backdrop-blur">
-              <CardContent className="p-6 text-center">
-                <div className="w-16 h-16 mx-auto mb-4 gradient-teal rounded-2xl flex items-center justify-center text-white group-hover:scale-110 transition-transform shadow-lg">
-                  <Icon name={category.icon} size={32} />
-                </div>
-                <h3 className="font-semibold text-sm md:text-base">{category.name}</h3>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        <div className="border-t border-primary/20 pt-12">
-          <h2 className="text-3xl md:text-4xl font-bold mb-8 text-primary">
-            {searchQuery ? `Результаты поиска: ${searchQuery}` : 'Популярные товары'}
-          </h2>
-          {filteredProducts.length === 0 ? (
-            <div className="text-center py-12">
-              <Icon name="SearchX" size={64} className="mx-auto text-muted-foreground mb-4" />
-              <p className="text-lg text-muted-foreground">По вашему запросу ничего не найдено</p>
-            </div>
-          ) : (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredProducts.map(product => (
-                <Card key={product.id} className="group relative overflow-hidden hover-scale bg-white/80 backdrop-blur border-primary/20">
-                  <CardContent className="p-0">
-                    <div className="h-52 gradient-light-teal flex items-center justify-center relative">
-                      <Icon name="Cpu" size={80} className="text-primary/40" />
-                      <button
-                        onClick={() => addToFavorites(product)}
-                        className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-lg hover:scale-110 transition-transform"
-                      >
-                        <Icon 
-                          name="Heart" 
-                          size={20} 
-                          className={favorites.find(f => f.id === product.id) ? 'fill-red-500 text-red-500' : 'text-primary'} 
-                        />
-                      </button>
-                    </div>
-                    <div className="p-4">
-                      <Badge className="mb-2 bg-primary">{product.brand}</Badge>
-                      <h3 className="font-semibold mb-2 min-h-[3rem]">{product.name}</h3>
-                      <p className="text-2xl font-bold text-primary mb-4">
-                        {product.price.toLocaleString()} ₽
-                      </p>
+        <section className="py-16 bg-muted/30">
+          <div className="container mx-auto px-4">
+            <h2 className="text-3xl font-bold mb-8 text-center">Популярные товары</h2>
+            <div className="relative overflow-hidden">
+              <div 
+                className="flex gap-6 transition-none"
+                style={{
+                  transform: `translateX(${sliderOffset}px)`,
+                  width: `${duplicatedProducts.length * 320}px`
+                }}
+              >
+                {duplicatedProducts.map((product, index) => (
+                  <Card 
+                    key={`${product.id}-${index}`} 
+                    className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex-shrink-0"
+                    style={{ width: '300px' }}
+                  >
+                    <CardContent className="p-4">
+                      <div className="aspect-square bg-gradient-to-br from-primary/10 to-secondary/10 rounded-lg mb-4 flex items-center justify-center relative overflow-hidden">
+                        <Icon name="Package" size={64} className="text-primary/30" />
+                        <Button
+                          size="icon"
+                          variant="secondary"
+                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => addToFavorites(product)}
+                        >
+                          <Icon name="Heart" size={18} />
+                        </Button>
+                      </div>
+                      <Badge className="mb-2">{product.brand}</Badge>
+                      <h3 className="font-semibold mb-2 line-clamp-2 min-h-[3em]">{product.name}</h3>
+                      <p className="text-2xl font-bold text-primary mb-4">{product.price.toLocaleString()} ₽</p>
+                    </CardContent>
+                    <CardFooter className="p-4 pt-0">
                       <Button 
-                        className="w-full bg-secondary hover:bg-secondary/90 h-11"
+                        className="w-full gradient-teal"
                         onClick={() => addToCart(product)}
                       >
                         <Icon name="ShoppingCart" size={18} className="mr-2" />
                         В корзину
                       </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
             </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
+          </div>
+        </section>
 
-  const renderDeliveryPage = () => (
-    <div className="py-12 bg-gradient-to-br from-teal-50 to-cyan-50 min-h-[calc(100vh-300px)]">
-      <div className="container mx-auto px-4 max-w-4xl">
-        <h1 className="text-4xl md:text-5xl font-bold mb-8 text-primary">Доставка</h1>
-        <div className="space-y-6">
-          <Card className="hover-scale bg-white/80 backdrop-blur border-primary/20">
-            <CardContent className="p-6">
-              <div className="flex items-start gap-4">
-                <div className="gradient-teal p-3 rounded-xl text-white flex-shrink-0 shadow-lg">
-                  <Icon name="Truck" size={32} />
-                </div>
-                <div>
-                  <h3 className="font-bold text-xl mb-2">Доставка по России</h3>
-                  <p className="text-base leading-relaxed">Доставляем заказы во все регионы России. Сроки доставки составляют от 1 до 7 дней в зависимости от региона.</p>
-                </div>
+        <section className="container mx-auto px-4 py-16">
+          <h2 className="text-3xl font-bold mb-8 text-center">Почему выбирают нас?</h2>
+          <div className="grid md:grid-cols-3 gap-8">
+            <Card className="text-center p-6 hover:shadow-lg transition-shadow">
+              <div className="w-16 h-16 gradient-teal rounded-full flex items-center justify-center mx-auto mb-4">
+                <Icon name="Truck" size={32} className="text-white" />
               </div>
-            </CardContent>
-          </Card>
-          <Card className="hover-scale bg-white/80 backdrop-blur border-primary/20">
-            <CardContent className="p-6">
-              <div className="flex items-start gap-4">
-                <div className="gradient-teal p-3 rounded-xl text-white flex-shrink-0 shadow-lg">
-                  <Icon name="MapPin" size={32} />
-                </div>
-                <div>
-                  <h3 className="font-bold text-xl mb-2">Самовывоз</h3>
-                  <p className="text-base leading-relaxed">Вы можете забрать заказ из нашего пункта выдачи в Москве. Адрес: ул. Примерная, д. 1. Работаем ежедневно с 10:00 до 20:00.</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="hover-scale bg-white/80 backdrop-blur border-primary/20">
-            <CardContent className="p-6">
-              <div className="flex items-start gap-4">
-                <div className="gradient-teal p-3 rounded-xl text-white flex-shrink-0 shadow-lg">
-                  <Icon name="DollarSign" size={32} />
-                </div>
-                <div>
-                  <h3 className="font-bold text-xl mb-2">Стоимость доставки</h3>
-                  <p className="text-base leading-relaxed">При заказе на сумму от 10 000 рублей — доставка бесплатная! Для заказов меньшей суммы стоимость доставки рассчитывается индивидуально.</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderWarrantyPage = () => (
-    <div className="py-12 bg-gradient-to-br from-teal-50 to-cyan-50 min-h-[calc(100vh-300px)]">
-      <div className="container mx-auto px-4 max-w-4xl">
-        <h1 className="text-4xl md:text-5xl font-bold mb-8 text-primary">Гарантия</h1>
-        <div className="space-y-6">
-          <Card className="hover-scale bg-white/80 backdrop-blur border-primary/20">
-            <CardContent className="p-6">
-              <div className="flex items-start gap-4">
-                <div className="gradient-teal p-3 rounded-xl text-white flex-shrink-0 shadow-lg">
-                  <Icon name="Shield" size={32} />
-                </div>
-                <div>
-                  <h3 className="font-bold text-xl mb-2">Официальная гарантия</h3>
-                  <p className="text-base leading-relaxed">На все товары предоставляется официальная гарантия производителя от 1 до 3 лет в зависимости от категории товара.</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="hover-scale bg-white/80 backdrop-blur border-primary/20">
-            <CardContent className="p-6">
-              <div className="flex items-start gap-4">
-                <div className="gradient-teal p-3 rounded-xl text-white flex-shrink-0 shadow-lg">
-                  <Icon name="RotateCcw" size={32} />
-                </div>
-                <div>
-                  <h3 className="font-bold text-xl mb-2">Обмен и возврат</h3>
-                  <p className="text-base leading-relaxed">В течение 14 дней вы можете вернуть товар или обменять его на аналогичный. Товар должен сохранять товарный вид и комплектацию.</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="hover-scale bg-white/80 backdrop-blur border-primary/20">
-            <CardContent className="p-6">
-              <div className="flex items-start gap-4">
-                <div className="gradient-teal p-3 rounded-xl text-white flex-shrink-0 shadow-lg">
-                  <Icon name="Wrench" size={32} />
-                </div>
-                <div>
-                  <h3 className="font-bold text-xl mb-2">Сервисное обслуживание</h3>
-                  <p className="text-base leading-relaxed">При возникновении проблем с товаром мы организуем ремонт в авторизованном сервисном центре или замену на новый.</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderPaymentPage = () => (
-    <div className="py-12 bg-gradient-to-br from-teal-50 to-cyan-50 min-h-[calc(100vh-300px)]">
-      <div className="container mx-auto px-4 max-w-4xl">
-        <h1 className="text-4xl md:text-5xl font-bold mb-8 text-primary">Оплата</h1>
-        <div className="space-y-6">
-          <Card className="hover-scale bg-white/80 backdrop-blur border-primary/20">
-            <CardContent className="p-6">
-              <div className="flex items-start gap-4">
-                <div className="gradient-teal p-3 rounded-xl text-white flex-shrink-0 shadow-lg">
-                  <Icon name="CreditCard" size={32} />
-                </div>
-                <div>
-                  <h3 className="font-bold text-xl mb-2">Банковские карты</h3>
-                  <p className="text-base leading-relaxed">Принимаем к оплате карты Visa, MasterCard, МИР. Оплата производится через защищенное соединение.</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="hover-scale bg-white/80 backdrop-blur border-primary/20">
-            <CardContent className="p-6">
-              <div className="flex items-start gap-4">
-                <div className="gradient-teal p-3 rounded-xl text-white flex-shrink-0 shadow-lg">
-                  <Icon name="Wallet" size={32} />
-                </div>
-                <div>
-                  <h3 className="font-bold text-xl mb-2">Электронные кошельки</h3>
-                  <p className="text-base leading-relaxed">Поддерживаем оплату через ЮMoney, QIWI, WebMoney и другие популярные платежные системы.</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="hover-scale bg-white/80 backdrop-blur border-primary/20">
-            <CardContent className="p-6">
-              <div className="flex items-start gap-4">
-                <div className="gradient-teal p-3 rounded-xl text-white flex-shrink-0 shadow-lg">
-                  <Icon name="Banknote" size={32} />
-                </div>
-                <div>
-                  <h3 className="font-bold text-xl mb-2">Наличные</h3>
-                  <p className="text-base leading-relaxed">Оплата наличными доступна при получении заказа курьером или в пункте самовывоза.</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderContactsPage = () => (
-    <div className="py-12 bg-gradient-to-br from-teal-50 to-cyan-50 min-h-[calc(100vh-300px)]">
-      <div className="container mx-auto px-4 max-w-5xl">
-        <h1 className="text-4xl md:text-5xl font-bold mb-8 text-primary">Контакты</h1>
-        <div className="grid md:grid-cols-2 gap-8">
-          <div className="space-y-6">
-            <Card className="hover-scale bg-white/80 backdrop-blur border-primary/20">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-3">
-                  <div className="gradient-teal p-3 rounded-xl text-white flex-shrink-0 shadow-lg">
-                    <Icon name="Phone" size={28} />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Справочная служба</p>
-                    <p className="font-bold text-xl">8 (800) 555-35-35</p>
-                  </div>
-                </div>
-              </CardContent>
+              <h3 className="text-xl font-semibold mb-2">Быстрая доставка</h3>
+              <p className="text-muted-foreground">Доставим ваш заказ в течение 1-3 дней</p>
             </Card>
-            <Card className="hover-scale bg-white/80 backdrop-blur border-primary/20">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-3">
-                  <div className="gradient-teal p-3 rounded-xl text-white flex-shrink-0 shadow-lg">
-                    <Icon name="Mail" size={28} />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Электронная почта</p>
-                    <p className="font-bold text-xl">info@mixpc.ru</p>
-                  </div>
-                </div>
-              </CardContent>
+            <Card className="text-center p-6 hover:shadow-lg transition-shadow">
+              <div className="w-16 h-16 gradient-teal rounded-full flex items-center justify-center mx-auto mb-4">
+                <Icon name="Shield" size={32} className="text-white" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Гарантия качества</h3>
+              <p className="text-muted-foreground">Официальная гарантия на все товары</p>
             </Card>
-            <Card className="hover-scale bg-white/80 backdrop-blur border-primary/20">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-3">
-                  <div className="gradient-teal p-3 rounded-xl text-white flex-shrink-0 shadow-lg">
-                    <Icon name="Clock" size={28} />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Время работы</p>
-                    <p className="font-bold text-xl">Ежедневно 10:00 - 20:00</p>
-                  </div>
-                </div>
-              </CardContent>
+            <Card className="text-center p-6 hover:shadow-lg transition-shadow">
+              <div className="w-16 h-16 gradient-teal rounded-full flex items-center justify-center mx-auto mb-4">
+                <Icon name="Headphones" size={32} className="text-white" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Поддержка 24/7</h3>
+              <p className="text-muted-foreground">Всегда готовы помочь с выбором</p>
             </Card>
           </div>
+        </section>
+      </div>
+    );
+  };
 
-          <Card className="hover-scale bg-white/80 backdrop-blur border-primary/20">
-            <div className="p-6">
-              <h3 className="font-bold text-2xl mb-6 flex items-center gap-2">
-                <div className="gradient-teal p-2 rounded-lg">
-                  <Icon name="MessageSquare" size={28} className="text-white" />
-                </div>
-                Задать вопрос
-              </h3>
-              <form className="space-y-4" onSubmit={(e) => {
-                e.preventDefault();
-                alert('Спасибо! Ваш вопрос отправлен. Мы свяжемся с вами в ближайшее время.');
-              }}>
-                <div className="space-y-2">
-                  <Label>ФИО</Label>
-                  <Input placeholder="Иванов Иван Иванович" required />
-                </div>
-                <div className="space-y-2">
-                  <Label>Телефон</Label>
-                  <Input placeholder="+7 (900) 123-45-67" required />
-                </div>
-                <div className="space-y-2">
-                  <Label>E-mail</Label>
-                  <Input type="email" placeholder="example@mail.ru" required />
-                </div>
-                <div className="space-y-2">
-                  <Label>Вопрос</Label>
-                  <Textarea placeholder="Напишите ваш вопрос..." rows={4} required />
-                </div>
-                <Button type="submit" className="w-full bg-secondary hover:bg-secondary/90 h-11">
-                  <Icon name="Send" size={18} className="mr-2" />
-                  Отправить
-                </Button>
-              </form>
-            </div>
+  const renderCatalogPage = () => (
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-4xl font-bold mb-8 text-center">Каталог товаров</h1>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {categories.map(category => (
+          <Card 
+            key={category.id} 
+            className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-2 group"
+            onClick={() => {
+              setSelectedCategory(category.name);
+              setCurrentPage('category');
+              setPriceRange([0, 200000]);
+              setSelectedBrands([]);
+              setSortBy('default');
+            }}
+          >
+            <CardContent className="p-6 text-center">
+              <div className="w-20 h-20 gradient-teal rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                <Icon name={category.icon as any} size={40} className="text-white" />
+              </div>
+              <h3 className="font-semibold text-lg">{category.name}</h3>
+              <p className="text-sm text-muted-foreground mt-2">
+                {allProducts.filter(p => p.category === category.name).length} товаров
+              </p>
+            </CardContent>
           </Card>
-        </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const renderContactPage = () => (
+    <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <h1 className="text-4xl font-bold mb-8 text-center">Контакты</h1>
+      <div className="grid md:grid-cols-2 gap-8 mb-8">
+        <Card>
+          <CardContent className="p-6">
+            <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              <Icon name="MapPin" className="text-primary" />
+              Адрес
+            </h3>
+            <p className="text-muted-foreground mb-4">
+              г. Москва, ул. Примерная, д. 123
+            </p>
+            <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              <Icon name="Phone" className="text-primary" />
+              Телефон
+            </h3>
+            <p className="text-muted-foreground mb-4">
+              8 (800) 555-35-35
+            </p>
+            <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              <Icon name="Mail" className="text-primary" />
+              Email
+            </h3>
+            <p className="text-muted-foreground">
+              info@mixpc.ru
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <h3 className="text-xl font-semibold mb-4">Напишите нам</h3>
+            <form className="space-y-4">
+              <div>
+                <Label>Имя</Label>
+                <Input placeholder="Ваше имя" />
+              </div>
+              <div>
+                <Label>Email</Label>
+                <Input type="email" placeholder="your@email.com" />
+              </div>
+              <div>
+                <Label>Сообщение</Label>
+                <Textarea placeholder="Ваше сообщение..." rows={4} />
+              </div>
+              <Button className="w-full gradient-teal">
+                Отправить
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
@@ -660,48 +823,10 @@ export default function Index() {
   return (
     <div className="min-h-screen bg-background">
       {renderHeader()}
-      <main className="min-h-[calc(100vh-300px)]">
-        {(currentPage === 'home' || currentPage === 'о-компании') && renderHomePage()}
-        {currentPage === 'каталог' && renderCatalogPage()}
-        {currentPage === 'доставка' && renderDeliveryPage()}
-        {currentPage === 'гарантия' && renderWarrantyPage()}
-        {currentPage === 'оплата' && renderPaymentPage()}
-        {currentPage === 'контакты' && renderContactsPage()}
-      </main>
-      <footer className="bg-gradient-to-r from-gray-900 to-gray-800 text-white py-12 mt-12">
-        <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-3 gap-8 mb-8">
-            <div>
-              <h3 className="font-bold text-xl mb-4">MIX PC</h3>
-              <p className="text-gray-300 text-sm leading-relaxed">
-                Современный интернет-магазин компьютерных комплектующих. 
-                Качество, надежность, профессионализм.
-              </p>
-            </div>
-            <div>
-              <h3 className="font-bold text-xl mb-4">Контакты</h3>
-              <div className="space-y-2 text-sm">
-                <p className="text-gray-300">📞 8 (800) 555-35-35</p>
-                <p className="text-gray-300">📧 info@mixpc.ru</p>
-                <p className="text-gray-300">🕐 Ежедневно 10:00 - 20:00</p>
-              </div>
-            </div>
-            <div>
-              <h3 className="font-bold text-xl mb-4">Информация</h3>
-              <ul className="space-y-2 text-sm">
-                <li><button onClick={() => setCurrentPage('доставка')} className="text-gray-300 hover:text-white transition-colors">Доставка</button></li>
-                <li><button onClick={() => setCurrentPage('гарантия')} className="text-gray-300 hover:text-white transition-colors">Гарантия</button></li>
-                <li><button onClick={() => setCurrentPage('оплата')} className="text-gray-300 hover:text-white transition-colors">Оплата</button></li>
-                <li><button onClick={() => setCurrentPage('контакты')} className="text-gray-300 hover:text-white transition-colors">Контакты</button></li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-gray-700 pt-6 text-center">
-            <p className="text-lg font-bold mb-1">MIX PC - Компьютерные комплектующие</p>
-            <p className="text-sm text-gray-400">© 2025 Все права защищены</p>
-          </div>
-        </div>
-      </footer>
+      {selectedCategory ? renderCategoryPage() :
+       currentPage === 'home' ? renderHomePage() :
+       currentPage === 'catalog' ? renderCatalogPage() :
+       currentPage === 'contact' ? renderContactPage() : null}
     </div>
   );
 }
