@@ -290,18 +290,6 @@ export default function Index() {
             </div>
           </div>
 
-          <div className="flex-1 max-w-xl min-w-[200px]">
-            <div className="relative">
-              <Input
-                placeholder="Поиск по брендам (AMD, Intel, NVIDIA...)"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 h-11"
-              />
-              <Icon name="Search" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-            </div>
-          </div>
-
           <div className="flex items-center gap-4">
             <div className="text-sm text-center hidden md:block">
               <div className="font-semibold text-base text-white">8 (800) 555-35-35</div>
@@ -481,6 +469,18 @@ export default function Index() {
                 </div>
               </SheetContent>
             </Sheet>
+          </div>
+        </div>
+
+        <div className="mt-4 flex justify-center">
+          <div className="relative max-w-2xl w-full">
+            <Input
+              placeholder="Поиск по брендам (AMD, Intel, NVIDIA...)"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 h-11"
+            />
+            <Icon name="Search" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
           </div>
         </div>
 
