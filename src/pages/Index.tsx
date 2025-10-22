@@ -200,6 +200,9 @@ export default function Index() {
   const [adminActiveTab, setAdminActiveTab] = useState('products');
   const [adminOrders, setAdminOrders] = useState<any[]>([]);
   
+  // Featured products
+  const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
+  
   // Filters
   const [priceRange, setPriceRange] = useState([0, 200000]);
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
@@ -220,6 +223,20 @@ export default function Index() {
       loadAdminData();
     }
   }, [isAdmin]);
+  
+  useEffect(() => {
+    loadFeaturedProducts();
+  }, []);
+  
+  const loadFeaturedProducts = async () => {
+    try {
+      const response = await fetch('https://functions.poehali.dev/cceb4ca9-48f7-4a28-a301-3dd14baa0d71?featured=true');
+      const products = await response.json();
+      setFeaturedProducts(products);
+    } catch (error) {
+      console.error('Failed to load featured products:', error);
+    }
+  };
 
   const loadAdminData = async () => {
     try {
@@ -772,7 +789,7 @@ export default function Index() {
   };
 
   const renderHomePage = () => {
-    const popularProducts = allProducts.slice(0, 20);
+    const popularProducts = featuredProducts.length > 0 ? featuredProducts : allProducts.slice(0, 20);
     const duplicatedProducts = [...popularProducts, ...popularProducts, ...popularProducts];
 
     return (
@@ -813,13 +830,18 @@ export default function Index() {
                 }}
               >
                 {duplicatedProducts.map((product, index) => {
-                  const getProductImage = (productId: number) => {
+                  const getProductImage = (product: any) => {
+                    if (product.image_url) {
+                      return product.image_url.startsWith('http') 
+                        ? product.image_url 
+                        : `https://cdn.poehali.dev/${product.image_url}`;
+                    }
                     const images = [
                       'https://cdn.poehali.dev/projects/f7df5c93-3ffb-476e-bc55-4da98f7f2c0a/files/bb10f9c9-ec03-4dae-852d-ab8eb7cb81c7.jpg',
                       'https://cdn.poehali.dev/projects/f7df5c93-3ffb-476e-bc55-4da98f7f2c0a/files/11810e39-9f5c-43b4-979a-e723f231c489.jpg',
                       'https://cdn.poehali.dev/projects/f7df5c93-3ffb-476e-bc55-4da98f7f2c0a/files/825e48c1-6cd6-4d1f-9d28-ff9464fff64f.jpg',
                     ];
-                    return images[productId % images.length];
+                    return images[product.id % images.length];
                   };
 
                   return (
@@ -831,7 +853,7 @@ export default function Index() {
                       <CardContent className="p-4">
                         <div className="aspect-square rounded-lg mb-4 relative overflow-hidden bg-gradient-to-br from-primary/5 to-secondary/5">
                           <img 
-                            src={getProductImage(product.id)} 
+                            src={getProductImage(product)} 
                             alt={product.name}
                             className="w-full h-full object-cover"
                           />
@@ -1377,7 +1399,7 @@ export default function Index() {
           <TabsContent value="products" className="mt-6">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-semibold">Управление товарами</h2>
-              <Button onClick={() => setEditingProduct({ name: '', price: 0, brand: '', category: '', image_url: '', description: '', specifications: [] })} className="gradient-teal">
+              <Button onClick={() => setEditingProduct({ name: '', price: 0, brand: '', category: '', image_url: '', description: '', is_featured: false, specifications: [] })} className="gradient-teal">
                 <Icon name="Plus" size={18} className="mr-2" />
                 Добавить товар
               </Button>
@@ -1472,6 +1494,19 @@ export default function Index() {
                         placeholder="Краткое описание товара"
                         rows={3}
                       />
+                    </div>
+                    
+                    <div className="md:col-span-2">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox 
+                          id="is_featured"
+                          checked={editingProduct.is_featured || false}
+                          onCheckedChange={(checked) => setEditingProduct({...editingProduct, is_featured: checked})}
+                        />
+                        <Label htmlFor="is_featured" className="cursor-pointer">
+                          Популярный товар (показывать на главной странице)
+                        </Label>
+                      </div>
                     </div>
                     
                     <div className="md:col-span-2">

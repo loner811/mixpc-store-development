@@ -34,33 +34,33 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     
     try:
         if method == 'GET':
-            params = event.get('queryStringParameters', {})
-            category_slug = params.get('category')
+            params = event.get('queryStringParameters', {}) or {}
+            category_name = params.get('category')
             brand = params.get('brand')
             min_price = params.get('minPrice')
             max_price = params.get('maxPrice')
-            popular_only = params.get('popularOnly') == 'true'
+            featured_only = params.get('featured') == 'true'
             
             query = '''
                 SELECT p.id, p.name, p.description, p.price, p.brand, p.image_filename, 
-                       p.specs, p.is_popular, c.name as category_name, c.slug as category_slug
-                FROM products p
-                LEFT JOIN categories c ON p.category_id = c.id
+                       p.is_featured, c.name as category_name
+                FROM t_p58610579_mixpc_store_developm.products p
+                LEFT JOIN t_p58610579_mixpc_store_developm.categories c ON p.category_id = c.id
                 WHERE 1=1
             '''
             
-            if category_slug:
-                query += f" AND c.slug = '{category_slug}'"
+            if category_name:
+                query += f" AND c.name = '{category_name}'"
             if brand:
                 query += f" AND p.brand = '{brand}'"
             if min_price:
                 query += f" AND p.price >= {min_price}"
             if max_price:
                 query += f" AND p.price <= {max_price}"
-            if popular_only:
-                query += " AND p.is_popular = true"
+            if featured_only:
+                query += " AND p.is_featured = true"
             
-            query += " ORDER BY p.created_at DESC"
+            query += " ORDER BY p.created_at DESC LIMIT 50"
             
             cur.execute(query)
             products = []
@@ -71,18 +71,16 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'description': row[2],
                     'price': float(row[3]),
                     'brand': row[4],
-                    'image': row[5],
-                    'specs': row[6] if row[6] else {},
-                    'isPopular': row[7],
-                    'categoryName': row[8],
-                    'categorySlug': row[9]
+                    'image_url': row[5],
+                    'is_featured': row[6],
+                    'category': row[7]
                 })
             
             return {
                 'statusCode': 200,
                 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
                 'isBase64Encoded': False,
-                'body': json.dumps({'products': products})
+                'body': json.dumps(products)
             }
         
         elif method == 'POST':

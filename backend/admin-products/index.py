@@ -43,7 +43,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute("""
                     SELECT p.id, p.name, p.price, p.brand, c.name as category, 
-                           p.image_filename, p.description, p.created_at
+                           p.image_filename, p.description, p.is_featured, p.created_at
                     FROM t_p58610579_mixpc_store_developm.products p
                     LEFT JOIN t_p58610579_mixpc_store_developm.categories c ON p.category_id = c.id
                     ORDER BY p.created_at DESC
@@ -74,6 +74,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             category_name = body_data.get('category')
             image_url = body_data.get('image_url', '')
             description = body_data.get('description', '')
+            is_featured = body_data.get('is_featured', False)
             specifications = body_data.get('specifications', [])
             
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
@@ -82,10 +83,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 category_id = category['id'] if category else None
                 
                 cur.execute("""
-                    INSERT INTO t_p58610579_mixpc_store_developm.products (name, price, brand, category_id, image_filename, description)
-                    VALUES (%s, %s, %s, %s, %s, %s)
-                    RETURNING id, name, price, brand, image_filename, description
-                """, (name, price, brand, category_id, image_url, description))
+                    INSERT INTO t_p58610579_mixpc_store_developm.products (name, price, brand, category_id, image_filename, description, is_featured)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    RETURNING id, name, price, brand, image_filename, description, is_featured
+                """, (name, price, brand, category_id, image_url, description, is_featured))
                 
                 new_product = cur.fetchone()
                 product_id = new_product['id']
@@ -113,6 +114,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             category_name = body_data.get('category')
             image_url = body_data.get('image_url')
             description = body_data.get('description')
+            is_featured = body_data.get('is_featured', False)
             specifications = body_data.get('specifications', [])
             
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
@@ -123,10 +125,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 cur.execute("""
                     UPDATE t_p58610579_mixpc_store_developm.products 
                     SET name = %s, price = %s, brand = %s, category_id = %s, 
-                        image_filename = %s, description = %s, updated_at = CURRENT_TIMESTAMP
+                        image_filename = %s, description = %s, is_featured = %s, updated_at = CURRENT_TIMESTAMP
                     WHERE id = %s
-                    RETURNING id, name, price, brand, image_filename, description
-                """, (name, price, brand, category_id, image_url, description, product_id))
+                    RETURNING id, name, price, brand, image_filename, description, is_featured
+                """, (name, price, brand, category_id, image_url, description, is_featured, product_id))
                 
                 updated_product = cur.fetchone()
                 
