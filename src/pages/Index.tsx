@@ -1093,7 +1093,7 @@ export default function Index() {
               </div>
               <div>
                 <h4 className="font-semibold mb-2">Самовывоз из пункта выдачи</h4>
-                <p className="text-muted-foreground">Бесплатно | г. Москва, ул. Примерная, д. 123</p>
+                <p className="text-muted-foreground">Бесплатно | г. Ростов-на-Дону, Ворошиловский проспект, д. 123</p>
               </div>
             </div>
           </CardContent>
