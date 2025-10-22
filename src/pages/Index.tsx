@@ -960,13 +960,13 @@ export default function Index() {
           <CardContent className="p-6">
             <h3 className="text-xl font-semibold mb-4">Напишите нам</h3>
             
-            {!user ? (
+            {!currentUser ? (
               <div className="text-center py-8 space-y-4">
                 <Icon name="Lock" size={48} className="mx-auto text-muted-foreground" />
                 <p className="text-lg text-muted-foreground">
                   Для отправки сообщений необходимо войти в систему
                 </p>
-                <Button onClick={() => setShowAuthModal(true)} className="gradient-teal">
+                <Button onClick={() => setLoginOpen(true)} className="gradient-teal">
                   <Icon name="LogIn" size={18} className="mr-2" />
                   Войти
                 </Button>
@@ -976,8 +976,8 @@ export default function Index() {
                 e.preventDefault();
                 const formData = new FormData(e.target as HTMLFormElement);
                 const message = {
-                  name: user.name,
-                  email: user.email,
+                  name: currentUser.name,
+                  email: currentUser.email,
                   message: formData.get('message') as string,
                   created_at: new Date().toISOString(),
                   is_read: false
@@ -992,11 +992,11 @@ export default function Index() {
               }}>
                 <div>
                   <Label>Имя</Label>
-                  <Input value={user.name} disabled className="bg-muted" />
+                  <Input value={currentUser.name} disabled className="bg-muted" />
                 </div>
                 <div>
                   <Label>Email</Label>
-                  <Input value={user.email} disabled className="bg-muted" />
+                  <Input value={currentUser.email} disabled className="bg-muted" />
                 </div>
                 <div>
                   <Label>Сообщение</Label>
