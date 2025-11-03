@@ -677,6 +677,14 @@ export default function Index() {
             Каталог
           </Button>
           <Button
+            variant={currentPage === 'configurator' ? 'default' : 'outline'}
+            onClick={() => setCurrentPage('configurator')}
+            className={currentPage === 'configurator' ? 'gradient-teal' : ''}
+          >
+            <Icon name="Wrench" size={16} className="mr-2" />
+            Конфигуратор
+          </Button>
+          <Button
             variant={currentPage === 'about' ? 'default' : 'outline'}
             onClick={() => setCurrentPage('about')}
             className={currentPage === 'about' ? 'gradient-teal' : ''}
@@ -1115,6 +1123,157 @@ export default function Index() {
     </div>
   );
 
+  const renderConfiguratorPage = () => (
+    <div className="container mx-auto px-4 py-8">
+      <div className="relative h-[300px] gradient-teal rounded-2xl mb-12 flex items-center justify-center overflow-hidden">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0iZ3JpZCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNIDQwIDAgTCAwIDAgMCA0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLW9wYWNpdHk9IjAuMSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-30"></div>
+        <div className="relative z-10 text-center text-white">
+          <h1 className="text-5xl font-bold mb-4 flex items-center justify-center gap-4">
+            <Icon name="Wrench" size={56} />
+            Конфигуратор ПК
+          </h1>
+          <p className="text-xl opacity-90">Соберите компьютер своей мечты с проверкой совместимости комплектующих</p>
+        </div>
+      </div>
+
+      <div className="max-w-6xl mx-auto">
+        <Card className="mb-8 border-2 border-primary/20">
+          <CardContent className="p-8">
+            <div className="grid md:grid-cols-2 gap-8 items-center">
+              <div>
+                <h2 className="text-3xl font-bold mb-4">Умный подбор комплектующих</h2>
+                <ul className="space-y-3 text-lg">
+                  <li className="flex items-start gap-3">
+                    <Icon name="CheckCircle2" className="text-green-500 mt-1 flex-shrink-0" size={24} />
+                    <span>Автоматическая проверка совместимости процессора и материнской платы</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Icon name="CheckCircle2" className="text-green-500 mt-1 flex-shrink-0" size={24} />
+                    <span>Расчет необходимой мощности блока питания</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Icon name="CheckCircle2" className="text-green-500 mt-1 flex-shrink-0" size={24} />
+                    <span>Подбор оперативной памяти по типу (DDR4/DDR5)</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Icon name="CheckCircle2" className="text-green-500 mt-1 flex-shrink-0" size={24} />
+                    <span>Проверка размера видеокарты и корпуса</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <Icon name="CheckCircle2" className="text-green-500 mt-1 flex-shrink-0" size={24} />
+                    <span>Готовые конфигурации для разных задач</span>
+                  </li>
+                </ul>
+              </div>
+              <div className="flex justify-center">
+                <div className="w-48 h-48 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-full flex items-center justify-center backdrop-blur-sm border-4 border-primary/30">
+                  <Icon name="Cpu" size={96} className="text-primary" />
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="grid md:grid-cols-3 gap-6 mb-12">
+          <Card className="text-center p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 cursor-pointer border-2 hover:border-primary">
+            <div className="w-20 h-20 bg-gradient-to-br from-green-500/20 to-green-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Icon name="Gamepad2" size={40} className="text-green-600" />
+            </div>
+            <h3 className="text-xl font-bold mb-2">Игровой ПК</h3>
+            <p className="text-muted-foreground mb-4">От 70 000 ₽</p>
+            <p className="text-sm text-muted-foreground">Конфигурация для современных игр в Full HD и 2K разрешении</p>
+          </Card>
+
+          <Card className="text-center p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 cursor-pointer border-2 hover:border-primary">
+            <div className="w-20 h-20 bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Icon name="Briefcase" size={40} className="text-blue-600" />
+            </div>
+            <h3 className="text-xl font-bold mb-2">Рабочая станция</h3>
+            <p className="text-muted-foreground mb-4">От 120 000 ₽</p>
+            <p className="text-sm text-muted-foreground">Для 3D-моделирования, рендеринга и профессиональных задач</p>
+          </Card>
+
+          <Card className="text-center p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 cursor-pointer border-2 hover:border-primary">
+            <div className="w-20 h-20 bg-gradient-to-br from-purple-500/20 to-purple-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Icon name="Home" size={40} className="text-purple-600" />
+            </div>
+            <h3 className="text-xl font-bold mb-2">Офисный ПК</h3>
+            <p className="text-muted-foreground mb-4">От 35 000 ₽</p>
+            <p className="text-sm text-muted-foreground">Для работы с документами, браузинга и повседневных задач</p>
+          </Card>
+        </div>
+
+        <Card className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20 border-2 border-orange-200 dark:border-orange-800">
+          <CardContent className="p-8 text-center">
+            <div className="w-24 h-24 bg-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Icon name="Construction" size={56} className="text-orange-600" />
+            </div>
+            <h2 className="text-3xl font-bold mb-4">Конфигуратор в разработке</h2>
+            <p className="text-lg text-muted-foreground mb-6 max-w-2xl mx-auto">
+              Мы работаем над созданием удобного инструмента для подбора комплектующих. 
+              Скоро вы сможете самостоятельно собрать идеальную конфигурацию с автоматической проверкой совместимости!
+            </p>
+            <div className="flex flex-wrap justify-center gap-4">
+              <Badge variant="secondary" className="px-4 py-2 text-sm">
+                <Icon name="Rocket" size={16} className="mr-2" />
+                Запуск в ближайшее время
+              </Badge>
+              <Badge variant="secondary" className="px-4 py-2 text-sm">
+                <Icon name="Sparkles" size={16} className="mr-2" />
+                Умная проверка совместимости
+              </Badge>
+              <Badge variant="secondary" className="px-4 py-2 text-sm">
+                <Icon name="TrendingDown" size={16} className="mr-2" />
+                Оптимизация бюджета
+              </Badge>
+            </div>
+            <div className="mt-8">
+              <p className="text-sm text-muted-foreground mb-4">
+                А пока вы можете обратиться к нашим специалистам для подбора комплектующих
+              </p>
+              <Button 
+                size="lg" 
+                className="gradient-teal"
+                onClick={() => setCurrentPage('contact')}
+              >
+                <Icon name="MessageCircle" size={20} className="mr-2" />
+                Связаться с консультантом
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="grid md:grid-cols-2 gap-6 mt-12">
+          <Card>
+            <CardContent className="p-6">
+              <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                <Icon name="ShieldCheck" className="text-primary" />
+                Гарантия совместимости
+              </h3>
+              <p className="text-muted-foreground">
+                Все конфигурации, собранные через наш конфигуратор, проходят автоматическую проверку. 
+                Мы гарантируем, что выбранные комплектующие будут работать вместе без проблем.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                <Icon name="Wrench" className="text-primary" />
+                Бесплатная сборка
+              </h3>
+              <p className="text-muted-foreground">
+                При заказе полной конфигурации через конфигуратор — сборка и первый запуск бесплатно! 
+                Вы получите готовый к работе компьютер с установленной Windows.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+
   const renderAboutPage = () => (
     <div className="container mx-auto px-4 py-8">
       <div className="relative h-[300px] gradient-teal rounded-2xl mb-12 flex items-center justify-center overflow-hidden">
@@ -1241,32 +1400,6 @@ export default function Index() {
             </CardContent>
           </Card>
         </div>
-
-        <Card className="gradient-teal text-white">
-          <CardContent className="p-8">
-            <div className="grid md:grid-cols-2 gap-8 items-center">
-              <div>
-                <h3 className="text-3xl font-bold mb-4 flex items-center gap-2">
-                  <Icon name="Wrench" size={32} />
-                  Конфигуратор ПК
-                </h3>
-                <p className="text-lg opacity-90 mb-4">
-                  Собери компьютер своей мечты! Наш конфигуратор поможет подобрать идеальную 
-                  конфигурацию под ваши задачи и бюджет с проверкой совместимости комплектующих.
-                </p>
-                <Button size="lg" variant="secondary" className="font-semibold">
-                  Скоро доступен
-                  <Icon name="ArrowRight" size={20} className="ml-2" />
-                </Button>
-              </div>
-              <div className="flex justify-center">
-                <div className="w-32 h-32 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-                  <Icon name="Cpu" size={64} className="text-white" />
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
 
         <div className="grid md:grid-cols-3 gap-6">
           <Card className="p-6 text-center hover:shadow-lg transition-shadow">
@@ -1973,6 +2106,7 @@ export default function Index() {
          selectedCategory ? renderCategoryPage() :
          currentPage === 'home' ? renderHomePage() :
          currentPage === 'catalog' ? renderCatalogPage() :
+         currentPage === 'configurator' ? renderConfiguratorPage() :
          currentPage === 'about' ? renderAboutPage() :
          currentPage === 'delivery' ? renderDeliveryPage() :
          currentPage === 'warranty' ? renderWarrantyPage() :
