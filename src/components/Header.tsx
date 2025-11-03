@@ -58,24 +58,6 @@ const Header = () => {
             </div>
 
             <Button 
-              variant={location.pathname === '/configurator' ? 'default' : 'outline'}
-              className="gap-2"
-              onClick={() => navigate('/configurator')}
-            >
-              <Icon name="Wrench" size={18} />
-              <span className="hidden sm:inline">Конфигуратор</span>
-            </Button>
-
-            <Button 
-              variant="outline"
-              className="gap-2"
-              onClick={() => navigate('/my-build')}
-            >
-              <Icon name="Package" size={18} />
-              <span className="hidden sm:inline">Моя сборка</span>
-            </Button>
-
-            <Button 
               size="icon" 
               className="gradient-teal text-white hover:opacity-90"
               onClick={() => navigate('/cart')}
