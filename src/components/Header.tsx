@@ -30,11 +30,19 @@ const Header = () => {
             </div>
 
             <Button 
+              className="gap-2 gradient-teal text-white hover:opacity-90"
+              onClick={() => navigate('/configurator')}
+            >
+              <Icon name="Wrench" size={18} />
+              <span className="hidden sm:inline">Конфигуратор</span>
+            </Button>
+
+            <Button 
               size="icon" 
               className="gradient-teal text-white hover:opacity-90"
               onClick={() => navigate('/cart')}
             >
-              <Icon name="Wrench" size={20} />
+              <Icon name="ShoppingCart" size={20} />
             </Button>
 
             <Button 

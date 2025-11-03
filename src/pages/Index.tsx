@@ -727,12 +727,12 @@ export default function Index() {
             Каталог
           </Button>
           <Button
-            variant={currentPage === 'configurator' ? 'default' : 'outline'}
-            onClick={() => setCurrentPage('configurator')}
-            className={currentPage === 'configurator' ? 'gradient-teal' : ''}
+            variant="outline"
+            onClick={() => window.location.href = '/configurator'}
+            className="gradient-teal text-white border-0"
           >
             <Icon name="Wrench" size={16} className="mr-2" />
-            Конфигуратор
+            Конфигуратор ПК
           </Button>
           <Button
             variant={currentPage === 'about' ? 'default' : 'outline'}
@@ -947,14 +947,25 @@ export default function Index() {
             <p className="text-xl md:text-2xl mb-8 opacity-90 drop-shadow-md">
               Широкий ассортимент комплектующих и готовых решений по выгодным ценам
             </p>
-            <Button 
-              size="lg" 
-              className="bg-white text-primary hover:bg-white/90 h-14 px-8 text-lg shadow-2xl"
-              onClick={() => setCurrentPage('catalog')}
-            >
-              Перейти в каталог
-              <Icon name="ArrowRight" className="ml-2" size={20} />
-            </Button>
+            <div className="flex gap-4 justify-center flex-wrap">
+              <Button 
+                size="lg" 
+                className="bg-white text-primary hover:bg-white/90 h-14 px-8 text-lg shadow-2xl"
+                onClick={() => window.location.href = '/configurator'}
+              >
+                <Icon name="Wrench" className="mr-2" size={20} />
+                Собрать свой ПК
+              </Button>
+              <Button 
+                size="lg" 
+                variant="outline"
+                className="bg-white/10 text-white border-white hover:bg-white/20 h-14 px-8 text-lg shadow-2xl"
+                onClick={() => setCurrentPage('catalog')}
+              >
+                Перейти в каталог
+                <Icon name="ArrowRight" className="ml-2" size={20} />
+              </Button>
+            </div>
           </div>
         </section>
 
@@ -1042,6 +1053,74 @@ export default function Index() {
                     </Card>
                   );
                 })}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-gradient-to-r from-primary to-secondary text-white py-16">
+          <div className="container mx-auto px-4">
+            <div className="grid md:grid-cols-2 gap-12 items-center">
+              <div>
+                <h2 className="text-4xl font-bold mb-6">Конфигуратор ПК</h2>
+                <p className="text-xl mb-6 opacity-90">
+                  Соберите идеальный компьютер под ваши задачи с автоматической проверкой совместимости компонентов
+                </p>
+                <ul className="space-y-3 mb-8">
+                  <li className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                      <Icon name="Check" size={18} />
+                    </div>
+                    <span>Автоматическая проверка совместимости</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                      <Icon name="Check" size={18} />
+                    </div>
+                    <span>Бесплатная сборка и тестирование</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                      <Icon name="Check" size={18} />
+                    </div>
+                    <span>Гарантия на все компоненты</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                      <Icon name="Check" size={18} />
+                    </div>
+                    <span>Помощь специалиста в подборе</span>
+                  </li>
+                </ul>
+                <Button 
+                  size="lg" 
+                  className="bg-white text-primary hover:bg-white/90 h-14 px-8 text-lg shadow-2xl"
+                  onClick={() => window.location.href = '/configurator'}
+                >
+                  <Icon name="Wrench" className="mr-2" size={20} />
+                  Начать сборку
+                </Button>
+              </div>
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8">
+                <div className="space-y-4">
+                  {[
+                    { icon: 'Cpu', name: 'Процессор', desc: 'Intel / AMD' },
+                    { icon: 'Zap', name: 'Видеокарта', desc: 'NVIDIA / AMD' },
+                    { icon: 'MemoryStick', name: 'ОЗУ', desc: 'DDR4 / DDR5' },
+                    { icon: 'HardDrive', name: 'Накопитель', desc: 'SSD / HDD' },
+                  ].map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-4 bg-white/10 p-4 rounded-lg">
+                      <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+                        <Icon name={item.icon as any} size={24} />
+                      </div>
+                      <div>
+                        <div className="font-semibold">{item.name}</div>
+                        <div className="text-sm opacity-75">{item.desc}</div>
+                      </div>
+                      <Icon name="ChevronRight" size={20} className="ml-auto opacity-50" />
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
