@@ -153,7 +153,7 @@ const Admin = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle>Вход в админ-панель</CardTitle>
+            <CardTitle>Панель управления</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <input
@@ -195,7 +195,7 @@ const Admin = () => {
       <main className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold">Админ-панель</h1>
+            <h1 className="text-3xl font-bold">Панель управления</h1>
             <p className="text-gray-600">Управление заказами и сообщениями</p>
           </div>
           <div className="flex gap-2">

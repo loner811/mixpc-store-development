@@ -269,6 +269,8 @@ export default function Index() {
   const [priceRange, setPriceRange] = useState([0, 200000]);
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState('default');
+  const [showInStockOnly, setShowInStockOnly] = useState(false);
+  const [selectedSpecs, setSelectedSpecs] = useState<Record<string, string[]>>({});
 
   // Auto-slider
   const [sliderOffset, setSliderOffset] = useState(0);
@@ -437,6 +439,23 @@ export default function Index() {
         products = products.filter(p => selectedBrands.includes(p.brand));
       }
 
+      if (showInStockOnly) {
+        products = products.filter(p => p.in_stock === true);
+      }
+
+      if (Object.keys(selectedSpecs).length > 0) {
+        products = products.filter(p => {
+          const specs = p.specifications || [];
+          return Object.entries(selectedSpecs).every(([specName, specValues]) => {
+            return specs.some((spec: any) => {
+              const name = spec.spec_name || spec.name || '';
+              const value = spec.spec_value || spec.value || '';
+              return name === specName && specValues.includes(value);
+            });
+          });
+        });
+      }
+
       if (sortBy === 'price-asc') {
         products.sort((a, b) => a.price - b.price);
       } else if (sortBy === 'price-desc') {
@@ -464,6 +483,51 @@ export default function Index() {
         ? prev.filter(b => b !== brand)
         : [...prev, brand]
     );
+  };
+
+  const getSpecsForCategory = () => {
+    if (!selectedCategory) return {};
+    const productsSource = allProductsFromDB.length > 0 ? allProductsFromDB : allProducts;
+    const products = productsSource.filter(p => p.category === selectedCategory);
+    
+    const specsMap: Record<string, Set<string>> = {};
+    
+    products.forEach(product => {
+      const specs = product.specifications || [];
+      specs.forEach((spec: any) => {
+        const name = spec.spec_name || spec.name || '';
+        const value = spec.spec_value || spec.value || '';
+        if (name && value) {
+          if (!specsMap[name]) {
+            specsMap[name] = new Set();
+          }
+          specsMap[name].add(value);
+        }
+      });
+    });
+    
+    const result: Record<string, string[]> = {};
+    Object.keys(specsMap).forEach(key => {
+      result[key] = Array.from(specsMap[key]).sort();
+    });
+    
+    return result;
+  };
+
+  const toggleSpec = (specName: string, specValue: string) => {
+    setSelectedSpecs(prev => {
+      const current = prev[specName] || [];
+      const updated = current.includes(specValue)
+        ? current.filter(v => v !== specValue)
+        : [...current, specValue];
+      
+      if (updated.length === 0) {
+        const { [specName]: _, ...rest } = prev;
+        return rest;
+      }
+      
+      return { ...prev, [specName]: updated };
+    });
   };
 
   const addToCart = (product: any) => {
@@ -634,10 +698,12 @@ export default function Index() {
                       <div className="space-y-2">
                         <Label>Логин</Label>
                         <Input name="username" placeholder="Придумайте логин" required />
+                        <p className="text-xs text-red-500">Логин не может быть пустым</p>
                       </div>
                       <div className="space-y-2 mb-4">
                         <Label>Пароль</Label>
                         <Input type="password" name="password" placeholder="Придумайте пароль" required />
+                        <p className="text-xs text-red-500">Пароль не может быть пустым</p>
                       </div>
                       <Button type="submit" className="w-full bg-secondary hover:bg-secondary/90 h-11">
                         Зарегистрироваться
@@ -942,17 +1008,41 @@ export default function Index() {
             <Card>
               <CardContent className="p-4">
                 <h3 className="font-semibold mb-4">Цена</h3>
-                <Slider
-                  value={priceRange}
-                  onValueChange={setPriceRange}
-                  min={0}
-                  max={maxPrice}
-                  step={1000}
-                  className="mb-4"
-                />
-                <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>{priceRange[0].toLocaleString()} ₽</span>
-                  <span>{priceRange[1].toLocaleString()} ₽</span>
+                <div className="space-y-4">
+                  <Slider
+                    value={priceRange}
+                    onValueChange={setPriceRange}
+                    min={0}
+                    max={maxPrice}
+                    step={1000}
+                    className="mb-2"
+                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-xs text-muted-foreground">От</label>
+                      <Input
+                        type="number"
+                        value={priceRange[0]}
+                        onChange={(e) => {
+                          const value = Math.max(0, Math.min(Number(e.target.value), priceRange[1]));
+                          setPriceRange([value, priceRange[1]]);
+                        }}
+                        className="h-8 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground">До</label>
+                      <Input
+                        type="number"
+                        value={priceRange[1]}
+                        onChange={(e) => {
+                          const value = Math.min(maxPrice, Math.max(Number(e.target.value), priceRange[0]));
+                          setPriceRange([priceRange[0], value]);
+                        }}
+                        className="h-8 text-sm"
+                      />
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -977,6 +1067,44 @@ export default function Index() {
               </CardContent>
             </Card>
 
+            {Object.entries(getSpecsForCategory()).slice(0, 5).map(([specName, specValues]) => (
+              <Card key={specName}>
+                <CardContent className="p-4">
+                  <h3 className="font-semibold mb-4">{specName}</h3>
+                  <div className="space-y-3 max-h-64 overflow-y-auto">
+                    {specValues.map(specValue => (
+                      <div key={specValue} className="flex items-center gap-2">
+                        <Checkbox
+                          id={`${specName}-${specValue}`}
+                          checked={(selectedSpecs[specName] || []).includes(specValue)}
+                          onCheckedChange={() => toggleSpec(specName, specValue)}
+                        />
+                        <label htmlFor={`${specName}-${specValue}`} className="text-sm cursor-pointer flex-1">
+                          {specValue}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+
+            <Card>
+              <CardContent className="p-4">
+                <h3 className="font-semibold mb-4">Наличие</h3>
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="in-stock-filter"
+                    checked={showInStockOnly}
+                    onCheckedChange={(checked) => setShowInStockOnly(!!checked)}
+                  />
+                  <label htmlFor="in-stock-filter" className="text-sm cursor-pointer flex-1">
+                    Только в наличии
+                  </label>
+                </div>
+              </CardContent>
+            </Card>
+
             <Button
               variant="outline"
               className="w-full"
@@ -984,6 +1112,8 @@ export default function Index() {
                 setPriceRange([0, maxPrice]);
                 setSelectedBrands([]);
                 setSortBy('default');
+                setShowInStockOnly(false);
+                setSelectedSpecs({});
               }}
             >
               Сбросить фильтры
@@ -1046,7 +1176,19 @@ export default function Index() {
                           <Icon name="Heart" size={18} />
                         </Button>
                       </div>
-                      <Badge className="mb-2">{product.brand}</Badge>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Badge>{product.brand}</Badge>
+                        {product.in_stock && (
+                          <Badge variant="outline" className="border-green-500 text-green-600">
+                            В наличии
+                          </Badge>
+                        )}
+                        {!product.in_stock && (
+                          <Badge variant="outline" className="border-gray-400 text-gray-500">
+                            Нет в наличии
+                          </Badge>
+                        )}
+                      </div>
                       <h3 className="font-semibold mb-2 line-clamp-2 min-h-[3em]">{product.name}</h3>
                       
                       {product.description && (
@@ -1883,7 +2025,7 @@ export default function Index() {
           <TabsContent value="products" className="mt-6">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-semibold">Управление товарами</h2>
-              <Button onClick={() => setEditingProduct({ name: '', price: 0, brand: '', category: '', image_url: '', description: '', is_featured: false, specifications: [] })} className="gradient-teal">
+              <Button onClick={() => setEditingProduct({ name: '', price: 0, brand: '', category: '', image_url: '', description: '', is_featured: false, in_stock: true, stock_quantity: 0, specifications: [] })} className="gradient-teal">
                 <Icon name="Plus" size={18} className="mr-2" />
                 Добавить товар
               </Button>
@@ -1958,6 +2100,26 @@ export default function Index() {
                       />
                     </div>
                     
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="in-stock"
+                        checked={editingProduct.in_stock !== false}
+                        onChange={(e) => setEditingProduct({...editingProduct, in_stock: e.target.checked})}
+                        className="w-4 h-4"
+                      />
+                      <Label htmlFor="in-stock" className="cursor-pointer">Товар в наличии</Label>
+                    </div>
+                    
+                    <div>
+                      <Label>Количество товара (шт)</Label>
+                      <Input 
+                        type="number"
+                        min="0"
+                        value={editingProduct.stock_quantity || 0} 
+                        onChange={(e) => setEditingProduct({...editingProduct, stock_quantity: Number(e.target.value)})}
+                      />
+                    </div>
 
                     
                     <div className="md:col-span-2">
@@ -2051,6 +2213,14 @@ export default function Index() {
                         <h3 className="font-semibold">{product.name}</h3>
                         <p className="text-sm text-muted-foreground">{product.brand} • {product.category}</p>
                         <p className="text-lg font-bold text-primary">{Number(product.price).toLocaleString()} ₽</p>
+                        <div className="flex items-center gap-2 mt-2">
+                          <Badge variant={product.in_stock ? "default" : "secondary"}>
+                            {product.in_stock ? "В наличии" : "Нет в наличии"}
+                          </Badge>
+                          <span className="text-sm text-muted-foreground">
+                            Кол-во: <span className="font-semibold">{product.stock_quantity || 0} шт</span>
+                          </span>
+                        </div>
                       </div>
                       <div className="flex gap-2">
                         <Button 

@@ -78,6 +78,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             image_url_input = body_data.get('image_url', '')
             description = body_data.get('description', '')
             is_featured = body_data.get('is_featured', False)
+            in_stock = body_data.get('in_stock', True)
+            stock_quantity = body_data.get('stock_quantity', 0)
             specifications = body_data.get('specifications', [])
             
             image_url = ''
@@ -115,10 +117,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 category_id = category['id'] if category else None
                 
                 cur.execute("""
-                    INSERT INTO t_p58610579_mixpc_store_developm.products (name, price, brand, category_id, image_filename, description, is_featured)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s)
-                    RETURNING id, name, price, brand, image_filename, description, is_featured
-                """, (name, price, brand, category_id, image_url, description, is_featured))
+                    INSERT INTO t_p58610579_mixpc_store_developm.products (name, price, brand, category_id, image_filename, description, is_featured, in_stock, stock_quantity)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    RETURNING id, name, price, brand, image_filename, description, is_featured, in_stock, stock_quantity
+                """, (name, price, brand, category_id, image_url, description, is_featured, in_stock, stock_quantity))
                 
                 new_product = cur.fetchone()
                 product_id = new_product['id']
@@ -152,6 +154,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             image_base64 = body_data.get('image_base64', '')
             description = body_data.get('description')
             is_featured = body_data.get('is_featured', False)
+            in_stock = body_data.get('in_stock', True)
+            stock_quantity = body_data.get('stock_quantity', 0)
             specifications = body_data.get('specifications', [])
             
             if image_base64:
@@ -178,10 +182,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 cur.execute("""
                     UPDATE t_p58610579_mixpc_store_developm.products 
                     SET name = %s, price = %s, brand = %s, category_id = %s, 
-                        image_filename = %s, description = %s, is_featured = %s, updated_at = CURRENT_TIMESTAMP
+                        image_filename = %s, description = %s, is_featured = %s, in_stock = %s, stock_quantity = %s, updated_at = CURRENT_TIMESTAMP
                     WHERE id = %s
-                    RETURNING id, name, price, brand, image_filename, description, is_featured
-                """, (name, price, brand, category_id, image_url, description, is_featured, product_id))
+                    RETURNING id, name, price, brand, image_filename, description, is_featured, in_stock, stock_quantity
+                """, (name, price, brand, category_id, image_url, description, is_featured, in_stock, stock_quantity, product_id))
                 
                 updated_product = cur.fetchone()
                 

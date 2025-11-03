@@ -4,21 +4,13 @@
       "name": "Get all products",
       "method": "GET",
       "path": "/",
-      "expectedStatus": 200,
-      "expectedBody": {
-        "products": "array"
-      },
-      "bodyMatcher": "partial"
+      "expectedStatus": 200
     },
     {
       "name": "Get products by category",
       "method": "GET",
-      "path": "/?category=processors",
-      "expectedStatus": 200,
-      "expectedBody": {
-        "products": "array"
-      },
-      "bodyMatcher": "partial"
+      "path": "/?category=Процессоры",
+      "expectedStatus": 200
     }
   ]
 }

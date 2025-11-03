@@ -44,7 +44,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             query = '''
                 SELECT p.id, p.name, p.description, p.price, p.brand, p.image_filename, 
-                       p.is_featured, c.name as category_name
+                       p.is_featured, p.in_stock, p.stock_quantity, c.name as category_name
                 FROM t_p58610579_mixpc_store_developm.products p
                 LEFT JOIN t_p58610579_mixpc_store_developm.categories c ON p.category_id = c.id
                 WHERE 1=1
@@ -90,7 +90,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'brand': row[4],
                     'image_url': row[5],
                     'is_featured': row[6],
-                    'category': row[7],
+                    'in_stock': row[7],
+                    'stock_quantity': row[8],
+                    'category': row[9],
                     'specifications': specifications
                 })
             

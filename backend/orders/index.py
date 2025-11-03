@@ -97,11 +97,18 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             order_id = cursor.fetchone()['id']
             
             for item in items:
+                product_id = item.get('id')
                 cursor.execute('''
                     INSERT INTO t_p58610579_mixpc_store_developm.order_items
                     (order_id, product_id, product_name, product_price, quantity)
                     VALUES (%s, %s, %s, %s, %s)
-                ''', (order_id, item.get('id'), item.get('name'), item.get('price'), 1))
+                ''', (order_id, product_id, item.get('name'), item.get('price'), 1))
+                
+                cursor.execute('''
+                    UPDATE t_p58610579_mixpc_store_developm.products
+                    SET stock_quantity = GREATEST(stock_quantity - 1, 0)
+                    WHERE id = %s
+                ''', (product_id,))
             
             conn.commit()
             
