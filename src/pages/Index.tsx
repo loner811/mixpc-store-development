@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Slider } from '@/components/ui/slider';
 import Icon from '@/components/ui/icon';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 const categories = [
   { id: 1, name: 'Компьютеры', icon: 'Monitor' },
@@ -576,6 +577,8 @@ export default function Index() {
               </SheetContent>
             </Sheet>
 
+            <ThemeToggle />
+            
             <Sheet>
               <SheetTrigger asChild>
                 <Button size="icon" className="relative gradient-teal text-white hover:opacity-90">
