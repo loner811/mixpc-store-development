@@ -38,7 +38,7 @@ const Configurator = () => {
     { id: 5, name: 'Оперативная память', icon: 'MemoryStick', required: true },
     { id: 6, name: 'Накопители SSD', icon: 'HardDrive', required: true },
     { id: 7, name: 'Блоки питания', icon: 'Battery', required: true },
-    { id: 8, name: 'Корпуса', icon: 'Box', required: true },
+    { id: 8, name: 'Корпуса', icon: 'Box', required: false },
     { id: 9, name: 'Куллеры', icon: 'Fan', required: false },
   ]);
 
