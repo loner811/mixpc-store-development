@@ -86,6 +86,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             delivery_address = body_data.get('delivery_address', '')
             total_amount = body_data.get('total_amount')
             items = body_data.get('items', [])
+            build_id = body_data.get('build_id')
             
             cursor.execute('''
                 INSERT INTO t_p58610579_mixpc_store_developm.orders 
@@ -101,7 +102,11 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     INSERT INTO t_p58610579_mixpc_store_developm.order_items
                     (order_id, product_id, product_name, product_price, quantity)
                     VALUES (%s, %s, %s, %s, %s)
-                ''', (order_id, item.get('id'), item.get('name'), item.get('price'), 1))
+                ''', (order_id, item.get('id') or item.get('product_id'), item.get('name') or item.get('product_name'), item.get('price'), item.get('quantity', 1)))
+            
+            if build_id:
+                cursor.execute('DELETE FROM t_p58610579_mixpc_store_developm.pc_build_items WHERE build_id = %s', (build_id,))
+                cursor.execute('DELETE FROM t_p58610579_mixpc_store_developm.pc_builds WHERE id = %s', (build_id,))
             
             conn.commit()
             

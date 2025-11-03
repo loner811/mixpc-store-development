@@ -403,6 +403,44 @@ export default function Index() {
     setCart([...cart, product]);
   };
 
+  const addToBuild = async (product: any) => {
+    if (!isLoggedIn) {
+      alert('Войдите в систему для добавления товаров в сборку');
+      return;
+    }
+    
+    const userId = localStorage.getItem('userId') || currentUser?.id?.toString();
+    if (!userId) {
+      alert('Ошибка: не удалось определить пользователя');
+      return;
+    }
+
+    try {
+      const categoryId = categories.find(c => c.name === product.category)?.id;
+      
+      const response = await fetch('https://functions.poehali.dev/66eafcf6-38e4-415c-b1ff-ad6d420b564e', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Id': userId
+        },
+        body: JSON.stringify({
+          action: 'add_to_build',
+          product_id: product.id,
+          category_id: categoryId
+        })
+      });
+
+      if (response.ok) {
+        alert('Товар добавлен в сборку!');
+      } else {
+        alert('Ошибка добавления в сборку');
+      }
+    } catch (error) {
+      alert('Ошибка соединения с сервером');
+    }
+  };
+
   const addToFavorites = (product: any) => {
     if (!isLoggedIn) {
       alert('Войдите в систему для добавления товаров в избранное');
@@ -476,12 +514,14 @@ export default function Index() {
                       
                       if (username === 'admin' && password === '123') {
                         setCurrentUser({ id: 1, username: 'admin', role: 'admin', email: 'admin@mixpc.ru' });
+                        localStorage.setItem('userId', '1');
                         setIsLoggedIn(true);
                         setIsAdmin(true);
                         setLoginOpen(false);
                         alert('Добро пожаловать, администратор!');
                       } else if (username === 'login' && password === '123') {
                         setCurrentUser({ id: 2, username: 'login', role: 'user', email: 'user@example.com' });
+                        localStorage.setItem('userId', '2');
                         setIsLoggedIn(true);
                         setIsAdmin(false);
                         setLoginOpen(false);
@@ -526,6 +566,14 @@ export default function Index() {
                 </Tabs>
               </DialogContent>
             </Dialog>
+
+            <Button 
+              size="icon" 
+              className="relative gradient-teal text-white hover:opacity-90"
+              onClick={() => window.location.href = '/cart'}
+            >
+              <Icon name="Wrench" size={20} />
+            </Button>
 
             <Sheet>
               <SheetTrigger asChild>
@@ -853,13 +901,21 @@ export default function Index() {
                       
                       <p className="text-2xl font-bold text-primary">{product.price.toLocaleString()} ₽</p>
                     </CardContent>
-                    <CardFooter className="p-4 pt-0">
+                    <CardFooter className="p-4 pt-0 flex gap-2">
                       <Button 
-                        className="w-full gradient-teal"
+                        className="flex-1 gradient-teal"
                         onClick={() => addToCart(product)}
                       >
                         <Icon name="ShoppingCart" size={18} className="mr-2" />
                         В корзину
+                      </Button>
+                      <Button 
+                        className="flex-1"
+                        variant="outline"
+                        onClick={() => addToBuild(product)}
+                      >
+                        <Icon name="Wrench" size={18} className="mr-2" />
+                        В сборку
                       </Button>
                     </CardFooter>
                   </Card>
@@ -966,13 +1022,21 @@ export default function Index() {
                         
                         <p className="text-2xl font-bold text-primary">{product.price.toLocaleString()} ₽</p>
                       </CardContent>
-                      <CardFooter className="p-4 pt-0">
+                      <CardFooter className="p-4 pt-0 flex gap-2">
                         <Button 
-                          className="w-full gradient-teal"
+                          className="flex-1 gradient-teal"
                           onClick={() => addToCart(product)}
                         >
                           <Icon name="ShoppingCart" size={18} className="mr-2" />
                           В корзину
+                        </Button>
+                        <Button 
+                          className="flex-1"
+                          variant="outline"
+                          onClick={() => addToBuild(product)}
+                        >
+                          <Icon name="Wrench" size={18} className="mr-2" />
+                          В сборку
                         </Button>
                       </CardFooter>
                     </Card>
