@@ -66,6 +66,22 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             cur.execute(query)
             products = []
             for row in cur.fetchall():
+                product_id = row[0]
+                
+                cur.execute('''
+                    SELECT spec_name, spec_value
+                    FROM t_p58610579_mixpc_store_developm.product_specifications
+                    WHERE product_id = %s
+                    ORDER BY display_order
+                ''', (product_id,))
+                
+                specifications = []
+                for spec_row in cur.fetchall():
+                    specifications.append({
+                        'spec_name': spec_row[0],
+                        'spec_value': spec_row[1]
+                    })
+                
                 products.append({
                     'id': row[0],
                     'name': row[1],
@@ -74,7 +90,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'brand': row[4],
                     'image_url': row[5],
                     'is_featured': row[6],
-                    'category': row[7]
+                    'category': row[7],
+                    'specifications': specifications
                 })
             
             return {

@@ -211,6 +211,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             with conn.cursor() as cur:
                 cur.execute("DELETE FROM t_p58610579_mixpc_store_developm.product_specifications WHERE product_id = %s", (product_id,))
+                cur.execute("DELETE FROM t_p58610579_mixpc_store_developm.order_items WHERE product_id = %s", (product_id,))
                 cur.execute("DELETE FROM t_p58610579_mixpc_store_developm.products WHERE id = %s", (product_id,))
                 conn.commit()
             

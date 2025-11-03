@@ -670,16 +670,53 @@ export default function Index() {
                       <p className="text-muted-foreground">Избранное пусто</p>
                     </div>
                   ) : (
-                    favorites.map(product => (
+                    favorites.map(product => {
+                      const getProductImage = (product: any) => {
+                        if (product.image || product.image_url || product.image_filename) {
+                          const img = product.image || product.image_url || product.image_filename;
+                          if (img.startsWith('http')) return img;
+                          if (img.startsWith('files/')) return `https://cdn.poehali.dev/${img}`;
+                          return `https://cdn.poehali.dev/images/${img}`;
+                        }
+                        return '';
+                      };
+                      
+                      const productSpecs = product.specifications || [];
+                      const specs = Array.isArray(productSpecs) 
+                        ? productSpecs.map((s: any) => typeof s === 'string' ? s : `${s.spec_name || s.name}: ${s.spec_value || s.value}`)
+                        : [];
+                      
+                      return (
                       <Card key={product.id}>
                         <CardContent className="p-4">
                           <div className="flex gap-4">
-                            <div className="w-20 h-20 bg-muted rounded-lg flex items-center justify-center">
-                              <Icon name="Package" size={32} className="text-muted-foreground" />
+                            <div className="w-24 h-24 bg-muted rounded-lg overflow-hidden flex-shrink-0">
+                              {getProductImage(product) ? (
+                                <img 
+                                  src={getProductImage(product)} 
+                                  alt={product.name}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                  <Icon name="Package" size={32} className="text-muted-foreground" />
+                                </div>
+                              )}
                             </div>
                             <div className="flex-1">
-                              <h4 className="font-semibold mb-1">{product.name}</h4>
-                              <p className="text-lg font-bold text-primary">{product.price.toLocaleString()} ₽</p>
+                              <Badge className="mb-1 text-xs">{product.brand}</Badge>
+                              <h4 className="font-semibold mb-2 line-clamp-2">{product.name}</h4>
+                              {product.description && (
+                                <p className="text-xs text-muted-foreground mb-2 line-clamp-1">{product.description}</p>
+                              )}
+                              {specs.length > 0 && (
+                                <div className="mb-2">
+                                  {specs.slice(0, 2).map((spec, idx) => (
+                                    <p key={idx} className="text-xs text-muted-foreground line-clamp-1">• {spec}</p>
+                                  ))}
+                                </div>
+                              )}
+                              <p className="text-xl font-bold text-primary">{product.price.toLocaleString()} ₽</p>
                             </div>
                             <Button 
                               size="icon" 
@@ -691,7 +728,8 @@ export default function Index() {
                           </div>
                         </CardContent>
                       </Card>
-                    ))
+                    );
+                    })
                   )}
                 </div>
               </SheetContent>
@@ -720,16 +758,53 @@ export default function Index() {
                     </div>
                   ) : (
                     <>
-                      {cart.map(product => (
+                      {cart.map(product => {
+                        const getProductImage = (product: any) => {
+                          if (product.image || product.image_url || product.image_filename) {
+                            const img = product.image || product.image_url || product.image_filename;
+                            if (img.startsWith('http')) return img;
+                            if (img.startsWith('files/')) return `https://cdn.poehali.dev/${img}`;
+                            return `https://cdn.poehali.dev/images/${img}`;
+                          }
+                          return '';
+                        };
+                        
+                        const productSpecs = product.specifications || [];
+                        const specs = Array.isArray(productSpecs) 
+                          ? productSpecs.map((s: any) => typeof s === 'string' ? s : `${s.spec_name || s.name}: ${s.spec_value || s.value}`)
+                          : [];
+                        
+                        return (
                         <Card key={product.id}>
                           <CardContent className="p-4">
                             <div className="flex gap-4">
-                              <div className="w-20 h-20 bg-muted rounded-lg flex items-center justify-center">
-                                <Icon name="Package" size={32} className="text-muted-foreground" />
+                              <div className="w-24 h-24 bg-muted rounded-lg overflow-hidden flex-shrink-0">
+                                {getProductImage(product) ? (
+                                  <img 
+                                    src={getProductImage(product)} 
+                                    alt={product.name}
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center">
+                                    <Icon name="Package" size={32} className="text-muted-foreground" />
+                                  </div>
+                                )}
                               </div>
                               <div className="flex-1">
-                                <h4 className="font-semibold mb-1">{product.name}</h4>
-                                <p className="text-lg font-bold text-primary">{product.price.toLocaleString()} ₽</p>
+                                <Badge className="mb-1 text-xs">{product.brand}</Badge>
+                                <h4 className="font-semibold mb-2 line-clamp-2">{product.name}</h4>
+                                {product.description && (
+                                  <p className="text-xs text-muted-foreground mb-2 line-clamp-1">{product.description}</p>
+                                )}
+                                {specs.length > 0 && (
+                                  <div className="mb-2">
+                                    {specs.slice(0, 2).map((spec, idx) => (
+                                      <p key={idx} className="text-xs text-muted-foreground line-clamp-1">• {spec}</p>
+                                    ))}
+                                  </div>
+                                )}
+                                <p className="text-xl font-bold text-primary">{product.price.toLocaleString()} ₽</p>
                               </div>
                               <Button 
                                 size="icon" 
@@ -741,7 +816,8 @@ export default function Index() {
                             </div>
                           </CardContent>
                         </Card>
-                      ))}
+                        );
+                      })}
                       <div className="sticky bottom-0 bg-background pt-4 border-t">
                         <div className="flex justify-between mb-4">
                           <span className="text-lg font-semibold">Итого:</span>
@@ -1037,90 +1113,7 @@ export default function Index() {
           </div>
         </section>
 
-        <section className="py-16 bg-muted/30">
-          <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold mb-8 text-center">Популярные товары</h2>
-            <div className="relative overflow-hidden">
-              <div 
-                className="flex gap-6 transition-none"
-                style={{
-                  transform: `translateX(${sliderOffset}px)`,
-                  width: `${duplicatedProducts.length * 320}px`
-                }}
-              >
-                {duplicatedProducts.map((product, index) => {
-                  const getProductImage = (product: any) => {
-                    if (product.image || product.image_url || product.image_filename) {
-                      const img = product.image || product.image_url || product.image_filename;
-                      if (img.startsWith('http')) return img;
-                      if (img.startsWith('files/')) return `https://cdn.poehali.dev/${img}`;
-                      return `https://cdn.poehali.dev/images/${img}`;
-                    }
-                    const images = [
-                      'https://cdn.poehali.dev/projects/f7df5c93-3ffb-476e-bc55-4da98f7f2c0a/files/bb10f9c9-ec03-4dae-852d-ab8eb7cb81c7.jpg',
-                      'https://cdn.poehali.dev/projects/f7df5c93-3ffb-476e-bc55-4da98f7f2c0a/files/11810e39-9f5c-43b4-979a-e723f231c489.jpg',
-                      'https://cdn.poehali.dev/projects/f7df5c93-3ffb-476e-bc55-4da98f7f2c0a/files/825e48c1-6cd6-4d1f-9d28-ff9464fff64f.jpg',
-                    ];
-                    return images[product.id % images.length];
-                  };
 
-                  const productSpecs = product.specifications || [];
-                  const specs = Array.isArray(productSpecs) 
-                    ? productSpecs.map((s: any) => typeof s === 'string' ? s : `${s.spec_name || s.name}: ${s.spec_value || s.value}`)
-                    : [];
-                  
-                  return (
-                    <Card 
-                      key={`${product.id}-${index}`} 
-                      className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex-shrink-0 flex flex-col"
-                      style={{ width: '300px' }}
-                    >
-                      <CardContent className="p-4 flex-1">
-                        <div className="aspect-square rounded-lg mb-4 relative overflow-hidden bg-gradient-to-br from-primary/5 to-secondary/5">
-                          <img 
-                            src={getProductImage(product)} 
-                            alt={product.name}
-                            className="w-full h-full object-cover"
-                          />
-                          <Button
-                            size="icon"
-                            variant="secondary"
-                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={() => addToFavorites(product)}
-                          >
-                            <Icon name="Heart" size={18} />
-                          </Button>
-                        </div>
-                        <Badge className="mb-2">{product.brand}</Badge>
-                        <h3 className="font-semibold mb-2 line-clamp-2 min-h-[3em]">{product.name}</h3>
-                        
-                        <div className="mb-3 space-y-1">
-                          {specs.slice(0, 2).map((spec, idx) => (
-                            <div key={idx} className="flex items-center gap-2 text-xs text-muted-foreground">
-                              <Icon name="Check" size={12} className="text-primary flex-shrink-0" />
-                              <span className="line-clamp-1">{spec}</span>
-                            </div>
-                          ))}
-                        </div>
-                        
-                        <p className="text-2xl font-bold text-primary">{product.price.toLocaleString()} ₽</p>
-                      </CardContent>
-                      <CardFooter className="p-4 pt-0">
-                        <Button 
-                          className="w-full gradient-teal"
-                          onClick={() => addToCart(product)}
-                        >
-                          <Icon name="ShoppingCart" size={18} className="mr-2" />
-                          В корзину
-                        </Button>
-                      </CardFooter>
-                    </Card>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </section>
 
         <section className="container mx-auto px-4 py-16">
           <h2 className="text-3xl font-bold mb-8 text-center">Почему выбирают нас?</h2>
@@ -1939,43 +1932,17 @@ export default function Index() {
                     <div className="md:col-span-2">
                       <Label>Изображение товара</Label>
                       <div className="space-y-3">
-                        <div>
-                          <Label className="text-sm text-muted-foreground">Загрузить файл</Label>
-                          <Input 
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (!file) return;
-                              
-                              const reader = new FileReader();
-                              reader.onload = (event) => {
-                                const base64 = event.target?.result as string;
-                                setEditingProduct({...editingProduct, image_base64: base64, image_url: ''});
-                              };
-                              reader.readAsDataURL(file);
-                            }}
-                          />
-                        </div>
+                        <Input 
+                          type="url"
+                          placeholder="https://example.com/image.jpg"
+                          value={editingProduct.image_url || ''}
+                          onChange={(e) => setEditingProduct({...editingProduct, image_url: e.target.value})}
+                        />
                         
-                        <div>
-                          <Label className="text-sm text-muted-foreground">Или указать URL изображения</Label>
-                          <Input 
-                            type="url"
-                            placeholder="https://example.com/image.jpg"
-                            value={editingProduct.image_url || ''}
-                            onChange={(e) => setEditingProduct({...editingProduct, image_url: e.target.value, image_base64: ''})}
-                          />
-                        </div>
-                        
-                        {(editingProduct.image_base64 || editingProduct.image_url || editingProduct.image_filename) && (
+                        {editingProduct.image_url && (
                           <div className="flex items-center gap-2 text-sm text-green-600">
                             <Icon name="Check" size={16} />
-                            <span>
-                              {editingProduct.image_base64 ? 'Файл выбран' : 
-                               editingProduct.image_url ? 'URL указан' : 
-                               'Изображение загружено'}
-                            </span>
+                            <span>URL указан</span>
                           </div>
                         )}
                       </div>
@@ -1991,18 +1958,7 @@ export default function Index() {
                       />
                     </div>
                     
-                    <div className="md:col-span-2">
-                      <div className="flex items-center space-x-2">
-                        <Checkbox 
-                          id="is_featured"
-                          checked={editingProduct.is_featured || false}
-                          onCheckedChange={(checked) => setEditingProduct({...editingProduct, is_featured: checked})}
-                        />
-                        <Label htmlFor="is_featured" className="cursor-pointer">
-                          Популярный товар (показывать на главной странице)
-                        </Label>
-                      </div>
-                    </div>
+
                     
                     <div className="md:col-span-2">
                       <div className="flex justify-between items-center mb-2">
@@ -2226,14 +2182,20 @@ export default function Index() {
                 </Card>
               ) : (
                 adminMessages.map(msg => (
-                  <Card key={msg.id} className={msg.is_read ? 'opacity-60' : ''}>
+                  <Card key={msg.id}>
                     <CardContent className="p-6">
                       <div className="flex justify-between items-start mb-2">
                         <div>
                           <h3 className="font-semibold text-lg">{msg.name}</h3>
                           <p className="text-sm text-muted-foreground">{msg.email}</p>
                         </div>
-                        <Badge variant={msg.is_read ? 'secondary' : 'default'}>
+                        <Badge 
+                          className={
+                            msg.is_read
+                              ? 'bg-green-500 hover:bg-green-600 text-white'
+                              : 'bg-red-500 hover:bg-red-600 text-white'
+                          }
+                        >
                           {msg.is_read ? 'Прочитано' : 'Новое'}
                         </Badge>
                       </div>
@@ -2241,6 +2203,26 @@ export default function Index() {
                       <p className="text-xs text-muted-foreground mt-4">
                         {new Date(msg.created_at).toLocaleString('ru-RU')}
                       </p>
+                      
+                      {!msg.is_read && (
+                        <div className="mt-4">
+                          <Button 
+                            size="sm"
+                            className="bg-green-600 hover:bg-green-700 text-white"
+                            onClick={() => {
+                              const messages = JSON.parse(localStorage.getItem('contactMessages') || '[]');
+                              const updated = messages.map((m: any) => 
+                                m.id === msg.id ? {...m, is_read: true} : m
+                              );
+                              localStorage.setItem('contactMessages', JSON.stringify(updated));
+                              setAdminMessages(updated);
+                            }}
+                          >
+                            <Icon name="CheckCircle" size={16} className="mr-2" />
+                            Отметить прочитанным
+                          </Button>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 ))
