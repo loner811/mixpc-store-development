@@ -27,6 +27,64 @@ const categories = [
   { id: 12, name: 'Компьютерные мыши', icon: 'Mouse' }
 ];
 
+const getProductSpecs = (productId: number, productName: string, category: string) => {
+  const specs: { [key: number]: string[] } = {};
+  
+  if (category === 'Процессоры') {
+    if (productName.includes('Ryzen 9 7950X')) return ['16 ядер / 32 потока', '4.5-5.7 ГГц', 'TDP 170W', 'Socket AM5'];
+    if (productName.includes('i9-13900K')) return ['24 ядра / 32 потока', '3.0-5.8 ГГц', 'TDP 125W', 'Socket LGA1700'];
+    if (productName.includes('Ryzen 7 7700X')) return ['8 ядер / 16 потоков', '4.5-5.4 ГГц', 'TDP 105W', 'Socket AM5'];
+    if (productName.includes('i7-13700K')) return ['16 ядер / 24 потока', '3.4-5.4 ГГц', 'TDP 125W', 'Socket LGA1700'];
+    return ['8 ядер', 'До 5.0 ГГц', 'TDP 105W'];
+  }
+  
+  if (category === 'Видеокарты') {
+    if (productName.includes('RTX 4090')) return ['24 GB GDDR6X', '2520 МГц', '450W TDP', 'DLSS 3.0'];
+    if (productName.includes('RX 7900 XTX')) return ['24 GB GDDR6', '2500 МГц', '355W TDP', 'FSR 3.0'];
+    if (productName.includes('RTX 4080')) return ['16 GB GDDR6X', '2505 МГц', '320W TDP', 'DLSS 3.0'];
+    if (productName.includes('RX 7900 XT')) return ['20 GB GDDR6', '2400 МГц', '300W TDP', 'FSR 3.0'];
+    return ['GDDR6', 'Ray Tracing', '300W TDP'];
+  }
+  
+  if (category === 'Материнские платы') {
+    if (productName.includes('B650')) return ['Socket AM5', 'DDR5', 'PCIe 5.0', 'ATX'];
+    if (productName.includes('B760') || productName.includes('Z790')) return ['Socket LGA1700', 'DDR5', 'PCIe 5.0', 'ATX'];
+    if (productName.includes('X670')) return ['Socket AM5', 'DDR5', 'PCIe 5.0', 'ATX'];
+    return ['DDR5', 'PCIe 4.0', 'ATX'];
+  }
+  
+  if (category === 'Оперативная память') {
+    if (productName.includes('DDR5')) {
+      if (productName.includes('64GB')) return ['64 GB (2x32)', 'DDR5-6000', 'CL30', 'RGB'];
+      if (productName.includes('32GB')) return ['32 GB (2x16)', 'DDR5-6000', 'CL36', 'RGB'];
+      return ['16 GB', 'DDR5-5600', 'CL36'];
+    }
+    if (productName.includes('32GB')) return ['32 GB (2x16)', 'DDR4-3600', 'CL18', 'RGB'];
+    return ['16 GB', 'DDR4-3200', 'CL16'];
+  }
+  
+  if (category === 'Накопители SSD') {
+    if (productName.includes('2TB')) return ['2000 GB', 'NVMe PCIe 4.0', '7000 МБ/с чтение', '5 лет гарантия'];
+    if (productName.includes('1TB')) return ['1000 GB', 'NVMe PCIe 4.0', '7000 МБ/с чтение', '5 лет гарантия'];
+    return ['500 GB', 'NVMe PCIe 3.0', '3500 МБ/с'];
+  }
+  
+  if (category === 'Блоки питания') {
+    if (productName.includes('1200W')) return ['1200 Вт', '80+ Platinum', 'Модульный', 'RGB'];
+    if (productName.includes('850W') || productName.includes('850')) return ['850 Вт', '80+ Gold', 'Модульный', 'Бесшумный'];
+    if (productName.includes('750W') || productName.includes('750')) return ['750 Вт', '80+ Gold', 'Модульный', 'Бесшумный'];
+    return ['650 Вт', '80+ Bronze', 'Полумодульный'];
+  }
+  
+  if (category === 'Мониторы') {
+    if (productName.includes('4K') || productName.includes('UHD')) return ['27"', '3840x2160', '144 Гц', 'IPS'];
+    if (productName.includes('QHD')) return ['27"', '2560x1440', '165 Гц', 'IPS'];
+    return ['24"', '1920x1080', '144 Гц', 'IPS'];
+  }
+  
+  return ['Премиум качество', 'Гарантия 1 год', 'В наличии'];
+};
+
 const allProducts = [
   // Компьютеры
   { id: 1, name: 'Игровой ПК AMD Ryzen 7', price: 89990, brand: 'Custom Build', category: 'Компьютеры', image: '/images/products/1.jpg' },
@@ -747,9 +805,11 @@ export default function Index() {
                   return images[productId % images.length];
                 };
 
+                const specs = getProductSpecs(product.id, product.name, product.category);
+                
                 return (
-                  <Card key={product.id} className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                    <CardContent className="p-4">
+                  <Card key={product.id} className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col">
+                    <CardContent className="p-4 flex-1">
                       <div className="aspect-square rounded-lg mb-4 relative overflow-hidden bg-gradient-to-br from-primary/5 to-secondary/5">
                         <img 
                           src={getProductImage(product.id)} 
@@ -767,7 +827,17 @@ export default function Index() {
                       </div>
                       <Badge className="mb-2">{product.brand}</Badge>
                       <h3 className="font-semibold mb-2 line-clamp-2 min-h-[3em]">{product.name}</h3>
-                      <p className="text-2xl font-bold text-primary mb-4">{product.price.toLocaleString()} ₽</p>
+                      
+                      <div className="mb-3 space-y-1">
+                        {specs.slice(0, 3).map((spec, idx) => (
+                          <div key={idx} className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Icon name="Check" size={14} className="text-primary flex-shrink-0" />
+                            <span className="line-clamp-1">{spec}</span>
+                          </div>
+                        ))}
+                      </div>
+                      
+                      <p className="text-2xl font-bold text-primary">{product.price.toLocaleString()} ₽</p>
                     </CardContent>
                     <CardFooter className="p-4 pt-0">
                       <Button 
@@ -844,13 +914,15 @@ export default function Index() {
                     return images[product.id % images.length];
                   };
 
+                  const specs = getProductSpecs(product.id, product.name, product.category);
+                  
                   return (
                     <Card 
                       key={`${product.id}-${index}`} 
-                      className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex-shrink-0"
+                      className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex-shrink-0 flex flex-col"
                       style={{ width: '300px' }}
                     >
-                      <CardContent className="p-4">
+                      <CardContent className="p-4 flex-1">
                         <div className="aspect-square rounded-lg mb-4 relative overflow-hidden bg-gradient-to-br from-primary/5 to-secondary/5">
                           <img 
                             src={getProductImage(product)} 
@@ -868,7 +940,17 @@ export default function Index() {
                         </div>
                         <Badge className="mb-2">{product.brand}</Badge>
                         <h3 className="font-semibold mb-2 line-clamp-2 min-h-[3em]">{product.name}</h3>
-                        <p className="text-2xl font-bold text-primary mb-4">{product.price.toLocaleString()} ₽</p>
+                        
+                        <div className="mb-3 space-y-1">
+                          {specs.slice(0, 2).map((spec, idx) => (
+                            <div key={idx} className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <Icon name="Check" size={12} className="text-primary flex-shrink-0" />
+                              <span className="line-clamp-1">{spec}</span>
+                            </div>
+                          ))}
+                        </div>
+                        
+                        <p className="text-2xl font-bold text-primary">{product.price.toLocaleString()} ₽</p>
                       </CardContent>
                       <CardFooter className="p-4 pt-0">
                         <Button 
@@ -1034,36 +1116,176 @@ export default function Index() {
   );
 
   const renderAboutPage = () => (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <h1 className="text-4xl font-bold mb-8 text-center">О нас</h1>
-      <Card>
-        <CardContent className="p-8 space-y-4">
-          <p className="text-lg">MIX PC — это современный интернет-магазин компьютерной техники и комплектующих, который работает на рынке с 2025 года.</p>
-          <p>
-            Мы специализируемся на продаже высококачественных комплектующих для сборки компьютеров, 
-            ноутбуков, периферии и игровых устройств. Наша миссия — предоставить каждому клиенту 
-            доступ к современным технологиям по доступным ценам.
-          </p>
-          <p>
-            В нашем каталоге представлено более 10 000 товаров от ведущих мировых производителей: 
-            AMD, Intel, NVIDIA, ASUS, MSI, Corsair, Kingston и многих других.
-          </p>
-          <div className="grid md:grid-cols-3 gap-6 mt-8">
-            <div className="text-center">
-              <div className="text-4xl font-bold text-primary mb-2">50 000+</div>
-              <div className="text-muted-foreground">Довольных клиентов</div>
+    <div className="container mx-auto px-4 py-8">
+      <div className="relative h-[300px] gradient-teal rounded-2xl mb-12 flex items-center justify-center overflow-hidden">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0iZ3JpZCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNIDQwIDAgTCAwIDAgMCA0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLW9wYWNpdHk9IjAuMSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-30"></div>
+        <div className="relative z-10 text-center text-white">
+          <h1 className="text-5xl font-bold mb-4">О компании MIX PC</h1>
+          <p className="text-xl opacity-90">Ваш надежный партнер в мире компьютерных технологий</p>
+        </div>
+      </div>
+
+      <div className="max-w-6xl mx-auto space-y-12">
+        <div className="grid md:grid-cols-3 gap-6">
+          <Card className="text-center p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-2">
+            <div className="w-20 h-20 gradient-teal rounded-full flex items-center justify-center mx-auto mb-4">
+              <Icon name="Users" size={40} className="text-white" />
             </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold text-primary mb-2">10 000+</div>
-              <div className="text-muted-foreground">Товаров в каталоге</div>
+            <div className="text-4xl font-bold text-primary mb-2">50 000+</div>
+            <div className="text-muted-foreground text-lg">Довольных клиентов</div>
+          </Card>
+          <Card className="text-center p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-2">
+            <div className="w-20 h-20 gradient-teal rounded-full flex items-center justify-center mx-auto mb-4">
+              <Icon name="Package" size={40} className="text-white" />
             </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold text-primary mb-2">8 лет</div>
-              <div className="text-muted-foreground">На рынке</div>
+            <div className="text-4xl font-bold text-primary mb-2">10 000+</div>
+            <div className="text-muted-foreground text-lg">Товаров в каталоге</div>
+          </Card>
+          <Card className="text-center p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-2">
+            <div className="w-20 h-20 gradient-teal rounded-full flex items-center justify-center mx-auto mb-4">
+              <Icon name="Award" size={40} className="text-white" />
             </div>
-          </div>
-        </CardContent>
-      </Card>
+            <div className="text-4xl font-bold text-primary mb-2">8 лет</div>
+            <div className="text-muted-foreground text-lg">На рынке</div>
+          </Card>
+        </div>
+
+        <Card>
+          <CardContent className="p-8">
+            <h2 className="text-3xl font-bold mb-6 flex items-center gap-3">
+              <Icon name="Building2" className="text-primary" size={32} />
+              О компании
+            </h2>
+            <div className="space-y-4 text-lg leading-relaxed">
+              <p>
+                <span className="font-semibold text-primary">MIX PC</span> — это современный интернет-магазин компьютерной техники и комплектующих, 
+                который работает на рынке с 2017 года. За это время мы завоевали доверие тысяч клиентов 
+                по всей России благодаря качественному сервису и широкому ассортименту.
+              </p>
+              <p>
+                Мы специализируемся на продаже высококачественных комплектующих для сборки компьютеров, 
+                готовых игровых систем, ноутбуков, периферии и игровых устройств. Наша миссия — предоставить 
+                каждому клиенту доступ к современным технологиям по доступным ценам.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="grid md:grid-cols-2 gap-6">
+          <Card>
+            <CardContent className="p-6">
+              <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                <Icon name="Target" className="text-primary" />
+                Наши преимущества
+              </h3>
+              <ul className="space-y-3">
+                <li className="flex items-start gap-3">
+                  <Icon name="CheckCircle2" className="text-green-500 mt-1 flex-shrink-0" />
+                  <span>Официальная гарантия на все товары от производителей</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Icon name="CheckCircle2" className="text-green-500 mt-1 flex-shrink-0" />
+                  <span>Только оригинальная продукция, никаких подделок</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Icon name="CheckCircle2" className="text-green-500 mt-1 flex-shrink-0" />
+                  <span>Профессиональная консультация по подбору комплектующих</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Icon name="CheckCircle2" className="text-green-500 mt-1 flex-shrink-0" />
+                  <span>Услуги по сборке и настройке компьютеров</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Icon name="CheckCircle2" className="text-green-500 mt-1 flex-shrink-0" />
+                  <span>Быстрая доставка по всей России</span>
+                </li>
+              </ul>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                <Icon name="Store" className="text-primary" />
+                Наши партнеры
+              </h3>
+              <p className="mb-4 text-muted-foreground">
+                Мы работаем напрямую с ведущими мировыми производителями:
+              </p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-3 border rounded-lg text-center font-semibold hover:border-primary transition-colors">
+                  AMD
+                </div>
+                <div className="p-3 border rounded-lg text-center font-semibold hover:border-primary transition-colors">
+                  Intel
+                </div>
+                <div className="p-3 border rounded-lg text-center font-semibold hover:border-primary transition-colors">
+                  NVIDIA
+                </div>
+                <div className="p-3 border rounded-lg text-center font-semibold hover:border-primary transition-colors">
+                  ASUS
+                </div>
+                <div className="p-3 border rounded-lg text-center font-semibold hover:border-primary transition-colors">
+                  MSI
+                </div>
+                <div className="p-3 border rounded-lg text-center font-semibold hover:border-primary transition-colors">
+                  Corsair
+                </div>
+                <div className="p-3 border rounded-lg text-center font-semibold hover:border-primary transition-colors">
+                  Kingston
+                </div>
+                <div className="p-3 border rounded-lg text-center font-semibold hover:border-primary transition-colors">
+                  Samsung
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card className="gradient-teal text-white">
+          <CardContent className="p-8">
+            <div className="grid md:grid-cols-2 gap-8 items-center">
+              <div>
+                <h3 className="text-3xl font-bold mb-4 flex items-center gap-2">
+                  <Icon name="Wrench" size={32} />
+                  Конфигуратор ПК
+                </h3>
+                <p className="text-lg opacity-90 mb-4">
+                  Собери компьютер своей мечты! Наш конфигуратор поможет подобрать идеальную 
+                  конфигурацию под ваши задачи и бюджет с проверкой совместимости комплектующих.
+                </p>
+                <Button size="lg" variant="secondary" className="font-semibold">
+                  Скоро доступен
+                  <Icon name="ArrowRight" size={20} className="ml-2" />
+                </Button>
+              </div>
+              <div className="flex justify-center">
+                <div className="w-32 h-32 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                  <Icon name="Cpu" size={64} className="text-white" />
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="grid md:grid-cols-3 gap-6">
+          <Card className="p-6 text-center hover:shadow-lg transition-shadow">
+            <Icon name="Truck" size={48} className="mx-auto text-primary mb-3" />
+            <h4 className="font-semibold text-lg mb-2">Быстрая доставка</h4>
+            <p className="text-muted-foreground">Доставим ваш заказ в кратчайшие сроки по всей России</p>
+          </Card>
+          <Card className="p-6 text-center hover:shadow-lg transition-shadow">
+            <Icon name="Shield" size={48} className="mx-auto text-primary mb-3" />
+            <h4 className="font-semibold text-lg mb-2">Гарантия качества</h4>
+            <p className="text-muted-foreground">Официальная гарантия от производителей на все товары</p>
+          </Card>
+          <Card className="p-6 text-center hover:shadow-lg transition-shadow">
+            <Icon name="Headphones" size={48} className="mx-auto text-primary mb-3" />
+            <h4 className="font-semibold text-lg mb-2">Поддержка 24/7</h4>
+            <p className="text-muted-foreground">Наши специалисты всегда готовы помочь с выбором</p>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 
