@@ -1938,26 +1938,44 @@ export default function Index() {
                     </div>
                     <div className="md:col-span-2">
                       <Label>Изображение товара</Label>
-                      <div className="space-y-2">
-                        <Input 
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (!file) return;
-                            
-                            const reader = new FileReader();
-                            reader.onload = (event) => {
-                              const base64 = event.target?.result as string;
-                              setEditingProduct({...editingProduct, image_base64: base64});
-                            };
-                            reader.readAsDataURL(file);
-                          }}
-                        />
+                      <div className="space-y-3">
+                        <div>
+                          <Label className="text-sm text-muted-foreground">Загрузить файл</Label>
+                          <Input 
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              
+                              const reader = new FileReader();
+                              reader.onload = (event) => {
+                                const base64 = event.target?.result as string;
+                                setEditingProduct({...editingProduct, image_base64: base64, image_url: ''});
+                              };
+                              reader.readAsDataURL(file);
+                            }}
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label className="text-sm text-muted-foreground">Или указать URL изображения</Label>
+                          <Input 
+                            type="url"
+                            placeholder="https://example.com/image.jpg"
+                            value={editingProduct.image_url || ''}
+                            onChange={(e) => setEditingProduct({...editingProduct, image_url: e.target.value, image_base64: ''})}
+                          />
+                        </div>
+                        
                         {(editingProduct.image_base64 || editingProduct.image_url || editingProduct.image_filename) && (
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <Icon name="Check" size={16} className="text-green-600" />
-                            <span>Изображение {editingProduct.image_base64 ? 'выбрано' : 'загружено'}</span>
+                          <div className="flex items-center gap-2 text-sm text-green-600">
+                            <Icon name="Check" size={16} />
+                            <span>
+                              {editingProduct.image_base64 ? 'Файл выбран' : 
+                               editingProduct.image_url ? 'URL указан' : 
+                               'Изображение загружено'}
+                            </span>
                           </div>
                         )}
                       </div>
@@ -2167,25 +2185,28 @@ export default function Index() {
                         </div>
                       </div>
                       
-                      <div className="mt-4 flex gap-2">
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={async () => {
-                            await fetch('https://functions.poehali.dev/55d2462d-02a8-4732-91f6-95271b22efe9', {
-                              method: 'PUT',
-                              headers: {
-                                'Content-Type': 'application/json',
-                                'X-Admin-Auth': 'admin:123'
-                              },
-                              body: JSON.stringify({ id: order.id, status: 'completed' })
-                            });
-                            loadAdminData();
-                          }}
-                        >
-                          Отметить выполненным
-                        </Button>
-                      </div>
+                      {order.status !== 'completed' && (
+                        <div className="mt-4 flex gap-2">
+                          <Button 
+                            size="sm" 
+                            className="bg-green-600 hover:bg-green-700 text-white"
+                            onClick={async () => {
+                              await fetch('https://functions.poehali.dev/55d2462d-02a8-4732-91f6-95271b22efe9', {
+                                method: 'PUT',
+                                headers: {
+                                  'Content-Type': 'application/json',
+                                  'X-Admin-Auth': 'admin:123'
+                                },
+                                body: JSON.stringify({ id: order.id, status: 'completed' })
+                              });
+                              loadAdminData();
+                            }}
+                          >
+                            <Icon name="CheckCircle" size={16} className="mr-2" />
+                            Отметить выполненным
+                          </Button>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 ))

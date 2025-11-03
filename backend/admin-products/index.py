@@ -75,12 +75,16 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             brand = body_data.get('brand')
             category_name = body_data.get('category')
             image_base64 = body_data.get('image_base64', '')
+            image_url_input = body_data.get('image_url', '')
             description = body_data.get('description', '')
             is_featured = body_data.get('is_featured', False)
             specifications = body_data.get('specifications', [])
             
             image_url = ''
-            if image_base64:
+            
+            if image_url_input:
+                image_url = image_url_input
+            elif image_base64:
                 if ',' in image_base64:
                     image_base64 = image_base64.split(',')[1]
                 
@@ -120,10 +124,14 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 product_id = new_product['id']
                 
                 for idx, spec in enumerate(specifications):
-                    cur.execute("""
-                        INSERT INTO t_p58610579_mixpc_store_developm.product_specifications (product_id, spec_name, spec_value, display_order)
-                        VALUES (%s, %s, %s, %s)
-                    """, (product_id, spec.get('name'), spec.get('value'), idx))
+                    spec_name = spec.get('spec_name') or spec.get('name') or ''
+                    spec_value = spec.get('spec_value') or spec.get('value') or ''
+                    
+                    if spec_name and spec_value:
+                        cur.execute("""
+                            INSERT INTO t_p58610579_mixpc_store_developm.product_specifications (product_id, spec_name, spec_value, display_order)
+                            VALUES (%s, %s, %s, %s)
+                        """, (product_id, spec_name, spec_value, idx))
                 
                 conn.commit()
             
@@ -180,10 +188,14 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 cur.execute("DELETE FROM t_p58610579_mixpc_store_developm.product_specifications WHERE product_id = %s", (product_id,))
                 
                 for idx, spec in enumerate(specifications):
-                    cur.execute("""
-                        INSERT INTO t_p58610579_mixpc_store_developm.product_specifications (product_id, spec_name, spec_value, display_order)
-                        VALUES (%s, %s, %s, %s)
-                    """, (product_id, spec.get('name'), spec.get('value'), idx))
+                    spec_name = spec.get('spec_name') or spec.get('name') or ''
+                    spec_value = spec.get('spec_value') or spec.get('value') or ''
+                    
+                    if spec_name and spec_value:
+                        cur.execute("""
+                            INSERT INTO t_p58610579_mixpc_store_developm.product_specifications (product_id, spec_name, spec_value, display_order)
+                            VALUES (%s, %s, %s, %s)
+                        """, (product_id, spec_name, spec_value, idx))
                 
                 conn.commit()
             
