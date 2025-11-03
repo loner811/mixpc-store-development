@@ -49,12 +49,9 @@ const Configurator = () => {
 
   useEffect(() => {
     if (!userId) {
-      toast({
-        title: 'Требуется авторизация',
-        description: 'Войдите в систему для создания сборки',
-        variant: 'destructive'
-      });
-      navigate('/');
+      const guestId = `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      localStorage.setItem('userId', guestId);
+      window.location.reload();
       return;
     }
 
@@ -232,7 +229,7 @@ const Configurator = () => {
       return;
     }
 
-    navigate('/cart');
+    navigate('/my-build');
   };
 
   return (
@@ -373,15 +370,7 @@ const Configurator = () => {
                   )}
                 </div>
 
-                <div className="bg-blue-50 p-4 rounded-lg text-sm">
-                  <p className="text-blue-900 font-semibold mb-2">
-                    <Icon name="Info" size={16} className="inline mr-1" />
-                    Проверка совместимости
-                  </p>
-                  <p className="text-blue-700 text-xs">
-                    Конфигуратор автоматически проверяет совместимость выбранных компонентов
-                  </p>
-                </div>
+
 
                 <div className="space-y-2 text-xs text-gray-600">
                   <div className="flex items-center gap-2">

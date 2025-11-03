@@ -36,12 +36,9 @@ const MyBuild = () => {
 
   useEffect(() => {
     if (!userId) {
-      toast({
-        title: 'Требуется авторизация',
-        description: 'Войдите в систему для просмотра сборки',
-        variant: 'destructive'
-      });
-      navigate('/');
+      const guestId = `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      localStorage.setItem('userId', guestId);
+      window.location.reload();
       return;
     }
 
