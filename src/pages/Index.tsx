@@ -478,16 +478,39 @@ export default function Index() {
                         setCurrentUser({ id: 1, username: 'admin', role: 'admin', email: 'admin@mixpc.ru' });
                         setIsLoggedIn(true);
                         setIsAdmin(true);
+                        localStorage.setItem('userId', '1');
+                        localStorage.setItem('userName', 'admin');
+                        localStorage.setItem('adminAuth', 'admin:123');
                         setLoginOpen(false);
                         alert('Добро пожаловать, администратор!');
-                      } else if (username === 'login' && password === '123') {
-                        setCurrentUser({ id: 2, username: 'login', role: 'user', email: 'user@example.com' });
-                        setIsLoggedIn(true);
-                        setIsAdmin(false);
-                        setLoginOpen(false);
-                        alert('Вход выполнен успешно!');
-                      } else {
-                        alert('Неверный логин или пароль');
+                        return;
+                      }
+                      
+                      try {
+                        const response = await fetch('https://functions.poehali.dev/66eafcf6-38e4-415c-b1ff-ad6d420b564e', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ action: 'login', username, password })
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (response.ok && data.success) {
+                          setCurrentUser(data.user);
+                          setIsLoggedIn(true);
+                          setIsAdmin(data.user.role === 'admin');
+                          localStorage.setItem('userId', String(data.user.id));
+                          localStorage.setItem('userName', data.user.username);
+                          if (data.user.role === 'admin') {
+                            localStorage.setItem('adminAuth', 'admin:123');
+                          }
+                          setLoginOpen(false);
+                          alert(data.message);
+                        } else {
+                          alert(data.error || 'Неверный логин или пароль');
+                        }
+                      } catch (error) {
+                        alert('Ошибка подключения к серверу');
                       }
                     }}>
                       <div className="space-y-2">
@@ -507,21 +530,48 @@ export default function Index() {
                     </form>
                   </TabsContent>
                   <TabsContent value="register" className="space-y-4 mt-4">
-                    <div className="space-y-2">
-                      <Label>Email</Label>
-                      <Input type="email" placeholder="email@example.com" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Логин</Label>
-                      <Input placeholder="Придумайте логин" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Пароль</Label>
-                      <Input type="password" placeholder="Придумайте пароль" />
-                    </div>
-                    <Button className="w-full bg-secondary hover:bg-secondary/90 h-11">
-                      Зарегистрироваться
-                    </Button>
+                    <form onSubmit={async (e) => {
+                      e.preventDefault();
+                      const formData = new FormData(e.target as HTMLFormElement);
+                      const email = formData.get('email') as string;
+                      const username = formData.get('username') as string;
+                      const password = formData.get('password') as string;
+                      
+                      try {
+                        const response = await fetch('https://functions.poehali.dev/66eafcf6-38e4-415c-b1ff-ad6d420b564e', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ action: 'register', email, username, password })
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (response.ok && data.success) {
+                          alert('Регистрация успешна! Теперь вы можете войти.');
+                          (e.target as HTMLFormElement).reset();
+                        } else {
+                          alert(data.error || 'Ошибка регистрации');
+                        }
+                      } catch (error) {
+                        alert('Ошибка подключения к серверу');
+                      }
+                    }}>
+                      <div className="space-y-2">
+                        <Label>Email</Label>
+                        <Input type="email" name="email" placeholder="email@example.com" required />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Логин</Label>
+                        <Input name="username" placeholder="Придумайте логин" required />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Пароль</Label>
+                        <Input type="password" name="password" placeholder="Придумайте пароль" required />
+                      </div>
+                      <Button type="submit" className="w-full bg-secondary hover:bg-secondary/90 h-11">
+                        Зарегистрироваться
+                      </Button>
+                    </form>
                   </TabsContent>
                 </Tabs>
               </DialogContent>

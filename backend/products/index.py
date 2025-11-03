@@ -8,6 +8,7 @@ Returns: HTTP response dict
 import json
 import os
 import psycopg2
+import hashlib
 from typing import Dict, Any
 
 def get_db_connection():
@@ -85,6 +86,96 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         
         elif method == 'POST':
             body = json.loads(event.get('body', '{}'))
+            action = body.get('action')
+            
+            if action == 'register':
+                email = body.get('email')
+                username = body.get('username')
+                password = body.get('password')
+                
+                if not email or not username or not password:
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Заполните все поля'})
+                    }
+                
+                cur.execute('SELECT id FROM t_p58610579_mixpc_store_developm.users WHERE email = %s OR username = %s', (email, username))
+                if cur.fetchone():
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Пользователь с таким email или логином уже существует'})
+                    }
+                
+                password_hash = hashlib.sha256(password.encode()).hexdigest()
+                
+                cur.execute('''
+                    INSERT INTO t_p58610579_mixpc_store_developm.users (email, username, password_hash, role)
+                    VALUES (%s, %s, %s, 'user')
+                    RETURNING id, email, username, role
+                ''', (email, username, password_hash))
+                
+                user_data = cur.fetchone()
+                conn.commit()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({
+                        'success': True,
+                        'message': 'Регистрация успешна!',
+                        'user': {
+                            'id': user_data[0],
+                            'email': user_data[1],
+                            'username': user_data[2],
+                            'role': user_data[3]
+                        }
+                    })
+                }
+            
+            elif action == 'login':
+                username = body.get('username')
+                password = body.get('password')
+                
+                if not username or not password:
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Введите логин и пароль'})
+                    }
+                
+                password_hash = hashlib.sha256(password.encode()).hexdigest()
+                
+                cur.execute('''
+                    SELECT id, email, username, role 
+                    FROM t_p58610579_mixpc_store_developm.users 
+                    WHERE username = %s AND password_hash = %s
+                ''', (username, password_hash))
+                
+                user_data = cur.fetchone()
+                
+                if not user_data:
+                    return {
+                        'statusCode': 401,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Неверный логин или пароль'})
+                    }
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({
+                        'success': True,
+                        'message': 'Вход выполнен успешно!',
+                        'user': {
+                            'id': user_data[0],
+                            'email': user_data[1],
+                            'username': user_data[2],
+                            'role': user_data[3]
+                        }
+                    })
+                }
             
             cur.execute('''
                 INSERT INTO products (category_id, name, description, price, brand, image_filename, specs, is_popular)
