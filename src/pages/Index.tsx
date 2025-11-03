@@ -1732,8 +1732,7 @@ export default function Index() {
           </div>
         </div>
         <div className="border-t border-white/10 pt-8 text-center text-sm text-white/60">
-          <p>© 2025 MIX PC. Все права защищены.
-Создатель Рыбачёк С .С. ВЗПИ 51</p>
+          <p>© 2025 MIX PC. Все права защищены. Разработчик Рыбачёк С .С. ВЗПИ 51</p>
         </div>
       </div>
     </footer>
