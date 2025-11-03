@@ -261,6 +261,10 @@ export default function Index() {
   // Featured products
   const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
   
+  // All products from database
+  const [allProductsFromDB, setAllProductsFromDB] = useState<any[]>([]);
+  const [productsLoading, setProductsLoading] = useState(true);
+  
   // Filters
   const [priceRange, setPriceRange] = useState([0, 200000]);
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
@@ -284,7 +288,34 @@ export default function Index() {
   
   useEffect(() => {
     loadFeaturedProducts();
+    loadAllProducts();
   }, []);
+  
+  const loadAllProducts = async () => {
+    try {
+      setProductsLoading(true);
+      const response = await fetch('https://functions.poehali.dev/66eafcf6-38e4-415c-b1ff-ad6d420b564e');
+      const products = await response.json();
+      
+      const formattedProducts = products.map((p: any) => ({
+        id: p.id,
+        name: p.name,
+        price: p.price,
+        brand: p.brand,
+        category: p.category,
+        image: p.image_url ? `https://cdn.poehali.dev/images/${p.image_url}` : '/placeholder.jpg',
+        description: p.description,
+        is_featured: p.is_featured
+      }));
+      
+      setAllProductsFromDB(formattedProducts);
+    } catch (error) {
+      console.error('Failed to load products:', error);
+      setAllProductsFromDB([]);
+    } finally {
+      setProductsLoading(false);
+    }
+  };
   
   const loadFeaturedProducts = async () => {
     try {
@@ -345,6 +376,7 @@ export default function Index() {
       
       alert(product.id ? 'Товар обновлён!' : 'Товар добавлен!');
       await loadAdminData();
+      await loadAllProducts();
       setEditingProduct(null);
     } catch (error) {
       console.error('Ошибка при сохранении товара:', error);
@@ -360,13 +392,16 @@ export default function Index() {
       headers: { 'X-Admin-Auth': 'admin:123' }
     });
     
-    loadAdminData();
+    await loadAdminData();
+    await loadAllProducts();
   };
 
   const getFilteredProducts = () => {
+    const productsSource = allProductsFromDB.length > 0 ? allProductsFromDB : allProducts;
+    
     let products = selectedCategory 
-      ? allProducts.filter(p => p.category === selectedCategory)
-      : allProducts;
+      ? productsSource.filter(p => p.category === selectedCategory)
+      : productsSource;
 
     if (searchQuery) {
       products = products.filter(p => 
