@@ -297,16 +297,34 @@ export default function Index() {
       const response = await fetch('https://functions.poehali.dev/66eafcf6-38e4-415c-b1ff-ad6d420b564e');
       const products = await response.json();
       
-      const formattedProducts = products.map((p: any) => ({
-        id: p.id,
-        name: p.name,
-        price: p.price,
-        brand: p.brand,
-        category: p.category,
-        image: p.image_url ? `https://cdn.poehali.dev/images/${p.image_url}` : '/placeholder.jpg',
-        description: p.description,
-        is_featured: p.is_featured
-      }));
+      const formattedProducts = products.map((p: any) => {
+        let imageUrl = '/placeholder.jpg';
+        
+        if (p.image_url || p.image_filename) {
+          const img = p.image_url || p.image_filename;
+          if (img.startsWith('http')) {
+            imageUrl = img;
+          } else if (img.startsWith('files/')) {
+            imageUrl = `https://cdn.poehali.dev/${img}`;
+          } else {
+            imageUrl = `https://cdn.poehali.dev/images/${img}`;
+          }
+        }
+        
+        return {
+          id: p.id,
+          name: p.name,
+          price: p.price,
+          brand: p.brand,
+          category: p.category,
+          image: imageUrl,
+          image_filename: p.image_filename,
+          image_url: p.image_url,
+          description: p.description,
+          is_featured: p.is_featured,
+          specifications: p.specifications || []
+        };
+      });
       
       setAllProductsFromDB(formattedProducts);
     } catch (error) {
@@ -929,10 +947,10 @@ export default function Index() {
                   return images[product.id % images.length];
                 };
 
-                const productSpecs = product.specifications || getProductSpecs(product.id, product.name, product.category);
+                const productSpecs = product.specifications || [];
                 const specsToShow = Array.isArray(productSpecs) 
                   ? productSpecs.map((s: any) => typeof s === 'string' ? s : `${s.spec_name || s.name}: ${s.spec_value || s.value}`)
-                  : productSpecs;
+                  : [];
                 
                 return (
                   <Card key={product.id} className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col">
@@ -1046,10 +1064,10 @@ export default function Index() {
                     return images[product.id % images.length];
                   };
 
-                  const productSpecs = product.specifications || getProductSpecs(product.id, product.name, product.category);
+                  const productSpecs = product.specifications || [];
                   const specs = Array.isArray(productSpecs) 
                     ? productSpecs.map((s: any) => typeof s === 'string' ? s : `${s.spec_name || s.name}: ${s.spec_value || s.value}`)
-                    : productSpecs;
+                    : [];
                   
                   return (
                     <Card 
@@ -2104,7 +2122,15 @@ export default function Index() {
                             {new Date(order.created_at).toLocaleString('ru-RU')}
                           </p>
                         </div>
-                        <Badge variant={order.status === 'pending' ? 'default' : 'secondary'}>
+                        <Badge 
+                          className={
+                            order.status === 'pending' 
+                              ? 'bg-red-500 hover:bg-red-600 text-white' 
+                              : order.status === 'completed'
+                              ? 'bg-green-500 hover:bg-green-600 text-white'
+                              : 'bg-gray-500 text-white'
+                          }
+                        >
                           {order.status === 'pending' ? 'Новый' : order.status === 'completed' ? 'Выполнен' : order.status}
                         </Badge>
                       </div>
