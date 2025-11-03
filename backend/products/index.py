@@ -182,7 +182,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             action = body.get('action')
             
             if action == 'add_to_build':
-                user_id = event.get('headers', {}).get('x-user-id')
+                user_id = event.get('headers', {}).get('x-user-id') or event.get('headers', {}).get('X-User-Id')
                 if not user_id:
                     return {
                         'statusCode': 401,
@@ -192,6 +192,13 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 
                 product_id = body.get('product_id')
                 category_id = body.get('category_id')
+                
+                if not product_id or not category_id:
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Не указан product_id или category_id'})
+                    }
                 
                 cur.execute('SELECT id FROM t_p58610579_mixpc_store_developm.pc_builds WHERE user_id = %s ORDER BY updated_at DESC LIMIT 1', (user_id,))
                 build = cur.fetchone()
@@ -255,7 +262,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 }
             
             elif action == 'remove_from_build':
-                user_id = event.get('headers', {}).get('x-user-id')
+                user_id = event.get('headers', {}).get('x-user-id') or event.get('headers', {}).get('X-User-Id')
                 if not user_id:
                     return {
                         'statusCode': 401,
@@ -264,14 +271,30 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     }
                 
                 item_id = body.get('item_id')
+                category_id = body.get('category_id')
                 
-                cur.execute('''
-                    DELETE FROM t_p58610579_mixpc_store_developm.pc_build_items 
-                    WHERE id = %s AND build_id IN (
-                        SELECT id FROM t_p58610579_mixpc_store_developm.pc_builds WHERE user_id = %s
-                    )
-                    RETURNING build_id
-                ''', (item_id, user_id))
+                if category_id:
+                    cur.execute('''
+                        DELETE FROM t_p58610579_mixpc_store_developm.pc_build_items 
+                        WHERE category_id = %s AND build_id IN (
+                            SELECT id FROM t_p58610579_mixpc_store_developm.pc_builds WHERE user_id = %s
+                        )
+                        RETURNING build_id
+                    ''', (category_id, user_id))
+                elif item_id:
+                    cur.execute('''
+                        DELETE FROM t_p58610579_mixpc_store_developm.pc_build_items 
+                        WHERE id = %s AND build_id IN (
+                            SELECT id FROM t_p58610579_mixpc_store_developm.pc_builds WHERE user_id = %s
+                        )
+                        RETURNING build_id
+                    ''', (item_id, user_id))
+                else:
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Не указан item_id или category_id'})
+                    }
                 
                 result = cur.fetchone()
                 if result:

@@ -71,13 +71,20 @@ const Configurator = () => {
         headers: { 'X-User-Id': userId || '' }
       });
 
-      if (!response.ok) return;
+      if (!response.ok) {
+        console.log('Build not found, starting fresh');
+        return;
+      }
 
       const data = await response.json();
       
       if (data.items && data.items.length > 0) {
         const updatedCategories = buildCategories.map(cat => {
-          const item = data.items.find((i: any) => i.category_id === cat.id);
+          const item = data.items.find((i: any) => {
+            const categoryMatch = i.category_name === cat.name;
+            return categoryMatch;
+          });
+          
           if (item) {
             return {
               ...cat,
@@ -172,14 +179,41 @@ const Configurator = () => {
     }
   };
 
-  const removeProduct = (categoryId: number) => {
-    const updatedCategories = buildCategories.map(cat => {
-      if (cat.id === categoryId) {
-        return { ...cat, selectedProduct: undefined };
-      }
-      return cat;
-    });
-    setBuildCategories(updatedCategories);
+  const removeProduct = async (categoryId: number) => {
+    try {
+      const response = await fetch('https://functions.poehali.dev/66eafcf6-38e4-415c-b1ff-ad6d420b564e', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Id': userId || ''
+        },
+        body: JSON.stringify({
+          action: 'remove_from_build',
+          category_id: categoryId
+        })
+      });
+
+      if (!response.ok) throw new Error('Ошибка удаления');
+
+      const updatedCategories = buildCategories.map(cat => {
+        if (cat.id === categoryId) {
+          return { ...cat, selectedProduct: undefined };
+        }
+        return cat;
+      });
+      setBuildCategories(updatedCategories);
+
+      toast({
+        title: 'Успешно',
+        description: 'Компонент удалён из сборки'
+      });
+    } catch (error) {
+      toast({
+        title: 'Ошибка',
+        description: 'Не удалось удалить компонент',
+        variant: 'destructive'
+      });
+    }
   };
 
   const canProceedToCheckout = () => {
@@ -242,9 +276,12 @@ const Configurator = () => {
                             <div className="flex items-center gap-3 flex-1">
                               {category.selectedProduct.image_url && (
                                 <img 
-                                  src={category.selectedProduct.image_url} 
+                                  src={`https://cdn.poehali.dev/images/${category.selectedProduct.image_url}`} 
                                   alt={category.selectedProduct.name}
                                   className="w-16 h-16 object-cover rounded"
+                                  onError={(e) => {
+                                    e.currentTarget.src = 'https://via.placeholder.com/64';
+                                  }}
                                 />
                               )}
                               <div className="flex-1">
@@ -391,9 +428,12 @@ const Configurator = () => {
                       <div className="w-20 h-20 bg-gray-100 rounded flex items-center justify-center flex-shrink-0">
                         {product.image_url ? (
                           <img 
-                            src={product.image_url} 
+                            src={`https://cdn.poehali.dev/images/${product.image_url}`} 
                             alt={product.name}
                             className="w-full h-full object-cover rounded"
+                            onError={(e) => {
+                              e.currentTarget.src = 'https://via.placeholder.com/80';
+                            }}
                           />
                         ) : (
                           <Icon name="Package" size={32} className="text-gray-400" />

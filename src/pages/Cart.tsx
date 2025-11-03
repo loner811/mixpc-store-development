@@ -171,9 +171,12 @@ const Cart = () => {
                     {items.map((item) => (
                       <div key={item.id} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
                         <img 
-                          src={item.product_image ? `/${item.product_image}` : '/placeholder.svg'} 
+                          src={item.product_image ? `https://cdn.poehali.dev/images/${item.product_image}` : 'https://via.placeholder.com/80'} 
                           alt={item.product_name}
                           className="w-20 h-20 object-cover rounded"
+                          onError={(e) => {
+                            e.currentTarget.src = 'https://via.placeholder.com/80';
+                          }}
                         />
                         <div className="flex-1">
                           <h3 className="font-semibold">{item.product_name}</h3>
