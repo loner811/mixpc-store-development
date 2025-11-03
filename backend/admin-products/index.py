@@ -1,5 +1,7 @@
 import json
 import os
+import base64
+import uuid
 from typing import Dict, Any
 import psycopg2
 from psycopg2.extras import RealDictCursor
@@ -72,10 +74,27 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             price = body_data.get('price')
             brand = body_data.get('brand')
             category_name = body_data.get('category')
-            image_url = body_data.get('image_url', '')
+            image_base64 = body_data.get('image_base64', '')
             description = body_data.get('description', '')
             is_featured = body_data.get('is_featured', False)
             specifications = body_data.get('specifications', [])
+            
+            image_url = ''
+            if image_base64:
+                if ',' in image_base64:
+                    image_base64 = image_base64.split(',')[1]
+                
+                try:
+                    image_data = base64.b64decode(image_base64)
+                    ext = 'jpg'
+                    unique_filename = f"{uuid.uuid4()}.{ext}"
+                    image_url = f"files/{unique_filename}"
+                    
+                    file_path = f"/tmp/{unique_filename}"
+                    with open(file_path, 'wb') as f:
+                        f.write(image_data)
+                except Exception as e:
+                    print(f'Image upload error: {str(e)}')
             
             print(f'POST /admin-products: name={name}, price={price}, brand={brand}, category={category_name}')
             
@@ -122,9 +141,26 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             brand = body_data.get('brand')
             category_name = body_data.get('category')
             image_url = body_data.get('image_url')
+            image_base64 = body_data.get('image_base64', '')
             description = body_data.get('description')
             is_featured = body_data.get('is_featured', False)
             specifications = body_data.get('specifications', [])
+            
+            if image_base64:
+                if ',' in image_base64:
+                    image_base64 = image_base64.split(',')[1]
+                
+                try:
+                    image_data = base64.b64decode(image_base64)
+                    ext = 'jpg'
+                    unique_filename = f"{uuid.uuid4()}.{ext}"
+                    image_url = f"files/{unique_filename}"
+                    
+                    file_path = f"/tmp/{unique_filename}"
+                    with open(file_path, 'wb') as f:
+                        f.write(image_data)
+                except Exception as e:
+                    print(f'Image upload error: {str(e)}')
             
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute("SELECT id FROM t_p58610579_mixpc_store_developm.categories WHERE name = %s", (category_name,))

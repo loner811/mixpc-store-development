@@ -617,7 +617,7 @@ export default function Index() {
                         <Label>Логин</Label>
                         <Input name="username" placeholder="Придумайте логин" required />
                       </div>
-                      <div className="space-y-2">
+                      <div className="space-y-2 mb-4">
                         <Label>Пароль</Label>
                         <Input type="password" name="password" placeholder="Придумайте пароль" required />
                       </div>
@@ -913,23 +913,33 @@ export default function Index() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredProducts.map(product => {
-                const getProductImage = (productId: number) => {
+                const getProductImage = (product: any) => {
+                  if (product.image || product.image_url || product.image_filename) {
+                    const img = product.image || product.image_url || product.image_filename;
+                    if (img.startsWith('http')) return img;
+                    if (img.startsWith('files/')) return `https://cdn.poehali.dev/${img}`;
+                    return `https://cdn.poehali.dev/images/${img}`;
+                  }
+                  
                   const images = [
                     'https://cdn.poehali.dev/projects/f7df5c93-3ffb-476e-bc55-4da98f7f2c0a/files/bb10f9c9-ec03-4dae-852d-ab8eb7cb81c7.jpg',
                     'https://cdn.poehali.dev/projects/f7df5c93-3ffb-476e-bc55-4da98f7f2c0a/files/11810e39-9f5c-43b4-979a-e723f231c489.jpg',
                     'https://cdn.poehali.dev/projects/f7df5c93-3ffb-476e-bc55-4da98f7f2c0a/files/825e48c1-6cd6-4d1f-9d28-ff9464fff64f.jpg',
                   ];
-                  return images[productId % images.length];
+                  return images[product.id % images.length];
                 };
 
-                const specs = getProductSpecs(product.id, product.name, product.category);
+                const productSpecs = product.specifications || getProductSpecs(product.id, product.name, product.category);
+                const specsToShow = Array.isArray(productSpecs) 
+                  ? productSpecs.map((s: any) => typeof s === 'string' ? s : `${s.spec_name || s.name}: ${s.spec_value || s.value}`)
+                  : productSpecs;
                 
                 return (
                   <Card key={product.id} className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col">
                     <CardContent className="p-4 flex-1">
                       <div className="aspect-square rounded-lg mb-4 relative overflow-hidden bg-gradient-to-br from-primary/5 to-secondary/5">
                         <img 
-                          src={getProductImage(product.id)} 
+                          src={getProductImage(product)} 
                           alt={product.name}
                           className="w-full h-full object-cover"
                         />
@@ -945,8 +955,12 @@ export default function Index() {
                       <Badge className="mb-2">{product.brand}</Badge>
                       <h3 className="font-semibold mb-2 line-clamp-2 min-h-[3em]">{product.name}</h3>
                       
+                      {product.description && (
+                        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{product.description}</p>
+                      )}
+                      
                       <div className="mb-3 space-y-1">
-                        {specs.slice(0, 3).map((spec, idx) => (
+                        {specsToShow.slice(0, 3).map((spec: string, idx: number) => (
                           <div key={idx} className="flex items-center gap-2 text-sm text-muted-foreground">
                             <Icon name="Check" size={14} className="text-primary flex-shrink-0" />
                             <span className="line-clamp-1">{spec}</span>
@@ -1018,10 +1032,11 @@ export default function Index() {
               >
                 {duplicatedProducts.map((product, index) => {
                   const getProductImage = (product: any) => {
-                    if (product.image_url) {
-                      return product.image_url.startsWith('http') 
-                        ? product.image_url 
-                        : `https://cdn.poehali.dev/${product.image_url}`;
+                    if (product.image || product.image_url || product.image_filename) {
+                      const img = product.image || product.image_url || product.image_filename;
+                      if (img.startsWith('http')) return img;
+                      if (img.startsWith('files/')) return `https://cdn.poehali.dev/${img}`;
+                      return `https://cdn.poehali.dev/images/${img}`;
                     }
                     const images = [
                       'https://cdn.poehali.dev/projects/f7df5c93-3ffb-476e-bc55-4da98f7f2c0a/files/bb10f9c9-ec03-4dae-852d-ab8eb7cb81c7.jpg',
@@ -1031,7 +1046,10 @@ export default function Index() {
                     return images[product.id % images.length];
                   };
 
-                  const specs = getProductSpecs(product.id, product.name, product.category);
+                  const productSpecs = product.specifications || getProductSpecs(product.id, product.name, product.category);
+                  const specs = Array.isArray(productSpecs) 
+                    ? productSpecs.map((s: any) => typeof s === 'string' ? s : `${s.spec_name || s.name}: ${s.spec_value || s.value}`)
+                    : productSpecs;
                   
                   return (
                     <Card 
@@ -1137,9 +1155,6 @@ export default function Index() {
                 <Icon name={category.icon as any} size={40} className="text-white" />
               </div>
               <h3 className="font-semibold text-lg">{category.name}</h3>
-              <p className="text-sm text-muted-foreground mt-2">
-                {allProducts.filter(p => p.category === category.name).length} товаров
-              </p>
             </CardContent>
           </Card>
         ))}
@@ -1909,36 +1924,22 @@ export default function Index() {
                         <Input 
                           type="file"
                           accept="image/*"
-                          onChange={async (e) => {
+                          onChange={(e) => {
                             const file = e.target.files?.[0];
                             if (!file) return;
                             
                             const reader = new FileReader();
-                            reader.onload = async (event) => {
+                            reader.onload = (event) => {
                               const base64 = event.target?.result as string;
-                              
-                              try {
-                                const response = await fetch('https://api.poehali.dev/upload-image', {
-                                  method: 'POST',
-                                  headers: { 'Content-Type': 'application/json' },
-                                  body: JSON.stringify({ image: base64 })
-                                });
-                                
-                                const data = await response.json();
-                                setEditingProduct({...editingProduct, image_url: data.url});
-                                alert('Изображение загружено!');
-                              } catch (error) {
-                                console.error('Upload error:', error);
-                                alert('Ошибка загрузки изображения');
-                              }
+                              setEditingProduct({...editingProduct, image_base64: base64});
                             };
                             reader.readAsDataURL(file);
                           }}
                         />
-                        {editingProduct.image_url && (
+                        {(editingProduct.image_base64 || editingProduct.image_url || editingProduct.image_filename) && (
                           <div className="flex items-center gap-2 text-sm text-muted-foreground">
                             <Icon name="Check" size={16} className="text-green-600" />
-                            <span>Изображение загружено</span>
+                            <span>Изображение {editingProduct.image_base64 ? 'выбрано' : 'загружено'}</span>
                           </div>
                         )}
                       </div>
