@@ -77,6 +77,15 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             is_featured = body_data.get('is_featured', False)
             specifications = body_data.get('specifications', [])
             
+            print(f'POST /admin-products: name={name}, price={price}, brand={brand}, category={category_name}')
+            
+            if not name or not price or not brand or not category_name:
+                return {
+                    'statusCode': 400,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Заполните обязательные поля: название, цена, бренд, категория'})
+                }
+            
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute("SELECT id FROM t_p58610579_mixpc_store_developm.categories WHERE name = %s", (category_name,))
                 category = cur.fetchone()

@@ -321,17 +321,35 @@ export default function Index() {
     const url = 'https://functions.poehali.dev/858f5e57-c172-4ef7-9a49-0a25a2e84cc5';
     const method = product.id ? 'PUT' : 'POST';
     
-    await fetch(url, {
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Admin-Auth': 'admin:123'
-      },
-      body: JSON.stringify(product)
-    });
-    
-    loadAdminData();
-    setEditingProduct(null);
+    try {
+      console.log('Отправка товара:', product);
+      
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Admin-Auth': 'admin:123'
+        },
+        body: JSON.stringify(product)
+      });
+      
+      console.log('Статус ответа:', response.status);
+      
+      const result = await response.json();
+      console.log('Результат:', result);
+      
+      if (!response.ok) {
+        alert(`Ошибка: ${result.error || 'Не удалось сохранить товар'}`);
+        return;
+      }
+      
+      alert(product.id ? 'Товар обновлён!' : 'Товар добавлен!');
+      await loadAdminData();
+      setEditingProduct(null);
+    } catch (error) {
+      console.error('Ошибка при сохранении товара:', error);
+      alert('Ошибка при сохранении товара');
+    }
   };
 
   const handleDeleteProduct = async (id: number) => {
