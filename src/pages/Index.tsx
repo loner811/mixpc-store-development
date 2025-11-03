@@ -664,6 +664,7 @@ export default function Index() {
             }}
             className={currentPage === 'home' && !selectedCategory ? 'gradient-teal' : ''}
           >
+            <Icon name="Home" size={16} className="mr-2" />
             Главная
           </Button>
           <Button
@@ -674,6 +675,7 @@ export default function Index() {
             }}
             className={currentPage === 'catalog' && !selectedCategory ? 'gradient-teal' : ''}
           >
+            <Icon name="Package" size={16} className="mr-2" />
             Каталог
           </Button>
           <Button
@@ -689,6 +691,7 @@ export default function Index() {
             onClick={() => setCurrentPage('about')}
             className={currentPage === 'about' ? 'gradient-teal' : ''}
           >
+            <Icon name="Info" size={16} className="mr-2" />
             О нас
           </Button>
           <Button
@@ -696,6 +699,7 @@ export default function Index() {
             onClick={() => setCurrentPage('delivery')}
             className={currentPage === 'delivery' ? 'gradient-teal' : ''}
           >
+            <Icon name="Truck" size={16} className="mr-2" />
             Доставка
           </Button>
           <Button
@@ -703,6 +707,7 @@ export default function Index() {
             onClick={() => setCurrentPage('warranty')}
             className={currentPage === 'warranty' ? 'gradient-teal' : ''}
           >
+            <Icon name="Shield" size={16} className="mr-2" />
             Гарантия
           </Button>
           <Button
@@ -710,6 +715,7 @@ export default function Index() {
             onClick={() => setCurrentPage('contact')}
             className={currentPage === 'contact' ? 'gradient-teal' : ''}
           >
+            <Icon name="Phone" size={16} className="mr-2" />
             Контакты
           </Button>
           {isAdmin && (
