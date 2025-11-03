@@ -403,44 +403,6 @@ export default function Index() {
     setCart([...cart, product]);
   };
 
-  const addToBuild = async (product: any) => {
-    if (!isLoggedIn) {
-      alert('Войдите в систему для добавления товаров в сборку');
-      return;
-    }
-    
-    const userId = localStorage.getItem('userId') || currentUser?.id?.toString();
-    if (!userId) {
-      alert('Ошибка: не удалось определить пользователя');
-      return;
-    }
-
-    try {
-      const categoryId = categories.find(c => c.name === product.category)?.id;
-      
-      const response = await fetch('https://functions.poehali.dev/66eafcf6-38e4-415c-b1ff-ad6d420b564e', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-User-Id': userId
-        },
-        body: JSON.stringify({
-          action: 'add_to_build',
-          product_id: product.id,
-          category_id: categoryId
-        })
-      });
-
-      if (response.ok) {
-        alert('Товар добавлен в сборку!');
-      } else {
-        alert('Ошибка добавления в сборку');
-      }
-    } catch (error) {
-      alert('Ошибка соединения с сервером');
-    }
-  };
-
   const addToFavorites = (product: any) => {
     if (!isLoggedIn) {
       alert('Войдите в систему для добавления товаров в избранное');
@@ -514,14 +476,12 @@ export default function Index() {
                       
                       if (username === 'admin' && password === '123') {
                         setCurrentUser({ id: 1, username: 'admin', role: 'admin', email: 'admin@mixpc.ru' });
-                        localStorage.setItem('userId', '1');
                         setIsLoggedIn(true);
                         setIsAdmin(true);
                         setLoginOpen(false);
                         alert('Добро пожаловать, администратор!');
                       } else if (username === 'login' && password === '123') {
                         setCurrentUser({ id: 2, username: 'login', role: 'user', email: 'user@example.com' });
-                        localStorage.setItem('userId', '2');
                         setIsLoggedIn(true);
                         setIsAdmin(false);
                         setLoginOpen(false);
@@ -566,14 +526,6 @@ export default function Index() {
                 </Tabs>
               </DialogContent>
             </Dialog>
-
-            <Button 
-              size="icon" 
-              className="relative gradient-teal text-white hover:opacity-90"
-              onClick={() => window.location.href = '/cart'}
-            >
-              <Icon name="Wrench" size={20} />
-            </Button>
 
             <Sheet>
               <SheetTrigger asChild>
@@ -727,12 +679,12 @@ export default function Index() {
             Каталог
           </Button>
           <Button
-            variant="outline"
-            onClick={() => window.location.href = '/configurator'}
-            className="gradient-teal text-white border-0"
+            variant={currentPage === 'configurator' ? 'default' : 'outline'}
+            onClick={() => setCurrentPage('configurator')}
+            className={currentPage === 'configurator' ? 'gradient-teal' : ''}
           >
             <Icon name="Wrench" size={16} className="mr-2" />
-            Конфигуратор ПК
+            Конфигуратор
           </Button>
           <Button
             variant={currentPage === 'about' ? 'default' : 'outline'}
@@ -901,21 +853,13 @@ export default function Index() {
                       
                       <p className="text-2xl font-bold text-primary">{product.price.toLocaleString()} ₽</p>
                     </CardContent>
-                    <CardFooter className="p-4 pt-0 flex gap-2">
+                    <CardFooter className="p-4 pt-0">
                       <Button 
-                        className="flex-1 gradient-teal"
+                        className="w-full gradient-teal"
                         onClick={() => addToCart(product)}
                       >
                         <Icon name="ShoppingCart" size={18} className="mr-2" />
                         В корзину
-                      </Button>
-                      <Button 
-                        className="flex-1"
-                        variant="outline"
-                        onClick={() => addToBuild(product)}
-                      >
-                        <Icon name="Wrench" size={18} className="mr-2" />
-                        В сборку
                       </Button>
                     </CardFooter>
                   </Card>
@@ -947,25 +891,14 @@ export default function Index() {
             <p className="text-xl md:text-2xl mb-8 opacity-90 drop-shadow-md">
               Широкий ассортимент комплектующих и готовых решений по выгодным ценам
             </p>
-            <div className="flex gap-4 justify-center flex-wrap">
-              <Button 
-                size="lg" 
-                className="bg-white text-primary hover:bg-white/90 h-14 px-8 text-lg shadow-2xl"
-                onClick={() => window.location.href = '/configurator'}
-              >
-                <Icon name="Wrench" className="mr-2" size={20} />
-                Собрать свой ПК
-              </Button>
-              <Button 
-                size="lg" 
-                variant="outline"
-                className="bg-white/10 text-white border-white hover:bg-white/20 h-14 px-8 text-lg shadow-2xl"
-                onClick={() => setCurrentPage('catalog')}
-              >
-                Перейти в каталог
-                <Icon name="ArrowRight" className="ml-2" size={20} />
-              </Button>
-            </div>
+            <Button 
+              size="lg" 
+              className="bg-white text-primary hover:bg-white/90 h-14 px-8 text-lg shadow-2xl"
+              onClick={() => setCurrentPage('catalog')}
+            >
+              Перейти в каталог
+              <Icon name="ArrowRight" className="ml-2" size={20} />
+            </Button>
           </div>
         </section>
 
@@ -1033,94 +966,18 @@ export default function Index() {
                         
                         <p className="text-2xl font-bold text-primary">{product.price.toLocaleString()} ₽</p>
                       </CardContent>
-                      <CardFooter className="p-4 pt-0 flex gap-2">
+                      <CardFooter className="p-4 pt-0">
                         <Button 
-                          className="flex-1 gradient-teal"
+                          className="w-full gradient-teal"
                           onClick={() => addToCart(product)}
                         >
                           <Icon name="ShoppingCart" size={18} className="mr-2" />
                           В корзину
                         </Button>
-                        <Button 
-                          className="flex-1"
-                          variant="outline"
-                          onClick={() => addToBuild(product)}
-                        >
-                          <Icon name="Wrench" size={18} className="mr-2" />
-                          В сборку
-                        </Button>
                       </CardFooter>
                     </Card>
                   );
                 })}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="bg-gradient-to-r from-primary to-secondary text-white py-16">
-          <div className="container mx-auto px-4">
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              <div>
-                <h2 className="text-4xl font-bold mb-6">Конфигуратор ПК</h2>
-                <p className="text-xl mb-6 opacity-90">
-                  Соберите идеальный компьютер под ваши задачи с автоматической проверкой совместимости компонентов
-                </p>
-                <ul className="space-y-3 mb-8">
-                  <li className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-                      <Icon name="Check" size={18} />
-                    </div>
-                    <span>Автоматическая проверка совместимости</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-                      <Icon name="Check" size={18} />
-                    </div>
-                    <span>Бесплатная сборка и тестирование</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-                      <Icon name="Check" size={18} />
-                    </div>
-                    <span>Гарантия на все компоненты</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-                      <Icon name="Check" size={18} />
-                    </div>
-                    <span>Помощь специалиста в подборе</span>
-                  </li>
-                </ul>
-                <Button 
-                  size="lg" 
-                  className="bg-white text-primary hover:bg-white/90 h-14 px-8 text-lg shadow-2xl"
-                  onClick={() => window.location.href = '/configurator'}
-                >
-                  <Icon name="Wrench" className="mr-2" size={20} />
-                  Начать сборку
-                </Button>
-              </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8">
-                <div className="space-y-4">
-                  {[
-                    { icon: 'Cpu', name: 'Процессор', desc: 'Intel / AMD' },
-                    { icon: 'Zap', name: 'Видеокарта', desc: 'NVIDIA / AMD' },
-                    { icon: 'MemoryStick', name: 'ОЗУ', desc: 'DDR4 / DDR5' },
-                    { icon: 'HardDrive', name: 'Накопитель', desc: 'SSD / HDD' },
-                  ].map((item, idx) => (
-                    <div key={idx} className="flex items-center gap-4 bg-white/10 p-4 rounded-lg">
-                      <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-                        <Icon name={item.icon as any} size={24} />
-                      </div>
-                      <div>
-                        <div className="font-semibold">{item.name}</div>
-                        <div className="text-sm opacity-75">{item.desc}</div>
-                      </div>
-                      <Icon name="ChevronRight" size={20} className="ml-auto opacity-50" />
-                    </div>
-                  ))}
-                </div>
               </div>
             </div>
           </div>
@@ -1875,7 +1732,8 @@ export default function Index() {
           </div>
         </div>
         <div className="border-t border-white/10 pt-8 text-center text-sm text-white/60">
-          <p>© 2025 MIX PC. Все права защищены. Разработчик Рыбачёк С .С. ВЗПИ 51</p>
+          <p>© 2025 MIX PC. Все права защищены.
+Создатель Рыбачёк С .С. ВЗПИ 51</p>
         </div>
       </div>
     </footer>
