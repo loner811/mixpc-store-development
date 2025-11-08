@@ -390,8 +390,9 @@ export default function Index() {
       const orders = await ordersRes.json();
       setAdminOrders(orders);
 
-      const localMessages = JSON.parse(localStorage.getItem('contactMessages') || '[]');
-      setAdminMessages(localMessages);
+      const messagesRes = await fetch('https://functions.poehali.dev/cef89039-b240-4ef5-bb82-eade4c24411b');
+      const messagesData = await messagesRes.json();
+      setAdminMessages(messagesData.messages || []);
     } catch (error) {
       console.error('Failed to load admin data:', error);
     }
@@ -607,13 +608,35 @@ export default function Index() {
               </div>
             </div>
 
-            <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
-              <DialogTrigger asChild>
-                <Button className="gap-2 gradient-teal text-white hover:opacity-90">
-                  <Icon name="User" size={18} />
-                  <span className="hidden sm:inline">Войти</span>
+            {isLoggedIn ? (
+              <div className="flex items-center gap-3">
+                <div className="hidden sm:flex flex-col items-end">
+                  <span className="text-sm font-semibold">{currentUser?.username}</span>
+                  <span className="text-xs text-muted-foreground">{currentUser?.email}</span>
+                </div>
+                <Button 
+                  onClick={() => {
+                    localStorage.removeItem('authToken');
+                    setIsLoggedIn(false);
+                    setIsAdmin(false);
+                    setCurrentUser(null);
+                    alert('Вы вышли из аккаунта');
+                  }}
+                  variant="outline" 
+                  className="gap-2"
+                >
+                  <Icon name="LogOut" size={18} />
+                  <span className="hidden sm:inline">Выход</span>
                 </Button>
-              </DialogTrigger>
+              </div>
+            ) : (
+              <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
+                <DialogTrigger asChild>
+                  <Button className="gap-2 gradient-teal text-white hover:opacity-90">
+                    <Icon name="User" size={18} />
+                    <span className="hidden sm:inline">Войти</span>
+                  </Button>
+                </DialogTrigger>
               <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                   <DialogTitle className="text-2xl">Личный кабинет</DialogTitle>
@@ -718,6 +741,7 @@ export default function Index() {
                 </Tabs>
               </DialogContent>
             </Dialog>
+            )}
 
             <Sheet>
               <SheetTrigger asChild>
@@ -2202,36 +2226,44 @@ export default function Index() {
                     <CardContent className="p-6">
                       <div className="flex justify-between items-start mb-2">
                         <div>
-                          <h3 className="font-semibold text-lg">{msg.name}</h3>
+                          <h3 className="font-semibold text-lg">{msg.fullName}</h3>
                           <p className="text-sm text-muted-foreground">{msg.email}</p>
+                          {msg.phone && <p className="text-sm text-muted-foreground">{msg.phone}</p>}
                         </div>
                         <Badge 
                           className={
-                            msg.is_read
+                            msg.isRead
                               ? 'bg-green-500 hover:bg-green-600 text-white'
                               : 'bg-red-500 hover:bg-red-600 text-white'
                           }
                         >
-                          {msg.is_read ? 'Прочитано' : 'Новое'}
+                          {msg.isRead ? 'Прочитано' : 'Новое'}
                         </Badge>
                       </div>
                       <p className="mt-4 whitespace-pre-wrap">{msg.message}</p>
                       <p className="text-xs text-muted-foreground mt-4">
-                        {new Date(msg.created_at).toLocaleString('ru-RU')}
+                        {new Date(msg.createdAt).toLocaleString('ru-RU')}
                       </p>
                       
-                      {!msg.is_read && (
+                      {!msg.isRead && (
                         <div className="mt-4">
                           <Button 
                             size="sm"
                             className="bg-green-600 hover:bg-green-700 text-white"
-                            onClick={() => {
-                              const messages = JSON.parse(localStorage.getItem('contactMessages') || '[]');
-                              const updated = messages.map((m: any) => 
-                                m.id === msg.id ? {...m, is_read: true} : m
-                              );
-                              localStorage.setItem('contactMessages', JSON.stringify(updated));
-                              setAdminMessages(updated);
+                            onClick={async () => {
+                              try {
+                                const response = await fetch('https://functions.poehali.dev/cef89039-b240-4ef5-bb82-eade4c24411b', {
+                                  method: 'PATCH',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ id: msg.id })
+                                });
+                                
+                                if (response.ok) {
+                                  loadAdminData();
+                                }
+                              } catch (error) {
+                                console.error('Failed to mark message as read:', error);
+                              }
                             }}
                           >
                             <Icon name="CheckCircle" size={16} className="mr-2" />
