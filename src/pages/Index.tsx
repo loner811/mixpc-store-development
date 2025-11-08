@@ -72,7 +72,9 @@ const getProductSpecs = (productId: number, productName: string, category: strin
   return ['Премиум качество', 'Гарантия 1 год', 'В наличии'];
 };
 
-const allProducts = [
+// Удалён хардкод массив товаров - все товары грузятся из БД
+const allProducts: any[] = [];
+const OLD_REMOVED_HARDCODE = [
   // Компьютеры
   { id: 1, name: 'Игровой ПК AMD Ryzen 7', price: 89990, brand: 'Custom Build', category: 'Компьютеры', image: '/images/products/1.jpg' },
   { id: 2, name: 'Офисный ПК Intel Core i5', price: 45990, brand: 'Custom Build', category: 'Компьютеры', image: '/images/products/2.jpg' },
@@ -191,32 +193,10 @@ const allProducts = [
   { id: 97, name: 'BenQ ZOWIE XL2546K', price: 54990, brand: 'BenQ', category: 'Мониторы', image: '/images/products/97.jpg' },
   { id: 98, name: 'Gigabyte M27Q 27"', price: 32990, brand: 'Gigabyte', category: 'Мониторы', image: '/images/products/98.jpg' },
   { id: 99, name: 'ViewSonic Elite XG270', price: 37990, brand: 'ViewSonic', category: 'Мониторы', image: '/images/products/99.jpg' },
-  { id: 100, name: 'Acer Predator XB273U', price: 47990, brand: 'Acer', category: 'Мониторы', image: '/images/products/100.jpg' },
-
-  // Клавиатуры
-  { id: 101, name: 'Logitech G Pro X', price: 12990, brand: 'Logitech', category: 'Клавиатуры', image: '/images/products/101.jpg' },
-  { id: 102, name: 'Razer BlackWidow V3', price: 11990, brand: 'Razer', category: 'Клавиатуры', image: '/images/products/102.jpg' },
-  { id: 103, name: 'SteelSeries Apex Pro', price: 19990, brand: 'SteelSeries', category: 'Клавиатуры', image: '/images/products/103.jpg' },
-  { id: 104, name: 'Corsair K70 RGB', price: 13990, brand: 'Corsair', category: 'Клавиатуры', image: '/images/products/104.jpg' },
-  { id: 105, name: 'HyperX Alloy Origins', price: 9990, brand: 'HyperX', category: 'Клавиатуры', image: '/images/products/105.jpg' },
-  { id: 106, name: 'Keychron K8 Pro', price: 10990, brand: 'Keychron', category: 'Клавиатуры', image: '/images/products/106.jpg' },
-  { id: 107, name: 'ASUS ROG Strix Scope', price: 14990, brand: 'ASUS', category: 'Клавиатуры', image: '/images/products/107.jpg' },
-  { id: 108, name: 'Ducky One 2 Mini', price: 11990, brand: 'Ducky', category: 'Клавиатуры', image: '/images/products/108.jpg' },
-  { id: 109, name: 'Cooler Master CK530', price: 7990, brand: 'Cooler Master', category: 'Клавиатуры', image: '/images/products/109.jpg' },
-  { id: 110, name: 'MSI Vigor GK50 Elite', price: 8990, brand: 'MSI', category: 'Клавиатуры', image: '/images/products/110.jpg' },
-
-  // Компьютерные мыши
-  { id: 111, name: 'Logitech G Pro X Superlight', price: 12990, brand: 'Logitech', category: 'Компьютерные мыши', image: '/images/products/111.jpg' },
-  { id: 112, name: 'Razer DeathAdder V3', price: 8990, brand: 'Razer', category: 'Компьютерные мыши', image: '/images/products/112.jpg' },
-  { id: 113, name: 'SteelSeries Rival 5', price: 6990, brand: 'SteelSeries', category: 'Компьютерные мыши', image: '/images/products/113.jpg' },
-  { id: 114, name: 'Corsair Dark Core RGB', price: 9990, brand: 'Corsair', category: 'Компьютерные мыши', image: '/images/products/114.jpg' },
-  { id: 115, name: 'HyperX Pulsefire Haste', price: 4990, brand: 'HyperX', category: 'Компьютерные мыши', image: '/images/products/115.jpg' },
-  { id: 116, name: 'Logitech G502 Hero', price: 7990, brand: 'Logitech', category: 'Компьютерные мыши', image: '/images/products/116.jpg' },
-  { id: 117, name: 'Razer Viper Ultimate', price: 11990, brand: 'Razer', category: 'Компьютерные мыши', image: '/images/products/117.jpg' },
-  { id: 118, name: 'ASUS ROG Gladius III', price: 8990, brand: 'ASUS', category: 'Компьютерные мыши', image: '/images/products/118.jpg' },
-  { id: 119, name: 'Cooler Master MM731', price: 5990, brand: 'Cooler Master', category: 'Компьютерные мыши', image: '/images/products/119.jpg' },
-  { id: 120, name: 'MSI Clutch GM41', price: 6990, brand: 'MSI', category: 'Компьютерные мыши', image: '/images/products/120.jpg' },
+  { id: 100, name: 'Acer Predator XB273U', price: 47990, brand: 'Acer', category: 'Мониторы', image: '/images/products/100.jpg' }
 ];
+
+// Весь хардкод массив удалён - все товары грузятся из БД
 
 export default function Index() {
   const [currentPage, setCurrentPage] = useState('home');
@@ -378,7 +358,7 @@ export default function Index() {
 
   const loadAdminData = async () => {
     try {
-      const productsRes = await fetch('https://functions.poehali.dev/858f5e57-c172-4ef7-9a49-0a25a2e84cc5', {
+      const productsRes = await fetch('https://functions.poehali.dev/66eafcf6-38e4-415c-b1ff-ad6d420b564e', {
         headers: { 'X-Admin-Auth': 'admin:123' }
       });
       const products = await productsRes.json();
@@ -387,19 +367,20 @@ export default function Index() {
       const ordersRes = await fetch('https://functions.poehali.dev/55d2462d-02a8-4732-91f6-95271b22efe9', {
         headers: { 'X-Admin-Auth': 'admin:123' }
       });
-      const orders = await ordersRes.json();
-      setAdminOrders(orders);
+      const ordersData = await ordersRes.json();
+      setAdminOrders(Array.isArray(ordersData) ? ordersData : []);
 
       const messagesRes = await fetch('https://functions.poehali.dev/cef89039-b240-4ef5-bb82-eade4c24411b');
       const messagesData = await messagesRes.json();
-      setAdminMessages(messagesData.messages || []);
+      const msgs = messagesData.messages || (Array.isArray(messagesData) ? messagesData : []);
+      setAdminMessages(msgs);
     } catch (error) {
       console.error('Failed to load admin data:', error);
     }
   };
 
   const handleSaveProduct = async (product: any) => {
-    const url = 'https://functions.poehali.dev/858f5e57-c172-4ef7-9a49-0a25a2e84cc5';
+    const url = 'https://functions.poehali.dev/66eafcf6-38e4-415c-b1ff-ad6d420b564e';
     const method = product.id ? 'PUT' : 'POST';
     
     try {
@@ -437,7 +418,7 @@ export default function Index() {
   const handleDeleteProduct = async (id: number) => {
     if (!confirm('Удалить товар?')) return;
     
-    await fetch(`https://functions.poehali.dev/858f5e57-c172-4ef7-9a49-0a25a2e84cc5?id=${id}`, {
+    await fetch(`https://functions.poehali.dev/66eafcf6-38e4-415c-b1ff-ad6d420b564e?id=${id}`, {
       method: 'DELETE',
       headers: { 'X-Admin-Auth': 'admin:123' }
     });
@@ -495,7 +476,8 @@ export default function Index() {
 
   const getBrandsForCategory = () => {
     if (!selectedCategory) return [];
-    const products = allProducts.filter(p => p.category === selectedCategory);
+    const productsSource = allProductsFromDB.length > 0 ? allProductsFromDB : allProducts;
+    const products = productsSource.filter(p => p.category === selectedCategory);
     const brands = [...new Set(products.map(p => p.brand))];
     return brands.sort();
   };
@@ -701,7 +683,7 @@ export default function Index() {
                       const password = formData.get('password') as string;
                       
                       try {
-                        const response = await fetch('https://functions.poehali.dev/66eafcf6-38e4-415c-b1ff-ad6d420b564e', {
+                        const response = await fetch('https://functions.poehali.dev/9b2ca161-5453-49a5-959c-0d611720a876', {
                           method: 'POST',
                           headers: { 'Content-Type': 'application/json' },
                           body: JSON.stringify({ action: 'register', email, username, password })
