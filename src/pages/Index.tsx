@@ -12,20 +12,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Slider } from '@/components/ui/slider';
 import Icon from '@/components/ui/icon';
 
-const categories = [
-  { id: 1, name: 'Компьютеры', icon: 'Monitor' },
-  { id: 2, name: 'Процессоры', icon: 'Cpu' },
-  { id: 3, name: 'Видеокарты', icon: 'Zap' },
-  { id: 4, name: 'Материнские платы', icon: 'CircuitBoard' },
-  { id: 5, name: 'Оперативная память', icon: 'MemoryStick' },
-  { id: 6, name: 'Накопители SSD', icon: 'HardDrive' },
-  { id: 7, name: 'Блоки питания', icon: 'Battery' },
-  { id: 8, name: 'Корпуса', icon: 'Box' },
-  { id: 9, name: 'Куллеры', icon: 'Fan' },
-  { id: 10, name: 'Мониторы', icon: 'MonitorDot' },
-  { id: 11, name: 'Клавиатуры', icon: 'Keyboard' },
-  { id: 12, name: 'Компьютерные мыши', icon: 'Mouse' }
-];
+
 
 const getProductSpecs = (productId: number, productName: string, category: string) => {
   const specs: { [key: number]: string[] } = {};
@@ -264,6 +251,10 @@ export default function Index() {
   const [allProductsFromDB, setAllProductsFromDB] = useState<any[]>([]);
   const [productsLoading, setProductsLoading] = useState(true);
   
+  // Categories from database
+  const [categories, setCategories] = useState<any[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+  
   // Filters
   const [priceRange, setPriceRange] = useState([0, 200000]);
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
@@ -290,7 +281,46 @@ export default function Index() {
   useEffect(() => {
     loadFeaturedProducts();
     loadAllProducts();
+    loadCategories();
+    checkAuth();
   }, []);
+  
+  const checkAuth = async () => {
+    const token = localStorage.getItem('authToken');
+    if (!token) return;
+    
+    try {
+      const response = await fetch('https://functions.poehali.dev/9b2ca161-5453-49a5-959c-0d611720a876', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok && data.user) {
+        setCurrentUser(data.user);
+        setIsLoggedIn(true);
+        setIsAdmin(data.user.role === 'admin');
+      } else {
+        localStorage.removeItem('authToken');
+      }
+    } catch (error) {
+      localStorage.removeItem('authToken');
+    }
+  };
+  
+  const loadCategories = async () => {
+    try {
+      setCategoriesLoading(true);
+      const response = await fetch('https://functions.poehali.dev/899eeac8-8b43-4e8b-9430-3ba1b8c0ac0b');
+      const data = await response.json();
+      setCategories(data.categories || []);
+    } catch (error) {
+      console.error('Failed to load categories:', error);
+      setCategories([]);
+    } finally {
+      setCategoriesLoading(false);
+    }
+  };
   
   const loadAllProducts = async () => {
     try {
@@ -600,38 +630,22 @@ export default function Index() {
                       const username = formData.get('login') as string;
                       const password = formData.get('password') as string;
                       
-                      if (username === 'admin' && password === '123') {
-                        setCurrentUser({ id: 1, username: 'admin', role: 'admin', email: 'admin@mixpc.ru' });
-                        setIsLoggedIn(true);
-                        setIsAdmin(true);
-                        localStorage.setItem('userId', '1');
-                        localStorage.setItem('userName', 'admin');
-                        localStorage.setItem('adminAuth', 'admin:123');
-                        setLoginOpen(false);
-                        alert('Добро пожаловать, администратор!');
-                        return;
-                      }
-                      
                       try {
-                        const response = await fetch('https://functions.poehali.dev/66eafcf6-38e4-415c-b1ff-ad6d420b564e', {
+                        const response = await fetch('https://functions.poehali.dev/9b2ca161-5453-49a5-959c-0d611720a876', {
                           method: 'POST',
                           headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ action: 'login', username, password })
+                          body: JSON.stringify({ username, password })
                         });
                         
                         const data = await response.json();
                         
-                        if (response.ok && data.success) {
+                        if (response.ok && data.token) {
+                          localStorage.setItem('authToken', data.token);
                           setCurrentUser(data.user);
                           setIsLoggedIn(true);
                           setIsAdmin(data.user.role === 'admin');
-                          localStorage.setItem('userId', String(data.user.id));
-                          localStorage.setItem('userName', data.user.username);
-                          if (data.user.role === 'admin') {
-                            localStorage.setItem('adminAuth', 'admin:123');
-                          }
                           setLoginOpen(false);
-                          alert(data.message);
+                          alert(`Добро пожаловать, ${data.user.username}!`);
                         } else {
                           alert(data.error || 'Неверный логин или пароль');
                         }
@@ -1330,27 +1344,39 @@ export default function Index() {
                 </Button>
               </div>
             ) : (
-              <form className="space-y-4" onSubmit={(e) => {
+              <form className="space-y-4" onSubmit={async (e) => {
                 e.preventDefault();
                 const formData = new FormData(e.target as HTMLFormElement);
-                const message = {
-                  name: currentUser.name,
-                  email: currentUser.email,
-                  message: formData.get('message') as string,
-                  created_at: new Date().toISOString(),
-                  is_read: false
-                };
                 
-                const messages = JSON.parse(localStorage.getItem('contactMessages') || '[]');
-                messages.push(message);
-                localStorage.setItem('contactMessages', JSON.stringify(messages));
-                
-                alert('Сообщение отправлено!');
-                (e.target as HTMLFormElement).reset();
+                try {
+                  const response = await fetch('https://functions.poehali.dev/cef89039-b240-4ef5-bb82-eade4c24411b', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      fullName: formData.get('fullName') as string,
+                      phone: formData.get('phone') as string,
+                      email: currentUser.email,
+                      message: formData.get('message') as string
+                    })
+                  });
+                  
+                  if (response.ok) {
+                    alert('Сообщение успешно отправлено! Мы свяжемся с вами в ближайшее время.');
+                    (e.target as HTMLFormElement).reset();
+                  } else {
+                    alert('Ошибка при отправке сообщения');
+                  }
+                } catch (error) {
+                  alert('Ошибка подключения к серверу');
+                }
               }}>
                 <div>
                   <Label>Имя</Label>
-                  <Input value={currentUser.name} disabled className="bg-muted" />
+                  <Input name="fullName" placeholder="Ваше имя" required />
+                </div>
+                <div>
+                  <Label>Телефон</Label>
+                  <Input name="phone" type="tel" placeholder="+7 (___) ___-__-__" required />
                 </div>
                 <div>
                   <Label>Email</Label>
