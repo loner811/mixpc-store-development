@@ -83,7 +83,7 @@ const Admin = () => {
         fetch('https://functions.poehali.dev/55d2462d-02a8-4732-91f6-95271b22efe9', {
           headers: { 'X-Admin-Auth': 'admin:123' }
         }),
-        fetch('https://functions.poehali.dev/2d62dc4b-2a13-48d8-af36-be6fb8d57edf', {
+        fetch('https://functions.poehali.dev/cef89039-b240-4ef5-bb82-eade4c24411b', {
           headers: { 'X-Admin-Auth': 'admin:123' }
         })
       ]);

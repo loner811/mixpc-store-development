@@ -4,11 +4,12 @@
       "name": "Get all messages",
       "method": "GET",
       "path": "/",
-      "expectedStatus": 200,
-      "expectedBody": {
-        "messages": "array"
+      "headers": {
+        "X-Admin-Auth": "admin:123"
       },
-      "bodyMatcher": "partial"
+      "expectedStatus": 200,
+      "expectedBody": [],
+      "bodyMatcher": "type"
     }
   ]
 }

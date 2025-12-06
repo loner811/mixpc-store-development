@@ -23,20 +23,31 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'headers': {
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type',
+                'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Auth',
                 'Access-Control-Max-Age': '86400'
             },
-            'body': ''
+            'body': '',
+            'isBase64Encoded': False
         }
+    
+    headers = event.get('headers', {})
+    auth_token = headers.get('x-admin-auth') or headers.get('X-Admin-Auth')
     
     conn = get_db_connection()
     cur = conn.cursor()
     
     try:
         if method == 'GET':
+            if auth_token != 'admin:123':
+                return {
+                    'statusCode': 401,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'isBase64Encoded': False,
+                    'body': json.dumps({'error': 'Unauthorized'})
+                }
             cur.execute('''
                 SELECT id, full_name, phone, email, message, is_read, created_at 
-                FROM contact_messages 
+                FROM t_p58610579_mixpc_store_developm.contact_messages 
                 ORDER BY created_at DESC
             ''')
             
@@ -44,26 +55,26 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             for row in cur.fetchall():
                 messages.append({
                     'id': row[0],
-                    'fullName': row[1],
+                    'name': row[1],
                     'phone': row[2],
                     'email': row[3],
                     'message': row[4],
-                    'isRead': row[5],
-                    'createdAt': row[6].isoformat() if row[6] else None
+                    'is_read': row[5],
+                    'created_at': row[6].isoformat() if row[6] else None
                 })
             
             return {
                 'statusCode': 200,
                 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
                 'isBase64Encoded': False,
-                'body': json.dumps({'messages': messages})
+                'body': json.dumps(messages)
             }
         
         elif method == 'POST':
             body = json.loads(event.get('body', '{}'))
             
             cur.execute('''
-                INSERT INTO contact_messages (full_name, phone, email, message)
+                INSERT INTO t_p58610579_mixpc_store_developm.contact_messages (full_name, phone, email, message)
                 VALUES (%s, %s, %s, %s)
                 RETURNING id
             ''', (

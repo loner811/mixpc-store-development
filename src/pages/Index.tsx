@@ -348,7 +348,7 @@ export default function Index() {
 
   const loadAdminData = async () => {
     try {
-      const productsRes = await fetch('https://functions.poehali.dev/858f5e57-c172-4ef7-9a49-0a25a2e84cc5', {
+      const productsRes = await fetch('https://functions.poehali.dev/cf16c6f9-3e3e-4344-a46d-9b82a874939f', {
         headers: { 'X-Admin-Auth': 'admin:123' }
       });
       const products = await productsRes.json();
@@ -368,7 +368,7 @@ export default function Index() {
   };
 
   const handleSaveProduct = async (product: any) => {
-    const url = 'https://functions.poehali.dev/858f5e57-c172-4ef7-9a49-0a25a2e84cc5';
+    const url = 'https://functions.poehali.dev/cf16c6f9-3e3e-4344-a46d-9b82a874939f';
     const method = product.id ? 'PUT' : 'POST';
     
     try {
@@ -406,7 +406,7 @@ export default function Index() {
   const handleDeleteProduct = async (id: number) => {
     if (!confirm('Удалить товар?')) return;
     
-    await fetch(`https://functions.poehali.dev/858f5e57-c172-4ef7-9a49-0a25a2e84cc5?id=${id}`, {
+    await fetch(`https://functions.poehali.dev/cf16c6f9-3e3e-4344-a46d-9b82a874939f?id=${id}`, {
       method: 'DELETE',
       headers: { 'X-Admin-Auth': 'admin:123' }
     });
