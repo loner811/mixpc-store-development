@@ -529,7 +529,16 @@ export default function Index() {
       alert('Войдите в систему для добавления товаров в корзину');
       return;
     }
-    setCart([...cart, product]);
+    const existingItem = cart.find(item => item.id === product.id);
+    if (existingItem) {
+      setCart(cart.map(item => 
+        item.id === product.id 
+          ? { ...item, quantity: (item.quantity || 1) + 1 }
+          : item
+      ));
+    } else {
+      setCart([...cart, { ...product, quantity: 1 }]);
+    }
   };
 
   const addToFavorites = (product: any) => {
@@ -544,6 +553,18 @@ export default function Index() {
 
   const removeFromCart = (productId: number) => {
     setCart(cart.filter(p => p.id !== productId));
+  };
+
+  const updateCartQuantity = (productId: number, newQuantity: number) => {
+    if (newQuantity <= 0) {
+      removeFromCart(productId);
+      return;
+    }
+    setCart(cart.map(item => 
+      item.id === productId 
+        ? { ...item, quantity: newQuantity }
+        : item
+    ));
   };
 
   const removeFromFavorites = (productId: number) => {
@@ -820,7 +841,7 @@ export default function Index() {
                   <Icon name="ShoppingCart" size={20} />
                   {cart.length > 0 && (
                     <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center bg-secondary text-white">
-                      {cart.length}
+                      {cart.reduce((sum, item) => sum + (item.quantity || 1), 0)}
                     </Badge>
                   )}
                 </Button>
@@ -883,7 +904,28 @@ export default function Index() {
                                     ))}
                                   </div>
                                 )}
-                                <p className="text-xl font-bold text-primary">{product.price.toLocaleString()} ₽</p>
+                                <div className="flex items-center gap-3 mt-2">
+                                  <div className="flex items-center gap-2">
+                                    <Button 
+                                      size="icon" 
+                                      variant="outline"
+                                      className="h-8 w-8"
+                                      onClick={() => updateCartQuantity(product.id, (product.quantity || 1) - 1)}
+                                    >
+                                      <Icon name="Minus" size={14} />
+                                    </Button>
+                                    <span className="text-sm font-semibold w-8 text-center">{product.quantity || 1}</span>
+                                    <Button 
+                                      size="icon" 
+                                      variant="outline"
+                                      className="h-8 w-8"
+                                      onClick={() => updateCartQuantity(product.id, (product.quantity || 1) + 1)}
+                                    >
+                                      <Icon name="Plus" size={14} />
+                                    </Button>
+                                  </div>
+                                  <p className="text-xl font-bold text-primary">{(product.price * (product.quantity || 1)).toLocaleString()} ₽</p>
+                                </div>
                               </div>
                               <Button 
                                 size="icon" 
@@ -901,7 +943,7 @@ export default function Index() {
                         <div className="flex justify-between mb-4">
                           <span className="text-lg font-semibold">Итого:</span>
                           <span className="text-2xl font-bold text-primary">
-                            {cart.reduce((sum, p) => sum + p.price, 0).toLocaleString()} ₽
+                            {cart.reduce((sum, p) => sum + (p.price * (p.quantity || 1)), 0).toLocaleString()} ₽
                           </span>
                         </div>
                         <Button 
@@ -1665,8 +1707,12 @@ export default function Index() {
                     phone: checkoutData.phone,
                     delivery_type: checkoutData.deliveryType,
                     delivery_address: checkoutData.address,
-                    total_amount: cart.reduce((sum, p) => sum + p.price, 0),
-                    items: cart
+                    total_amount: cart.reduce((sum, p) => sum + (p.price * (p.quantity || 1)), 0),
+                    items: cart.map(item => ({
+                      product_id: item.id,
+                      quantity: item.quantity || 1,
+                      price: item.price
+                    }))
                   })
                 });
                 
@@ -1768,16 +1814,19 @@ export default function Index() {
               <h2 className="text-2xl font-semibold mb-4">Ваш заказ</h2>
               <div className="space-y-3 mb-4">
                 {cart.map(product => (
-                  <div key={product.id} className="flex justify-between">
-                    <span className="text-sm">{product.name}</span>
-                    <span className="font-semibold">{product.price.toLocaleString()} ₽</span>
+                  <div key={product.id} className="flex justify-between items-center">
+                    <div className="flex-1">
+                      <span className="text-sm">{product.name}</span>
+                      <span className="text-xs text-muted-foreground ml-2">× {product.quantity || 1}</span>
+                    </div>
+                    <span className="font-semibold">{(product.price * (product.quantity || 1)).toLocaleString()} ₽</span>
                   </div>
                 ))}
               </div>
               <div className="border-t pt-4">
                 <div className="flex justify-between text-xl font-bold">
                   <span>Итого:</span>
-                  <span className="text-primary">{cart.reduce((sum, p) => sum + p.price, 0).toLocaleString()} ₽</span>
+                  <span className="text-primary">{cart.reduce((sum, p) => sum + (p.price * (p.quantity || 1)), 0).toLocaleString()} ₽</span>
                 </div>
               </div>
             </CardContent>
@@ -2056,8 +2105,8 @@ export default function Index() {
                         <p className="text-sm text-muted-foreground">{product.brand} • {product.category}</p>
                         <p className="text-lg font-bold text-primary">{Number(product.price).toLocaleString()} ₽</p>
                         <div className="flex items-center gap-2 mt-2">
-                          <Badge variant={product.in_stock ? "default" : "secondary"}>
-                            {product.in_stock ? "В наличии" : "Нет в наличии"}
+                          <Badge variant={(product.in_stock || product.stock_quantity > 0) ? "default" : "secondary"}>
+                            {(product.in_stock || product.stock_quantity > 0) ? "В наличии" : "Нет в наличии"}
                           </Badge>
                           <span className="text-sm text-muted-foreground">
                             Кол-во: <span className="font-semibold">{product.stock_quantity || 0} шт</span>

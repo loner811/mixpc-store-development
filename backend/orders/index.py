@@ -22,6 +22,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'Access-Control-Allow-Headers': 'Content-Type, X-User-Id, X-Admin-Auth',
                 'Access-Control-Max-Age': '86400'
             },
+            'isBase64Encoded': False,
             'body': ''
         }
     
@@ -52,6 +53,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     return {
                         'statusCode': 401,
                         'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'isBase64Encoded': False,
                         'body': json.dumps({'error': 'User not authenticated'})
                     }
                 
@@ -73,6 +75,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             return {
                 'statusCode': 200,
                 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'isBase64Encoded': False,
                 'body': json.dumps([dict(order) for order in orders], default=str)
             }
         
@@ -97,24 +100,35 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             order_id = cursor.fetchone()['id']
             
             for item in items:
-                product_id = item.get('id')
+                product_id = item.get('product_id') or item.get('id')
+                quantity = item.get('quantity', 1)
+                price = item.get('price')
+                
+                cursor.execute('''
+                    SELECT name FROM t_p58610579_mixpc_store_developm.products WHERE id = %s
+                ''', (product_id,))
+                product_row = cursor.fetchone()
+                product_name = product_row['name'] if product_row else 'Unknown'
+                
                 cursor.execute('''
                     INSERT INTO t_p58610579_mixpc_store_developm.order_items
                     (order_id, product_id, product_name, product_price, quantity)
                     VALUES (%s, %s, %s, %s, %s)
-                ''', (order_id, product_id, item.get('name'), item.get('price'), 1))
+                ''', (order_id, product_id, product_name, price, quantity))
                 
                 cursor.execute('''
                     UPDATE t_p58610579_mixpc_store_developm.products
-                    SET stock_quantity = GREATEST(stock_quantity - 1, 0)
+                    SET stock_quantity = GREATEST(stock_quantity - %s, 0),
+                        in_stock = CASE WHEN stock_quantity - %s <= 0 THEN false ELSE in_stock END
                     WHERE id = %s
-                ''', (product_id,))
+                ''', (quantity, quantity, product_id))
             
             conn.commit()
             
             return {
                 'statusCode': 201,
                 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'isBase64Encoded': False,
                 'body': json.dumps({'order_id': order_id, 'message': 'Order created successfully'})
             }
         
@@ -123,6 +137,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 return {
                     'statusCode': 403,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'isBase64Encoded': False,
                     'body': json.dumps({'error': 'Admin access required'})
                 }
             
@@ -141,12 +156,14 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             return {
                 'statusCode': 200,
                 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'isBase64Encoded': False,
                 'body': json.dumps({'message': 'Order status updated'})
             }
         
         return {
             'statusCode': 405,
             'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+            'isBase64Encoded': False,
             'body': json.dumps({'error': 'Method not allowed'})
         }
     
