@@ -196,46 +196,20 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     })
                 }
             
-            # Получаем category_id по имени категории
-            category_name = body.get('category', '')
-            cur.execute('SELECT id FROM t_p58610579_mixpc_store_developm.categories WHERE name = %s', (category_name,))
-            category_row = cur.fetchone()
-            category_id = category_row[0] if category_row else None
-            
-            if not category_id:
-                return {
-                    'statusCode': 400,
-                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'body': json.dumps({'error': f'Category {category_name} not found'})
-                }
-            
             cur.execute('''
-                INSERT INTO t_p58610579_mixpc_store_developm.products 
-                (category_id, name, description, price, brand, image_filename, is_featured, stock_quantity, in_stock)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                INSERT INTO products (category_id, name, description, price, brand, image_filename, specs, is_popular)
+                VALUES ((SELECT id FROM categories WHERE slug = %s), %s, %s, %s, %s, %s, %s, %s)
                 RETURNING id
             ''', (
-                category_id,
+                body['categorySlug'],
                 body['name'],
                 body.get('description', ''),
                 body['price'],
                 body['brand'],
-                body.get('image_filename', ''),
-                body.get('is_featured', False),
-                body.get('stock_quantity', 10),
-                body.get('in_stock', True)
+                body.get('image', ''),
+                json.dumps(body.get('specs', {})),
+                body.get('isPopular', False)
             ))
-            
-            product_id = cur.fetchone()[0]
-            
-            # Добавляем характеристики
-            if body.get('specifications'):
-                for i, spec in enumerate(body['specifications']):
-                    cur.execute('''
-                        INSERT INTO t_p58610579_mixpc_store_developm.product_specifications
-                        (product_id, spec_name, spec_value, display_order)
-                        VALUES (%s, %s, %s, %s)
-                    ''', (product_id, spec.get('spec_name'), spec.get('spec_value'), i))
             
             product_id = cur.fetchone()[0]
             conn.commit()
@@ -251,40 +225,21 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             body = json.loads(event.get('body', '{}'))
             product_id = body.get('id')
             
-            # Получаем category_id по имени категории
-            category_name = body.get('category', '')
-            cur.execute('SELECT id FROM t_p58610579_mixpc_store_developm.categories WHERE name = %s', (category_name,))
-            category_row = cur.fetchone()
-            category_id = category_row[0] if category_row else None
-            
             cur.execute('''
-                UPDATE t_p58610579_mixpc_store_developm.products 
-                SET category_id = %s, name = %s, description = %s, price = %s, brand = %s, 
-                    image_filename = %s, is_featured = %s, stock_quantity = %s, in_stock = %s,
-                    updated_at = CURRENT_TIMESTAMP
+                UPDATE products 
+                SET name = %s, description = %s, price = %s, brand = %s, 
+                    image_filename = %s, specs = %s, is_popular = %s, updated_at = CURRENT_TIMESTAMP
                 WHERE id = %s
             ''', (
-                category_id,
                 body['name'],
                 body.get('description', ''),
                 body['price'],
                 body['brand'],
-                body.get('image_filename', ''),
-                body.get('is_featured', False),
-                body.get('stock_quantity', 10),
-                body.get('in_stock', True),
+                body.get('image', ''),
+                json.dumps(body.get('specs', {})),
+                body.get('isPopular', False),
                 product_id
             ))
-            
-            # Обновляем характеристики
-            cur.execute('DELETE FROM t_p58610579_mixpc_store_developm.product_specifications WHERE product_id = %s', (product_id,))
-            if body.get('specifications'):
-                for i, spec in enumerate(body['specifications']):
-                    cur.execute('''
-                        INSERT INTO t_p58610579_mixpc_store_developm.product_specifications
-                        (product_id, spec_name, spec_value, display_order)
-                        VALUES (%s, %s, %s, %s)
-                    ''', (product_id, spec.get('spec_name'), spec.get('spec_value'), i))
             
             conn.commit()
             
