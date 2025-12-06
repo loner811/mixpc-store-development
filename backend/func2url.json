@@ -1,6 +1,4 @@
 {
-  "cart": "https://functions.poehali.dev/006f7731-8a8c-4a03-bdd0-e1158ba0bfb5",
-  "admin-products": "https://functions.poehali.dev/cf16c6f9-3e3e-4344-a46d-9b82a874939f",
   "auth": "https://functions.poehali.dev/9b2ca161-5453-49a5-959c-0d611720a876",
   "orders": "https://functions.poehali.dev/55d2462d-02a8-4732-91f6-95271b22efe9",
   "categories": "https://functions.poehali.dev/899eeac8-8b43-4e8b-9430-3ba1b8c0ac0b",

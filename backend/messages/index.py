@@ -22,7 +22,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'statusCode': 200,
             'headers': {
                 'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                'Access-Control-Allow-Methods': 'GET, POST, PATCH, OPTIONS',
                 'Access-Control-Allow-Headers': 'Content-Type',
                 'Access-Control-Max-Age': '86400'
             },
@@ -81,6 +81,40 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
                 'isBase64Encoded': False,
                 'body': json.dumps({'id': message_id, 'message': 'Message sent'})
+            }
+        
+        elif method == 'PATCH':
+            body = json.loads(event.get('body', '{}'))
+            message_id = body.get('id')
+            
+            if not message_id:
+                return {
+                    'statusCode': 400,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Message ID required'})
+                }
+            
+            cur.execute('''
+                UPDATE contact_messages 
+                SET is_read = true 
+                WHERE id = %s
+                RETURNING id
+            ''', (message_id,))
+            
+            updated = cur.fetchone()
+            conn.commit()
+            
+            if not updated:
+                return {
+                    'statusCode': 404,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Message not found'})
+                }
+            
+            return {
+                'statusCode': 200,
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({'message': 'Message marked as read'})
             }
     
     except Exception as e:
