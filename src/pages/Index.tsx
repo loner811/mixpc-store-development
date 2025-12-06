@@ -12,68 +12,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Slider } from '@/components/ui/slider';
 import Icon from '@/components/ui/icon';
 
-
-
-const getProductSpecs = (productId: number, productName: string, category: string) => {
-  const specs: { [key: number]: string[] } = {};
-  
-  if (category === 'Процессоры') {
-    if (productName.includes('Ryzen 9 7950X')) return ['16 ядер / 32 потока', '4.5-5.7 ГГц', 'TDP 170W', 'Socket AM5'];
-    if (productName.includes('i9-13900K')) return ['24 ядра / 32 потока', '3.0-5.8 ГГц', 'TDP 125W', 'Socket LGA1700'];
-    if (productName.includes('Ryzen 7 7700X')) return ['8 ядер / 16 потоков', '4.5-5.4 ГГц', 'TDP 105W', 'Socket AM5'];
-    if (productName.includes('i7-13700K')) return ['16 ядер / 24 потока', '3.4-5.4 ГГц', 'TDP 125W', 'Socket LGA1700'];
-    return ['8 ядер', 'До 5.0 ГГц', 'TDP 105W'];
-  }
-  
-  if (category === 'Видеокарты') {
-    if (productName.includes('RTX 4090')) return ['24 GB GDDR6X', '2520 МГц', '450W TDP', 'DLSS 3.0'];
-    if (productName.includes('RX 7900 XTX')) return ['24 GB GDDR6', '2500 МГц', '355W TDP', 'FSR 3.0'];
-    if (productName.includes('RTX 4080')) return ['16 GB GDDR6X', '2505 МГц', '320W TDP', 'DLSS 3.0'];
-    if (productName.includes('RX 7900 XT')) return ['20 GB GDDR6', '2400 МГц', '300W TDP', 'FSR 3.0'];
-    return ['GDDR6', 'Ray Tracing', '300W TDP'];
-  }
-  
-  if (category === 'Материнские платы') {
-    if (productName.includes('B650')) return ['Socket AM5', 'DDR5', 'PCIe 5.0', 'ATX'];
-    if (productName.includes('B760') || productName.includes('Z790')) return ['Socket LGA1700', 'DDR5', 'PCIe 5.0', 'ATX'];
-    if (productName.includes('X670')) return ['Socket AM5', 'DDR5', 'PCIe 5.0', 'ATX'];
-    return ['DDR5', 'PCIe 4.0', 'ATX'];
-  }
-  
-  if (category === 'Оперативная память') {
-    if (productName.includes('DDR5')) {
-      if (productName.includes('64GB')) return ['64 GB (2x32)', 'DDR5-6000', 'CL30', 'RGB'];
-      if (productName.includes('32GB')) return ['32 GB (2x16)', 'DDR5-6000', 'CL36', 'RGB'];
-      return ['16 GB', 'DDR5-5600', 'CL36'];
-    }
-    if (productName.includes('32GB')) return ['32 GB (2x16)', 'DDR4-3600', 'CL18', 'RGB'];
-    return ['16 GB', 'DDR4-3200', 'CL16'];
-  }
-  
-  if (category === 'Накопители SSD') {
-    if (productName.includes('2TB')) return ['2000 GB', 'NVMe PCIe 4.0', '7000 МБ/с чтение', '5 лет гарантия'];
-    if (productName.includes('1TB')) return ['1000 GB', 'NVMe PCIe 4.0', '7000 МБ/с чтение', '5 лет гарантия'];
-    return ['500 GB', 'NVMe PCIe 3.0', '3500 МБ/с'];
-  }
-  
-  if (category === 'Блоки питания') {
-    if (productName.includes('1200W')) return ['1200 Вт', '80+ Platinum', 'Модульный', 'RGB'];
-    if (productName.includes('850W') || productName.includes('850')) return ['850 Вт', '80+ Gold', 'Модульный', 'Бесшумный'];
-    if (productName.includes('750W') || productName.includes('750')) return ['750 Вт', '80+ Gold', 'Модульный', 'Бесшумный'];
-    return ['650 Вт', '80+ Bronze', 'Полумодульный'];
-  }
-  
-  if (category === 'Мониторы') {
-    if (productName.includes('4K') || productName.includes('UHD')) return ['27"', '3840x2160', '144 Гц', 'IPS'];
-    if (productName.includes('QHD')) return ['27"', '2560x1440', '165 Гц', 'IPS'];
-    return ['24"', '1920x1080', '144 Гц', 'IPS'];
-  }
-  
-  return ['Премиум качество', 'Гарантия 1 год', 'В наличии'];
-};
-
-// Все товары загружаются из БД через API
-
 export default function Index() {
   const [currentPage, setCurrentPage] = useState('home');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -82,66 +20,19 @@ export default function Index() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
-  
-  // Checkout
-  const [checkoutData, setCheckoutData] = useState({
-    fullName: '',
-    email: '',
-    phone: '',
-    deliveryType: 'delivery',
-    address: ''
-  });
-  
-  // Admin
   const [isAdmin, setIsAdmin] = useState(false);
-  const [adminProducts, setAdminProducts] = useState<any[]>([]);
-  const [adminMessages, setAdminMessages] = useState<any[]>([]);
-  const [editingProduct, setEditingProduct] = useState<any>(null);
-  const [adminActiveTab, setAdminActiveTab] = useState('products');
-  const [adminOrders, setAdminOrders] = useState<any[]>([]);
-  
-  // Featured products
-  const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
-  
-  // All products from database
   const [allProductsFromDB, setAllProductsFromDB] = useState<any[]>([]);
-  const [productsLoading, setProductsLoading] = useState(true);
-  
-  // Categories from database
   const [categories, setCategories] = useState<any[]>([]);
-  const [categoriesLoading, setCategoriesLoading] = useState(true);
-  
-  // Filters
   const [priceRange, setPriceRange] = useState([0, 200000]);
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState('default');
-  const [showInStockOnly, setShowInStockOnly] = useState(false);
-  const [selectedSpecs, setSelectedSpecs] = useState<Record<string, string[]>>({});
-
-  // Auto-slider
-  const [sliderOffset, setSliderOffset] = useState(0);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setSliderOffset((prev) => prev - 1);
-    }, 30);
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    if (isAdmin) {
-      loadAdminData();
-    }
-  }, [isAdmin]);
-  
-  useEffect(() => {
-    loadFeaturedProducts();
     loadAllProducts();
     loadCategories();
     checkAuth();
   }, []);
 
-  
   const checkAuth = async () => {
     const token = localStorage.getItem('authToken');
     if (!token) return;
@@ -164,24 +55,20 @@ export default function Index() {
       localStorage.removeItem('authToken');
     }
   };
-  
+
   const loadCategories = async () => {
     try {
-      setCategoriesLoading(true);
       const response = await fetch('https://functions.poehali.dev/899eeac8-8b43-4e8b-9430-3ba1b8c0ac0b');
       const data = await response.json();
       setCategories(data.categories || []);
     } catch (error) {
       console.error('Failed to load categories:', error);
       setCategories([]);
-    } finally {
-      setCategoriesLoading(false);
     }
   };
-  
+
   const loadAllProducts = async () => {
     try {
-      setProductsLoading(true);
       const response = await fetch('https://functions.poehali.dev/66eafcf6-38e4-415c-b1ff-ad6d420b564e');
       const products = await response.json();
       
@@ -206,8 +93,6 @@ export default function Index() {
           brand: p.brand,
           category: p.category,
           image: imageUrl,
-          image_filename: p.image_filename,
-          image_url: p.image_url,
           description: p.description,
           is_featured: p.is_featured,
           specifications: p.specifications || []
@@ -218,215 +103,12 @@ export default function Index() {
     } catch (error) {
       console.error('Failed to load products:', error);
       setAllProductsFromDB([]);
-    } finally {
-      setProductsLoading(false);
     }
-  };
-  
-  const loadFeaturedProducts = async () => {
-    try {
-      const response = await fetch('https://functions.poehali.dev/cceb4ca9-48f7-4a28-a301-3dd14baa0d71?featured=true');
-      const products = await response.json();
-      setFeaturedProducts(products);
-    } catch (error) {
-      console.error('Failed to load featured products:', error);
-    }
-  };
-
-  const loadAdminData = async () => {
-    try {
-      const productsRes = await fetch('https://functions.poehali.dev/66eafcf6-38e4-415c-b1ff-ad6d420b564e', {
-        headers: { 'X-Admin-Auth': 'admin:123' }
-      });
-      const products = await productsRes.json();
-      console.log('Загружено товаров для админки:', products.length);
-      setAdminProducts(products);
-
-      const ordersRes = await fetch('https://functions.poehali.dev/55d2462d-02a8-4732-91f6-95271b22efe9', {
-        headers: { 'X-Admin-Auth': 'admin:123' }
-      });
-      const ordersData = await ordersRes.json();
-      console.log('Данные заказов:', ordersData);
-      console.log('Тип ordersData:', Array.isArray(ordersData) ? 'array' : typeof ordersData);
-      const orders = Array.isArray(ordersData) ? ordersData : [];
-      console.log('Установлено заказов:', orders.length);
-      setAdminOrders(orders);
-
-      const messagesRes = await fetch('https://functions.poehali.dev/cef89039-b240-4ef5-bb82-eade4c24411b');
-      const messagesData = await messagesRes.json();
-      console.log('Данные сообщений:', messagesData);
-      const msgs = messagesData.messages || (Array.isArray(messagesData) ? messagesData : []);
-      console.log('Установлено сообщений:', msgs.length);
-      setAdminMessages(msgs);
-    } catch (error) {
-      console.error('Failed to load admin data:', error);
-    }
-  };
-
-
-  const handleSaveProduct = async (product: any) => {
-    const url = 'https://functions.poehali.dev/66eafcf6-38e4-415c-b1ff-ad6d420b564e';
-    const method = product.id ? 'PUT' : 'POST';
-    
-    try {
-      console.log('Отправка товара:', product);
-      
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Admin-Auth': 'admin:123'
-        },
-        body: JSON.stringify(product)
-      });
-      
-      console.log('Статус ответа:', response.status);
-      
-      const result = await response.json();
-      console.log('Результат:', result);
-      
-      if (!response.ok) {
-        alert(`Ошибка: ${result.error || 'Не удалось сохранить товар'}`);
-        return;
-      }
-      
-      alert(product.id ? 'Товар обновлён!' : 'Товар добавлен!');
-      await loadAdminData();
-      await loadAllProducts();
-      setEditingProduct(null);
-    } catch (error) {
-      console.error('Ошибка при сохранении товара:', error);
-      alert('Ошибка при сохранении товара');
-    }
-  };
-
-  const handleDeleteProduct = async (id: number) => {
-    if (!confirm('Удалить товар?')) return;
-    
-    await fetch(`https://functions.poehali.dev/66eafcf6-38e4-415c-b1ff-ad6d420b564e?id=${id}`, {
-      method: 'DELETE',
-      headers: { 'X-Admin-Auth': 'admin:123' }
-    });
-    
-    await loadAdminData();
-    await loadAllProducts();
-  };
-
-  const getFilteredProducts = () => {
-    const productsSource = allProductsFromDB;
-    
-    let products = selectedCategory 
-      ? productsSource.filter(p => p.category === selectedCategory)
-      : productsSource;
-
-
-    if (selectedCategory) {
-      products = products.filter(p => 
-        p.price >= priceRange[0] && p.price <= priceRange[1]
-      );
-
-      if (selectedBrands.length > 0) {
-        products = products.filter(p => selectedBrands.includes(p.brand));
-      }
-
-      if (showInStockOnly) {
-        products = products.filter(p => p.in_stock === true);
-      }
-
-      if (Object.keys(selectedSpecs).length > 0) {
-        products = products.filter(p => {
-          const specs = p.specifications || [];
-          return Object.entries(selectedSpecs).every(([specName, specValues]) => {
-            return specs.some((spec: any) => {
-              const name = spec.spec_name || spec.name || '';
-              const value = spec.spec_value || spec.value || '';
-              return name === specName && specValues.includes(value);
-            });
-          });
-        });
-      }
-
-      if (sortBy === 'price-asc') {
-        products.sort((a, b) => a.price - b.price);
-      } else if (sortBy === 'price-desc') {
-        products.sort((a, b) => b.price - a.price);
-      } else if (sortBy === 'name') {
-        products.sort((a, b) => a.name.localeCompare(b.name));
-      }
-    }
-
-    return products;
-  };
-
-  const filteredProducts = getFilteredProducts();
-
-  const getBrandsForCategory = () => {
-    if (!selectedCategory) return [];
-    const products = allProductsFromDB.filter(p => p.category === selectedCategory);
-    const brands = [...new Set(products.map(p => p.brand))];
-    return brands.sort();
-  };
-
-  const toggleBrand = (brand: string) => {
-    setSelectedBrands(prev => 
-      prev.includes(brand) 
-        ? prev.filter(b => b !== brand)
-        : [...prev, brand]
-    );
-  };
-
-  const getSpecsForCategory = () => {
-    if (!selectedCategory) return {};
-    const products = allProductsFromDB.filter(p => p.category === selectedCategory);
-    
-    const specsMap: Record<string, Set<string>> = {};
-    
-    products.forEach(product => {
-      const specs = product.specifications || [];
-      specs.forEach((spec: any) => {
-        const name = spec.spec_name || spec.name || '';
-        const value = spec.spec_value || spec.value || '';
-        if (name && value) {
-          if (!specsMap[name]) {
-            specsMap[name] = new Set();
-          }
-          specsMap[name].add(value);
-        }
-      });
-    });
-    
-    const result: Record<string, string[]> = {};
-    Object.keys(specsMap).forEach(key => {
-      result[key] = Array.from(specsMap[key]).sort();
-    });
-    
-    return result;
-  };
-
-
-  const toggleSpec = (specName: string, specValue: string) => {
-    setSelectedSpecs(prev => {
-      const current = prev[specName] || [];
-      const updated = current.includes(specValue)
-        ? current.filter(v => v !== specValue)
-        : [...current, specValue];
-      
-      if (updated.length === 0) {
-        const { [specName]: _, ...rest } = prev;
-        return rest;
-      }
-      
-      return { ...prev, [specName]: updated };
-    });
   };
 
   const addToCart = (product: any) => {
     setCart(prev => [...prev, product]);
     alert('Товар добавлен в корзину!');
-  };
-
-  const removeFromCart = (productId: number) => {
-    setCart(prev => prev.filter(p => p.id !== productId));
   };
 
   const toggleFavorite = (product: any) => {
@@ -441,623 +123,10 @@ export default function Index() {
     });
   };
 
-  useEffect(() => {
-    const saved = localStorage.getItem('favorites');
-    if (saved) {
-      setFavorites(JSON.parse(saved));
-    }
-  }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    setCurrentUser(null);
-    setIsLoggedIn(false);
-    setIsAdmin(false);
-    alert('Вы вышли из аккаунта');
-  };
-
-  const handleCheckout = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (cart.length === 0) {
-      alert('Корзина пуста!');
-      return;
-    }
-    
-    const formData = new FormData(e.target as HTMLFormElement);
-    const orderData = {
-      user_id: currentUser?.id || null,
-      full_name: formData.get('fullName'),
-      email: formData.get('email'),
-      phone: formData.get('phone'),
-      delivery_type: formData.get('deliveryType'),
-      delivery_address: formData.get('address') || '',
-      total_amount: cart.reduce((sum, item) => sum + item.price, 0),
-      items: cart
-    };
-    
-    try {
-      const response = await fetch('https://functions.poehali.dev/55d2462d-02a8-4732-91f6-95271b22efe9', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(orderData)
-      });
-      
-      if (response.ok) {
-        alert('Заказ успешно оформлен!');
-        setCart([]);
-        setCheckoutData({ fullName: '', email: '', phone: '', deliveryType: 'delivery', address: '' });
-      } else {
-        alert('Ошибка при оформлении заказа');
-      }
-    } catch (error) {
-      console.error('Checkout error:', error);
-      alert('Ошибка при оформлении заказа');
-    }
-  };
-
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    const formData = new FormData(e.target as HTMLFormElement);
-    const messageData = {
-      name: formData.get('name'),
-      email: formData.get('email'),
-      subject: formData.get('subject'),
-      message: formData.get('message')
-    };
-    
-    try {
-      const response = await fetch('https://functions.poehali.dev/cef89039-b240-4ef5-bb82-eade4c24411b', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(messageData)
-      });
-      
-      if (response.ok) {
-        alert('Сообщение отправлено!');
-        (e.target as HTMLFormElement).reset();
-      } else {
-        alert('Ошибка отправки');
-      }
-    } catch (error) {
-      console.error('Message error:', error);
-      alert('Ошибка отправки');
-    }
-  };
-
-
-  const removeFromFavorites = (productId: number) => {
-    setFavorites(favorites.filter(p => p.id !== productId));
-  };
-
-  const renderHeader = () => (
-    <header className="sticky top-0 z-50 bg-white shadow-lg border-b border-gray-200">
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between gap-4 flex-wrap">
-          <div className="flex items-center gap-2">
-            <div 
-              className="bg-white text-primary px-6 py-3 rounded-xl font-bold text-2xl shadow-lg cursor-pointer hover:scale-105 transition-transform"
-              onClick={() => {
-                setCurrentPage('home');
-                setSelectedCategory(null);
-              }}
-            >
-              MIX PC
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <div className="text-sm text-center hidden md:block">
-              <div className="font-semibold text-base text-primary">8 (800) 555-77-30</div>
-              <div className="flex gap-2 mt-1 justify-center">
-                <a href="https://t.me" target="_blank" rel="noopener" className="text-primary hover:opacity-80 transition-opacity">
-                  <Icon name="Send" size={20} />
-                </a>
-                <a href="https://wa.me" target="_blank" rel="noopener" className="text-primary hover:opacity-80 transition-opacity">
-                  <Icon name="MessageCircle" size={20} />
-                </a>
-              </div>
-            </div>
-
-            {isLoggedIn ? (
-              <div className="flex items-center gap-3">
-                <div className="hidden sm:flex flex-col items-end">
-                  <span className="text-sm font-semibold">{currentUser?.username}</span>
-                  <span className="text-xs text-muted-foreground">{currentUser?.email}</span>
-                </div>
-                <Button 
-                  onClick={() => {
-                    localStorage.removeItem('authToken');
-                    setIsLoggedIn(false);
-                    setIsAdmin(false);
-                    setCurrentUser(null);
-                    alert('Вы вышли из аккаунта');
-                  }}
-                  variant="outline" 
-                  className="gap-2"
-                >
-                  <Icon name="LogOut" size={18} />
-                  <span className="hidden sm:inline">Выход</span>
-                </Button>
-              </div>
-            ) : (
-              <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
-                <DialogTrigger asChild>
-                  <Button className="gap-2 gradient-teal text-white hover:opacity-90">
-                    <Icon name="User" size={18} />
-                    <span className="hidden sm:inline">Войти</span>
-                  </Button>
-                </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle className="text-2xl">Личный кабинет</DialogTitle>
-                </DialogHeader>
-                <Tabs defaultValue="login">
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="login">Вход</TabsTrigger>
-                    <TabsTrigger value="register">Регистрация</TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="login" className="space-y-4 mt-4">
-                    <form onSubmit={async (e) => {
-                      e.preventDefault();
-                      const formData = new FormData(e.target as HTMLFormElement);
-                      const username = formData.get('login') as string;
-                      const password = formData.get('password') as string;
-                      
-                      try {
-                        const response = await fetch('https://functions.poehali.dev/9b2ca161-5453-49a5-959c-0d611720a876', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ username, password })
-                        });
-                        
-                        const data = await response.json();
-                        
-                        if (response.ok && data.token) {
-                          localStorage.setItem('authToken', data.token);
-                          setCurrentUser(data.user);
-                          setIsLoggedIn(true);
-                          setIsAdmin(data.user.role === 'admin');
-                          setLoginOpen(false);
-                          alert(`Добро пожаловать, ${data.user.username}!`);
-                        } else {
-                          alert(data.error || 'Неверный логин или пароль');
-                        }
-                      } catch (error) {
-                        alert('Ошибка подключения к серверу');
-                      }
-                    }}>
-                      <div className="space-y-2">
-                        <Label>Логин</Label>
-                        <Input name="login" placeholder="Введите логин" required />
-                      </div>
-                      <div className="space-y-2 mt-4">
-                        <Label>Пароль</Label>
-                        <Input name="password" type="password" placeholder="Введите пароль" required />
-                      </div>
-                      <Button 
-                        type="submit"
-                        className="w-full bg-primary hover:bg-primary/90 h-11 mt-4"
-                      >
-                        Войти
-                      </Button>
-                    </form>
-                  </TabsContent>
-                  <TabsContent value="register" className="space-y-4 mt-4">
-                    <form onSubmit={async (e) => {
-                      e.preventDefault();
-                      const formData = new FormData(e.target as HTMLFormElement);
-                      const email = formData.get('email') as string;
-                      const username = formData.get('username') as string;
-                      const password = formData.get('password') as string;
-                      
-                      try {
-                        const response = await fetch('https://functions.poehali.dev/9b2ca161-5453-49a5-959c-0d611720a876', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ action: 'register', email, username, password })
-                        });
-                        
-                        const data = await response.json();
-                        
-                        if (response.ok && data.success) {
-                          alert('Регистрация успешна! Теперь можете войти.');
-                        } else {
-                          alert(data.error || 'Ошибка регистрации');
-                        }
-                      } catch (error) {
-                        alert('Ошибка подключения к серверу');
-                      }
-                    }}>
-                      <div className="space-y-2">
-                        <Label>Email</Label>
-                        <Input name="email" type="email" placeholder="Введите email" required />
-                      </div>
-                      <div className="space-y-2 mt-4">
-                        <Label>Логин</Label>
-                        <Input name="username" placeholder="Введите логин" required />
-                      </div>
-                      <div className="space-y-2 mt-4">
-                        <Label>Пароль</Label>
-                        <Input name="password" type="password" placeholder="Введите пароль" required />
-                      </div>
-                      <Button 
-                        type="submit"
-                        className="w-full bg-primary hover:bg-primary/90 h-11 mt-4"
-                      >
-                        Зарегистрироваться
-                      </Button>
-                    </form>
-                  </TabsContent>
-                </Tabs>
-              </DialogContent>
-            </Dialog>
-            )}
-
-            {isAdmin && (
-              <Button 
-                onClick={() => setCurrentPage('admin')}
-                className="gap-2"
-                variant="outline"
-              >
-                <Icon name="Settings" size={18} />
-                <span className="hidden sm:inline">Админ-панель</span>
-              </Button>
-            )}
-
-            <Button 
-              variant="outline" 
-              className="relative gap-2" 
-              onClick={() => setCurrentPage('favorites')}
-            >
-              <Icon name="Heart" size={18} />
-              <span className="hidden sm:inline">Избранное</span>
-              {favorites.length > 0 && (
-                <Badge variant="destructive" className="absolute -top-2 -right-2 px-2 py-0.5 h-5 min-w-5 flex items-center justify-center">
-                  {favorites.length}
-                </Badge>
-              )}
-            </Button>
-
-            <Button 
-              variant="default" 
-              className="relative gap-2 gradient-blue text-white hover:opacity-90" 
-              onClick={() => setCurrentPage('cart')}
-            >
-              <Icon name="ShoppingCart" size={18} />
-              <span className="hidden sm:inline">Корзина</span>
-              {cart.length > 0 && (
-                <Badge className="absolute -top-2 -right-2 bg-white text-primary px-2 py-0.5 h-5 min-w-5 flex items-center justify-center">
-                  {cart.length}
-                </Badge>
-              )}
-            </Button>
-          </div>
-        </div>
-      </div>
-    </header>
-  );
-
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {renderHeader()}
-      <main className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-4">MIX PC - Интернет-магазин компьютерной техники</h1>
-        <p>Загрузка...</p>
-      </main>
-    </div>
-  );
-}
-
-// HARDCODE TO DELETE
-
-  // Накопители SSD
-  { id: 51, name: 'Samsung 980 PRO 2TB', price: 18990, brand: 'Samsung', category: 'Накопители SSD', image: '/images/products/51.jpg' },
-  { id: 52, name: 'WD Black SN850X 2TB', price: 17990, brand: 'Western Digital', category: 'Накопители SSD', image: '/images/products/52.jpg' },
-  { id: 53, name: 'Kingston KC3000 1TB', price: 9990, brand: 'Kingston', category: 'Накопители SSD', image: '/images/products/53.jpg' },
-  { id: 54, name: 'Crucial P5 Plus 1TB', price: 8990, brand: 'Crucial', category: 'Накопители SSD', image: '/images/products/54.jpg' },
-  { id: 55, name: 'Samsung 990 PRO 1TB', price: 11990, brand: 'Samsung', category: 'Накопители SSD', image: '/images/products/55.jpg' },
-  { id: 56, name: 'Seagate FireCuda 530 2TB', price: 19990, brand: 'Seagate', category: 'Накопители SSD', image: '/images/products/56.jpg' },
-  { id: 57, name: 'ADATA XPG Gammix S70 1TB', price: 10990, brand: 'ADATA', category: 'Накопители SSD', image: '/images/products/57.jpg' },
-  { id: 58, name: 'WD Blue SN570 500GB', price: 5990, brand: 'Western Digital', category: 'Накопители SSD', image: '/images/products/58.jpg' },
-  { id: 59, name: 'Kingston NV2 1TB', price: 7990, brand: 'Kingston', category: 'Накопители SSD', image: '/images/products/59.jpg' },
-  { id: 60, name: 'Samsung 870 EVO 1TB', price: 9990, brand: 'Samsung', category: 'Накопители SSD', image: '/images/products/60.jpg' },
-
-  // Блоки питания
-  { id: 61, name: 'Corsair RM850x', price: 14990, brand: 'Corsair', category: 'Блоки питания', image: '/images/products/61.jpg' },
-  { id: 62, name: 'Seasonic Focus GX-750', price: 12990, brand: 'Seasonic', category: 'Блоки питания', image: '/images/products/62.jpg' },
-  { id: 63, name: 'be quiet! Straight Power 11 750W', price: 13990, brand: 'be quiet!', category: 'Блоки питания', image: '/images/products/63.jpg' },
-  { id: 64, name: 'Thermaltake Toughpower GF1 850W', price: 11990, brand: 'Thermaltake', category: 'Блоки питания', image: '/images/products/64.jpg' },
-  { id: 65, name: 'ASUS ROG Thor 1200W', price: 29990, brand: 'ASUS', category: 'Блоки питания', image: '/images/products/65.jpg' },
-  { id: 66, name: 'Cooler Master V850 SFX Gold', price: 15990, brand: 'Cooler Master', category: 'Блоки питания', image: '/images/products/66.jpg' },
-  { id: 67, name: 'EVGA SuperNOVA 750 G6', price: 12990, brand: 'EVGA', category: 'Блоки питания', image: '/images/products/67.jpg' },
-  { id: 68, name: 'MSI MPG A850GF', price: 13990, brand: 'MSI', category: 'Блоки питания', image: '/images/products/68.jpg' },
-  { id: 69, name: 'DeepCool PX1000G', price: 11990, brand: 'DeepCool', category: 'Блоки питания', image: '/images/products/69.jpg' },
-  { id: 70, name: 'Corsair HX1000i', price: 24990, brand: 'Corsair', category: 'Блоки питания', image: '/images/products/70.jpg' },
-
-  // Корпуса
-  { id: 71, name: 'NZXT H510 Elite', price: 14990, brand: 'NZXT', category: 'Корпуса', image: '/images/products/71.jpg' },
-  { id: 72, name: 'Corsair 4000D Airflow', price: 9990, brand: 'Corsair', category: 'Корпуса', image: '/images/products/72.jpg' },
-  { id: 73, name: 'Fractal Design Meshify 2', price: 12990, brand: 'Fractal Design', category: 'Корпуса', image: '/images/products/73.jpg' },
-  { id: 74, name: 'Lian Li O11 Dynamic EVO', price: 17990, brand: 'Lian Li', category: 'Корпуса', image: '/images/products/74.jpg' },
-  { id: 75, name: 'be quiet! Pure Base 500DX', price: 11990, brand: 'be quiet!', category: 'Корпуса', image: '/images/products/75.jpg' },
-  { id: 76, name: 'Cooler Master MasterBox TD500', price: 8990, brand: 'Cooler Master', category: 'Корпуса', image: '/images/products/76.jpg' },
-  { id: 77, name: 'Thermaltake View 51', price: 19990, brand: 'Thermaltake', category: 'Корпуса', image: '/images/products/77.jpg' },
-  { id: 78, name: 'Phanteks Eclipse P400A', price: 10990, brand: 'Phanteks', category: 'Корпуса', image: '/images/products/78.jpg' },
-  { id: 79, name: 'DeepCool CC560', price: 6990, brand: 'DeepCool', category: 'Корпуса', image: '/images/products/79.jpg' },
-  { id: 80, name: 'ASUS TUF Gaming GT501', price: 15990, brand: 'ASUS', category: 'Корпуса', image: '/images/products/80.jpg' },
-
-  // Куллеры
-  { id: 81, name: 'Noctua NH-D15', price: 9990, brand: 'Noctua', category: 'Куллеры', image: '/images/products/81.jpg' },
-  { id: 82, name: 'be quiet! Dark Rock Pro 4', price: 8990, brand: 'be quiet!', category: 'Куллеры', image: '/images/products/82.jpg' },
-  { id: 83, name: 'Cooler Master Hyper 212', price: 3990, brand: 'Cooler Master', category: 'Куллеры', image: '/images/products/83.jpg' },
-  { id: 84, name: 'Arctic Liquid Freezer II 280', price: 11990, brand: 'Arctic', category: 'Куллеры', image: '/images/products/84.jpg' },
-  { id: 85, name: 'Corsair iCUE H150i Elite', price: 17990, brand: 'Corsair', category: 'Куллеры', image: '/images/products/85.jpg' },
-  { id: 86, name: 'DeepCool AK620', price: 5990, brand: 'DeepCool', category: 'Куллеры', image: '/images/products/86.jpg' },
-  { id: 87, name: 'NZXT Kraken X63', price: 14990, brand: 'NZXT', category: 'Куллеры', image: '/images/products/87.jpg' },
-  { id: 88, name: 'Thermaltake TOUGHAIR 510', price: 6990, brand: 'Thermaltake', category: 'Куллеры', image: '/images/products/88.jpg' },
-  { id: 89, name: 'Noctua NH-U12S', price: 7990, brand: 'Noctua', category: 'Куллеры', image: '/images/products/89.jpg' },
-  { id: 90, name: 'be quiet! Pure Loop 2', price: 12990, brand: 'be quiet!', category: 'Куллеры', image: '/images/products/90.jpg' },
-
-  // Мониторы
-  { id: 91, name: 'Samsung Odyssey G7 32"', price: 49990, brand: 'Samsung', category: 'Мониторы', image: '/images/products/91.jpg' },
-  { id: 92, name: 'LG UltraGear 27" 144Hz', price: 29990, brand: 'LG', category: 'Мониторы', image: '/images/products/92.jpg' },
-  { id: 93, name: 'ASUS TUF Gaming VG27AQ', price: 34990, brand: 'ASUS', category: 'Мониторы', image: '/images/products/93.jpg' },
-  { id: 94, name: 'Dell S2721DGF 27"', price: 39990, brand: 'Dell', category: 'Мониторы', image: '/images/products/94.jpg' },
-  { id: 95, name: 'AOC 24G2 24" 144Hz', price: 19990, brand: 'AOC', category: 'Мониторы', image: '/images/products/95.jpg' },
-  { id: 96, name: 'MSI Optix MAG274QRF', price: 44990, brand: 'MSI', category: 'Мониторы', image: '/images/products/96.jpg' },
-  { id: 97, name: 'BenQ ZOWIE XL2546K', price: 54990, brand: 'BenQ', category: 'Мониторы', image: '/images/products/97.jpg' },
-  { id: 98, name: 'Gigabyte M27Q 27"', price: 32990, brand: 'Gigabyte', category: 'Мониторы', image: '/images/products/98.jpg' },
-  { id: 99, name: 'ViewSonic Elite XG270', price: 37990, brand: 'ViewSonic', category: 'Мониторы', image: '/images/products/99.jpg' },
-  { id: 100, name: 'Acer Predator XB273U', price: 47990, brand: 'Acer', category: 'Мониторы', image: '/images/products/100.jpg' }
-];
-
-// Весь хардкод массив удалён - все товары грузятся из БД
-
-export default function Index() {
-  const [currentPage, setCurrentPage] = useState('home');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [cart, setCart] = useState<any[]>([]);
-  const [favorites, setFavorites] = useState<any[]>([]);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [loginOpen, setLoginOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState<any>(null);
-  
-  // Checkout
-  const [checkoutData, setCheckoutData] = useState({
-    fullName: '',
-    email: '',
-    phone: '',
-    deliveryType: 'delivery',
-    address: ''
-  });
-  
-  // Admin
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [adminProducts, setAdminProducts] = useState<any[]>([]);
-  const [adminMessages, setAdminMessages] = useState<any[]>([]);
-  const [editingProduct, setEditingProduct] = useState<any>(null);
-  const [adminActiveTab, setAdminActiveTab] = useState('products');
-  const [adminOrders, setAdminOrders] = useState<any[]>([]);
-  
-  // Featured products
-  const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
-  
-  // All products from database
-  const [allProductsFromDB, setAllProductsFromDB] = useState<any[]>([]);
-  const [productsLoading, setProductsLoading] = useState(true);
-  
-  // Categories from database
-  const [categories, setCategories] = useState<any[]>([]);
-  const [categoriesLoading, setCategoriesLoading] = useState(true);
-  
-  // Filters
-  const [priceRange, setPriceRange] = useState([0, 200000]);
-  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
-  const [sortBy, setSortBy] = useState('default');
-  const [showInStockOnly, setShowInStockOnly] = useState(false);
-  const [selectedSpecs, setSelectedSpecs] = useState<Record<string, string[]>>({});
-
-  // Auto-slider
-  const [sliderOffset, setSliderOffset] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setSliderOffset((prev) => prev - 1);
-    }, 30);
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    if (isAdmin) {
-      loadAdminData();
-    }
-  }, [isAdmin]);
-  
-  useEffect(() => {
-    loadFeaturedProducts();
-    loadAllProducts();
-    loadCategories();
-    checkAuth();
-  }, []);
-  
-  const checkAuth = async () => {
-    const token = localStorage.getItem('authToken');
-    if (!token) return;
-    
-    try {
-      const response = await fetch('https://functions.poehali.dev/9b2ca161-5453-49a5-959c-0d611720a876', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      
-      const data = await response.json();
-      
-      if (response.ok && data.user) {
-        setCurrentUser(data.user);
-        setIsLoggedIn(true);
-        setIsAdmin(data.user.role === 'admin');
-      } else {
-        localStorage.removeItem('authToken');
-      }
-    } catch (error) {
-      localStorage.removeItem('authToken');
-    }
-  };
-  
-  const loadCategories = async () => {
-    try {
-      setCategoriesLoading(true);
-      const response = await fetch('https://functions.poehali.dev/899eeac8-8b43-4e8b-9430-3ba1b8c0ac0b');
-      const data = await response.json();
-      setCategories(data.categories || []);
-    } catch (error) {
-      console.error('Failed to load categories:', error);
-      setCategories([]);
-    } finally {
-      setCategoriesLoading(false);
-    }
-  };
-  
-  const loadAllProducts = async () => {
-    try {
-      setProductsLoading(true);
-      const response = await fetch('https://functions.poehali.dev/66eafcf6-38e4-415c-b1ff-ad6d420b564e');
-      const products = await response.json();
-      
-      const formattedProducts = products.map((p: any) => {
-        let imageUrl = '/placeholder.jpg';
-        
-        if (p.image_url || p.image_filename) {
-          const img = p.image_url || p.image_filename;
-          if (img.startsWith('http')) {
-            imageUrl = img;
-          } else if (img.startsWith('files/')) {
-            imageUrl = `https://cdn.poehali.dev/${img}`;
-          } else {
-            imageUrl = `https://cdn.poehali.dev/images/${img}`;
-          }
-        }
-        
-        return {
-          id: p.id,
-          name: p.name,
-          price: p.price,
-          brand: p.brand,
-          category: p.category,
-          image: imageUrl,
-          image_filename: p.image_filename,
-          image_url: p.image_url,
-          description: p.description,
-          is_featured: p.is_featured,
-          specifications: p.specifications || []
-        };
-      });
-      
-      setAllProductsFromDB(formattedProducts);
-    } catch (error) {
-      console.error('Failed to load products:', error);
-      setAllProductsFromDB([]);
-    } finally {
-      setProductsLoading(false);
-    }
-  };
-  
-  const loadFeaturedProducts = async () => {
-    try {
-      const response = await fetch('https://functions.poehali.dev/cceb4ca9-48f7-4a28-a301-3dd14baa0d71?featured=true');
-      const products = await response.json();
-      setFeaturedProducts(products);
-    } catch (error) {
-      console.error('Failed to load featured products:', error);
-    }
-  };
-
-  const loadAdminData = async () => {
-    try {
-      const productsRes = await fetch('https://functions.poehali.dev/66eafcf6-38e4-415c-b1ff-ad6d420b564e', {
-        headers: { 'X-Admin-Auth': 'admin:123' }
-      });
-      const products = await productsRes.json();
-      console.log('Загружено товаров для админки:', products.length);
-      setAdminProducts(products);
-
-      const ordersRes = await fetch('https://functions.poehali.dev/55d2462d-02a8-4732-91f6-95271b22efe9', {
-        headers: { 'X-Admin-Auth': 'admin:123' }
-      });
-      const ordersData = await ordersRes.json();
-      console.log('Данные заказов:', ordersData);
-      console.log('Тип ordersData:', Array.isArray(ordersData) ? 'array' : typeof ordersData);
-      const orders = Array.isArray(ordersData) ? ordersData : [];
-      console.log('Установлено заказов:', orders.length);
-      setAdminOrders(orders);
-
-      const messagesRes = await fetch('https://functions.poehali.dev/cef89039-b240-4ef5-bb82-eade4c24411b');
-      const messagesData = await messagesRes.json();
-      console.log('Данные сообщений:', messagesData);
-      const msgs = messagesData.messages || (Array.isArray(messagesData) ? messagesData : []);
-      console.log('Установлено сообщений:', msgs.length);
-      setAdminMessages(msgs);
-    } catch (error) {
-      console.error('Failed to load admin data:', error);
-    }
-  };
-
-  const handleSaveProduct = async (product: any) => {
-    const url = 'https://functions.poehali.dev/66eafcf6-38e4-415c-b1ff-ad6d420b564e';
-    const method = product.id ? 'PUT' : 'POST';
-    
-    try {
-      console.log('Отправка товара:', product);
-      
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Admin-Auth': 'admin:123'
-        },
-        body: JSON.stringify(product)
-      });
-      
-      console.log('Статус ответа:', response.status);
-      
-      const result = await response.json();
-      console.log('Результат:', result);
-      
-      if (!response.ok) {
-        alert(`Ошибка: ${result.error || 'Не удалось сохранить товар'}`);
-        return;
-      }
-      
-      alert(product.id ? 'Товар обновлён!' : 'Товар добавлен!');
-      await loadAdminData();
-      await loadAllProducts();
-      setEditingProduct(null);
-    } catch (error) {
-      console.error('Ошибка при сохранении товара:', error);
-      alert('Ошибка при сохранении товара');
-    }
-  };
-
-  const handleDeleteProduct = async (id: number) => {
-    if (!confirm('Удалить товар?')) return;
-    
-    await fetch(`https://functions.poehali.dev/66eafcf6-38e4-415c-b1ff-ad6d420b564e?id=${id}`, {
-      method: 'DELETE',
-      headers: { 'X-Admin-Auth': 'admin:123' }
-    });
-    
-    await loadAdminData();
-    await loadAllProducts();
-  };
-
   const getFilteredProducts = () => {
-    const productsSource = allProductsFromDB;
-    
     let products = selectedCategory 
-      ? productsSource.filter(p => p.category === selectedCategory)
-      : productsSource;
+      ? allProductsFromDB.filter(p => p.category === selectedCategory)
+      : allProductsFromDB;
 
     if (selectedCategory) {
       products = products.filter(p => 
@@ -1066,23 +135,6 @@ export default function Index() {
 
       if (selectedBrands.length > 0) {
         products = products.filter(p => selectedBrands.includes(p.brand));
-      }
-
-      if (showInStockOnly) {
-        products = products.filter(p => p.in_stock === true);
-      }
-
-      if (Object.keys(selectedSpecs).length > 0) {
-        products = products.filter(p => {
-          const specs = p.specifications || [];
-          return Object.entries(selectedSpecs).every(([specName, specValues]) => {
-            return specs.some((spec: any) => {
-              const name = spec.spec_name || spec.name || '';
-              const value = spec.spec_value || spec.value || '';
-              return name === specName && specValues.includes(value);
-            });
-          });
-        });
       }
 
       if (sortBy === 'price-asc') {
@@ -1099,161 +151,52 @@ export default function Index() {
 
   const filteredProducts = getFilteredProducts();
 
-  const getBrandsForCategory = () => {
-    if (!selectedCategory) return [];
-    const productsSource = allProductsFromDB.length > 0 ? allProductsFromDB : allProducts;
-    const products = productsSource.filter(p => p.category === selectedCategory);
-    const brands = [...new Set(products.map(p => p.brand))];
-    return brands.sort();
-  };
-
-  const toggleBrand = (brand: string) => {
-    setSelectedBrands(prev => 
-      prev.includes(brand) 
-        ? prev.filter(b => b !== brand)
-        : [...prev, brand]
-    );
-  };
-
-  const getSpecsForCategory = () => {
-    if (!selectedCategory) return {};
-    const productsSource = allProductsFromDB.length > 0 ? allProductsFromDB : allProducts;
-    const products = productsSource.filter(p => p.category === selectedCategory);
-    
-    const specsMap: Record<string, Set<string>> = {};
-    
-    products.forEach(product => {
-      const specs = product.specifications || [];
-      specs.forEach((spec: any) => {
-        const name = spec.spec_name || spec.name || '';
-        const value = spec.spec_value || spec.value || '';
-        if (name && value) {
-          if (!specsMap[name]) {
-            specsMap[name] = new Set();
-          }
-          specsMap[name].add(value);
-        }
-      });
-    });
-    
-    const result: Record<string, string[]> = {};
-    Object.keys(specsMap).forEach(key => {
-      result[key] = Array.from(specsMap[key]).sort();
-    });
-    
-    return result;
-  };
-
-  const toggleSpec = (specName: string, specValue: string) => {
-    setSelectedSpecs(prev => {
-      const current = prev[specName] || [];
-      const updated = current.includes(specValue)
-        ? current.filter(v => v !== specValue)
-        : [...current, specValue];
-      
-      if (updated.length === 0) {
-        const { [specName]: _, ...rest } = prev;
-        return rest;
-      }
-      
-      return { ...prev, [specName]: updated };
-    });
-  };
-
-  const addToCart = (product: any) => {
-    if (!isLoggedIn) {
-      alert('Войдите в систему для добавления товаров в корзину');
-      return;
-    }
-    setCart([...cart, product]);
-  };
-
-  const addToFavorites = (product: any) => {
-    if (!isLoggedIn) {
-      alert('Войдите в систему для добавления товаров в избранное');
-      return;
-    }
-    if (!favorites.find(f => f.id === product.id)) {
-      setFavorites([...favorites, product]);
-    }
-  };
-
-  const removeFromCart = (productId: number) => {
-    setCart(cart.filter(p => p.id !== productId));
-  };
-
-  const removeFromFavorites = (productId: number) => {
-    setFavorites(favorites.filter(p => p.id !== productId));
-  };
-
-  const renderHeader = () => (
-    <header className="sticky top-0 z-50 bg-white shadow-lg border-b border-gray-200">
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between gap-4 flex-wrap">
-          <div className="flex items-center gap-2">
-            <div 
-              className="bg-white text-primary px-6 py-3 rounded-xl font-bold text-2xl shadow-lg cursor-pointer hover:scale-105 transition-transform"
-              onClick={() => {
-                setCurrentPage('home');
-                setSelectedCategory(null);
-              }}
-            >
-              MIX PC
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <div className="text-sm text-center hidden md:block">
-              <div className="font-semibold text-base text-primary">8 (800) 555-77-30</div>
-              <div className="flex gap-2 mt-1 justify-center">
-                <a href="https://t.me" target="_blank" rel="noopener" className="text-primary hover:opacity-80 transition-opacity">
-                  <Icon name="Send" size={20} />
-                </a>
-                <a href="https://wa.me" target="_blank" rel="noopener" className="text-primary hover:opacity-80 transition-opacity">
-                  <Icon name="MessageCircle" size={20} />
-                </a>
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <header className="sticky top-0 z-50 bg-white shadow-lg border-b border-gray-200">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex items-center gap-2">
+              <div 
+                className="bg-white text-primary px-6 py-3 rounded-xl font-bold text-2xl shadow-lg cursor-pointer hover:scale-105 transition-transform"
+                onClick={() => {
+                  setCurrentPage('home');
+                  setSelectedCategory(null);
+                }}
+              >
+                MIX PC
               </div>
             </div>
 
-            {isLoggedIn ? (
-              <div className="flex items-center gap-3">
-                <div className="hidden sm:flex flex-col items-end">
+            <div className="flex items-center gap-4">
+              {isLoggedIn ? (
+                <div className="flex items-center gap-3">
                   <span className="text-sm font-semibold">{currentUser?.username}</span>
-                  <span className="text-xs text-muted-foreground">{currentUser?.email}</span>
-                </div>
-                <Button 
-                  onClick={() => {
-                    localStorage.removeItem('authToken');
-                    setIsLoggedIn(false);
-                    setIsAdmin(false);
-                    setCurrentUser(null);
-                    alert('Вы вышли из аккаунта');
-                  }}
-                  variant="outline" 
-                  className="gap-2"
-                >
-                  <Icon name="LogOut" size={18} />
-                  <span className="hidden sm:inline">Выход</span>
-                </Button>
-              </div>
-            ) : (
-              <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
-                <DialogTrigger asChild>
-                  <Button className="gap-2 gradient-teal text-white hover:opacity-90">
-                    <Icon name="User" size={18} />
-                    <span className="hidden sm:inline">Войти</span>
+                  <Button 
+                    onClick={() => {
+                      localStorage.removeItem('authToken');
+                      setIsLoggedIn(false);
+                      setIsAdmin(false);
+                      setCurrentUser(null);
+                      alert('Вы вышли из аккаунта');
+                    }}
+                    variant="outline"
+                  >
+                    <Icon name="LogOut" size={18} />
                   </Button>
-                </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle className="text-2xl">Личный кабинет</DialogTitle>
-                </DialogHeader>
-                <Tabs defaultValue="login">
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="login">Вход</TabsTrigger>
-                    <TabsTrigger value="register">Регистрация</TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="login" className="space-y-4 mt-4">
+                </div>
+              ) : (
+                <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="gap-2">
+                      <Icon name="User" size={18} />
+                      Войти
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Вход</DialogTitle>
+                    </DialogHeader>
                     <form onSubmit={async (e) => {
                       e.preventDefault();
                       const formData = new FormData(e.target as HTMLFormElement);
@@ -1285,1627 +228,221 @@ export default function Index() {
                     }}>
                       <div className="space-y-2">
                         <Label>Логин</Label>
-                        <Input name="login" placeholder="Введите логин" required />
+                        <Input name="login" required />
                       </div>
                       <div className="space-y-2 mt-4">
                         <Label>Пароль</Label>
-                        <Input name="password" type="password" placeholder="Введите пароль" required />
+                        <Input name="password" type="password" required />
                       </div>
-                      <Button 
-                        type="submit"
-                        className="w-full bg-primary hover:bg-primary/90 h-11 mt-4"
-                      >
+                      <Button type="submit" className="w-full mt-4">
                         Войти
                       </Button>
                     </form>
-                  </TabsContent>
-                  <TabsContent value="register" className="space-y-4 mt-4">
-                    <form onSubmit={async (e) => {
-                      e.preventDefault();
-                      const formData = new FormData(e.target as HTMLFormElement);
-                      const email = formData.get('email') as string;
-                      const username = formData.get('username') as string;
-                      const password = formData.get('password') as string;
-                      
-                      try {
-                        const response = await fetch('https://functions.poehali.dev/9b2ca161-5453-49a5-959c-0d611720a876', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ action: 'register', email, username, password })
-                        });
-                        
-                        const data = await response.json();
-                        
-                        if (response.ok && data.success) {
-                          alert('Регистрация успешна! Теперь вы можете войти.');
-                          (e.target as HTMLFormElement).reset();
-                        } else {
-                          alert(data.error || 'Ошибка регистрации');
-                        }
-                      } catch (error) {
-                        alert('Ошибка подключения к серверу');
-                      }
-                    }}>
-                      <div className="space-y-2">
-                        <Label>Email</Label>
-                        <Input type="email" name="email" placeholder="email@example.com" required />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Логин</Label>
-                        <Input name="username" placeholder="Придумайте логин" required />
-                        <p className="text-xs text-red-500">Логин не может быть пустым</p>
-                      </div>
-                      <div className="space-y-2 mb-4">
-                        <Label>Пароль</Label>
-                        <Input type="password" name="password" placeholder="Придумайте пароль" required />
-                        <p className="text-xs text-red-500">Пароль не может быть пустым</p>
-                      </div>
-                      <Button type="submit" className="w-full bg-secondary hover:bg-secondary/90 h-11">
-                        Зарегистрироваться
-                      </Button>
-                    </form>
-                  </TabsContent>
-                </Tabs>
-              </DialogContent>
-            </Dialog>
-            )}
-
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button size="icon" className="relative gradient-teal text-white hover:opacity-90">
-                  <Icon name="Heart" size={20} />
-                  {favorites.length > 0 && (
-                    <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center bg-secondary text-white">
-                      {favorites.length}
-                    </Badge>
-                  )}
-                </Button>
-              </SheetTrigger>
-              <SheetContent className="w-full sm:max-w-lg">
-                <SheetHeader>
-                  <SheetTitle>Избранное</SheetTitle>
-                </SheetHeader>
-                <div className="mt-6 space-y-4 overflow-y-auto max-h-[calc(100vh-120px)]">
-                  {favorites.length === 0 ? (
-                    <div className="text-center py-12">
-                      <Icon name="Heart" size={64} className="mx-auto text-muted-foreground mb-4" />
-                      <p className="text-muted-foreground">Избранное пусто</p>
-                    </div>
-                  ) : (
-                    favorites.map(product => {
-                      const getProductImage = (product: any) => {
-                        if (product.image || product.image_url || product.image_filename) {
-                          const img = product.image || product.image_url || product.image_filename;
-                          if (img.startsWith('http')) return img;
-                          if (img.startsWith('files/')) return `https://cdn.poehali.dev/${img}`;
-                          return `https://cdn.poehali.dev/images/${img}`;
-                        }
-                        return '';
-                      };
-                      
-                      const productSpecs = product.specifications || [];
-                      const specs = Array.isArray(productSpecs) 
-                        ? productSpecs.map((s: any) => typeof s === 'string' ? s : `${s.spec_name || s.name}: ${s.spec_value || s.value}`)
-                        : [];
-                      
-                      return (
-                      <Card key={product.id}>
-                        <CardContent className="p-4">
-                          <div className="flex gap-4">
-                            <div className="w-24 h-24 bg-muted rounded-lg overflow-hidden flex-shrink-0">
-                              {getProductImage(product) ? (
-                                <img 
-                                  src={getProductImage(product)} 
-                                  alt={product.name}
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center">
-                                  <Icon name="Package" size={32} className="text-muted-foreground" />
-                                </div>
-                              )}
-                            </div>
-                            <div className="flex-1">
-                              <Badge className="mb-1 text-xs">{product.brand}</Badge>
-                              <h4 className="font-semibold mb-2 line-clamp-2">{product.name}</h4>
-                              {product.description && (
-                                <p className="text-xs text-muted-foreground mb-2 line-clamp-1">{product.description}</p>
-                              )}
-                              {specs.length > 0 && (
-                                <div className="mb-2">
-                                  {specs.slice(0, 2).map((spec, idx) => (
-                                    <p key={idx} className="text-xs text-muted-foreground line-clamp-1">• {spec}</p>
-                                  ))}
-                                </div>
-                              )}
-                              <p className="text-xl font-bold text-primary">{product.price.toLocaleString()} ₽</p>
-                            </div>
-                            <Button 
-                              size="icon" 
-                              variant="ghost"
-                              onClick={() => removeFromFavorites(product.id)}
-                            >
-                              <Icon name="X" size={20} />
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                    })
-                  )}
-                </div>
-              </SheetContent>
-            </Sheet>
-
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button size="icon" className="relative gradient-teal text-white hover:opacity-90">
-                  <Icon name="ShoppingCart" size={20} />
-                  {cart.length > 0 && (
-                    <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center bg-secondary text-white">
-                      {cart.length}
-                    </Badge>
-                  )}
-                </Button>
-              </SheetTrigger>
-              <SheetContent className="w-full sm:max-w-lg">
-                <SheetHeader>
-                  <SheetTitle>Корзина</SheetTitle>
-                </SheetHeader>
-                <div className="mt-6 space-y-4 overflow-y-auto max-h-[calc(100vh-120px)]">
-                  {cart.length === 0 ? (
-                    <div className="text-center py-12">
-                      <Icon name="ShoppingCart" size={64} className="mx-auto text-muted-foreground mb-4" />
-                      <p className="text-muted-foreground">Корзина пуста</p>
-                    </div>
-                  ) : (
-                    <>
-                      {cart.map(product => {
-                        const getProductImage = (product: any) => {
-                          if (product.image || product.image_url || product.image_filename) {
-                            const img = product.image || product.image_url || product.image_filename;
-                            if (img.startsWith('http')) return img;
-                            if (img.startsWith('files/')) return `https://cdn.poehali.dev/${img}`;
-                            return `https://cdn.poehali.dev/images/${img}`;
-                          }
-                          return '';
-                        };
-                        
-                        const productSpecs = product.specifications || [];
-                        const specs = Array.isArray(productSpecs) 
-                          ? productSpecs.map((s: any) => typeof s === 'string' ? s : `${s.spec_name || s.name}: ${s.spec_value || s.value}`)
-                          : [];
-                        
-                        return (
-                        <Card key={product.id}>
-                          <CardContent className="p-4">
-                            <div className="flex gap-4">
-                              <div className="w-24 h-24 bg-muted rounded-lg overflow-hidden flex-shrink-0">
-                                {getProductImage(product) ? (
-                                  <img 
-                                    src={getProductImage(product)} 
-                                    alt={product.name}
-                                    className="w-full h-full object-cover"
-                                  />
-                                ) : (
-                                  <div className="w-full h-full flex items-center justify-center">
-                                    <Icon name="Package" size={32} className="text-muted-foreground" />
-                                  </div>
-                                )}
-                              </div>
-                              <div className="flex-1">
-                                <Badge className="mb-1 text-xs">{product.brand}</Badge>
-                                <h4 className="font-semibold mb-2 line-clamp-2">{product.name}</h4>
-                                {product.description && (
-                                  <p className="text-xs text-muted-foreground mb-2 line-clamp-1">{product.description}</p>
-                                )}
-                                {specs.length > 0 && (
-                                  <div className="mb-2">
-                                    {specs.slice(0, 2).map((spec, idx) => (
-                                      <p key={idx} className="text-xs text-muted-foreground line-clamp-1">• {spec}</p>
-                                    ))}
-                                  </div>
-                                )}
-                                <p className="text-xl font-bold text-primary">{product.price.toLocaleString()} ₽</p>
-                              </div>
-                              <Button 
-                                size="icon" 
-                                variant="ghost"
-                                onClick={() => removeFromCart(product.id)}
-                              >
-                                <Icon name="X" size={20} />
-                              </Button>
-                            </div>
-                          </CardContent>
-                        </Card>
-                        );
-                      })}
-                      <div className="sticky bottom-0 bg-background pt-4 border-t">
-                        <div className="flex justify-between mb-4">
-                          <span className="text-lg font-semibold">Итого:</span>
-                          <span className="text-2xl font-bold text-primary">
-                            {cart.reduce((sum, p) => sum + p.price, 0).toLocaleString()} ₽
-                          </span>
-                        </div>
-                        <Button 
-                          className="w-full h-12 text-lg gradient-teal"
-                          onClick={() => setCurrentPage('checkout')}
-                        >
-                          Перейти к оформлению
-                        </Button>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </SheetContent>
-            </Sheet>
-          </div>
-        </div>
-
-        <nav className="mt-8 flex gap-2 overflow-x-auto pb-2 justify-center">
-          <Button
-            variant={currentPage === 'home' && !selectedCategory ? 'default' : 'outline'}
-            onClick={() => {
-              setCurrentPage('home');
-              setSelectedCategory(null);
-            }}
-            className={currentPage === 'home' && !selectedCategory ? 'gradient-teal' : ''}
-          >
-            <Icon name="Home" size={16} className="mr-2" />
-            Главная
-          </Button>
-          <Button
-            variant={currentPage === 'catalog' && !selectedCategory ? 'default' : 'outline'}
-            onClick={() => {
-              setCurrentPage('catalog');
-              setSelectedCategory(null);
-            }}
-            className={currentPage === 'catalog' && !selectedCategory ? 'gradient-teal' : ''}
-          >
-            <Icon name="Package" size={16} className="mr-2" />
-            Каталог
-          </Button>
-          <Button
-            variant={currentPage === 'about' ? 'default' : 'outline'}
-            onClick={() => setCurrentPage('about')}
-            className={currentPage === 'about' ? 'gradient-teal' : ''}
-          >
-            <Icon name="Info" size={16} className="mr-2" />
-            О нас
-          </Button>
-          <Button
-            variant={currentPage === 'delivery' ? 'default' : 'outline'}
-            onClick={() => setCurrentPage('delivery')}
-            className={currentPage === 'delivery' ? 'gradient-teal' : ''}
-          >
-            <Icon name="Truck" size={16} className="mr-2" />
-            Доставка
-          </Button>
-          <Button
-            variant={currentPage === 'warranty' ? 'default' : 'outline'}
-            onClick={() => setCurrentPage('warranty')}
-            className={currentPage === 'warranty' ? 'gradient-teal' : ''}
-          >
-            <Icon name="Shield" size={16} className="mr-2" />
-            Гарантия
-          </Button>
-          <Button
-            variant={currentPage === 'contact' ? 'default' : 'outline'}
-            onClick={() => setCurrentPage('contact')}
-            className={currentPage === 'contact' ? 'gradient-teal' : ''}
-          >
-            <Icon name="Phone" size={16} className="mr-2" />
-            Контакты
-          </Button>
-          {isAdmin && (
-            <Button
-              variant={currentPage === 'admin' ? 'default' : 'outline'}
-              onClick={() => setCurrentPage('admin')}
-              className={currentPage === 'admin' ? 'gradient-teal' : ''}
-            >
-              <Icon name="Settings" size={16} className="mr-2" />
-              Админка
-            </Button>
-          )}
-        </nav>
-      </div>
-    </header>
-  );
-
-  const renderCategoryPage = () => {
-    const brands = getBrandsForCategory();
-    const minPrice = Math.min(...allProducts.filter(p => p.category === selectedCategory).map(p => p.price));
-    const maxPrice = Math.max(...allProducts.filter(p => p.category === selectedCategory).map(p => p.price));
-
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex gap-6">
-          <aside className="w-64 flex-shrink-0 space-y-6">
-            <Card>
-              <CardContent className="p-4">
-                <h3 className="font-semibold mb-4">Цена</h3>
-                <div className="space-y-4">
-                  <Slider
-                    value={priceRange}
-                    onValueChange={setPriceRange}
-                    min={0}
-                    max={maxPrice}
-                    step={1000}
-                    className="mb-2"
-                  />
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="text-xs text-muted-foreground">От</label>
-                      <Input
-                        type="number"
-                        value={priceRange[0]}
-                        onChange={(e) => {
-                          const value = Math.max(0, Math.min(Number(e.target.value), priceRange[1]));
-                          setPriceRange([value, priceRange[1]]);
-                        }}
-                        className="h-8 text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs text-muted-foreground">До</label>
-                      <Input
-                        type="number"
-                        value={priceRange[1]}
-                        onChange={(e) => {
-                          const value = Math.min(maxPrice, Math.max(Number(e.target.value), priceRange[0]));
-                          setPriceRange([priceRange[0], value]);
-                        }}
-                        className="h-8 text-sm"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-4">
-                <h3 className="font-semibold mb-4">Бренд</h3>
-                <div className="space-y-3 max-h-64 overflow-y-auto">
-                  {brands.map(brand => (
-                    <div key={brand} className="flex items-center gap-2">
-                      <Checkbox
-                        id={brand}
-                        checked={selectedBrands.includes(brand)}
-                        onCheckedChange={() => toggleBrand(brand)}
-                      />
-                      <label htmlFor={brand} className="text-sm cursor-pointer flex-1">
-                        {brand}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {Object.entries(getSpecsForCategory()).slice(0, 5).map(([specName, specValues]) => (
-              <Card key={specName}>
-                <CardContent className="p-4">
-                  <h3 className="font-semibold mb-4">{specName}</h3>
-                  <div className="space-y-3 max-h-64 overflow-y-auto">
-                    {specValues.map(specValue => (
-                      <div key={specValue} className="flex items-center gap-2">
-                        <Checkbox
-                          id={`${specName}-${specValue}`}
-                          checked={(selectedSpecs[specName] || []).includes(specValue)}
-                          onCheckedChange={() => toggleSpec(specName, specValue)}
-                        />
-                        <label htmlFor={`${specName}-${specValue}`} className="text-sm cursor-pointer flex-1">
-                          {specValue}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-
-            <Card>
-              <CardContent className="p-4">
-                <h3 className="font-semibold mb-4">Наличие</h3>
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="in-stock-filter"
-                    checked={showInStockOnly}
-                    onCheckedChange={(checked) => setShowInStockOnly(!!checked)}
-                  />
-                  <label htmlFor="in-stock-filter" className="text-sm cursor-pointer flex-1">
-                    Только в наличии
-                  </label>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => {
-                setPriceRange([0, maxPrice]);
-                setSelectedBrands([]);
-                setSortBy('default');
-                setShowInStockOnly(false);
-                setSelectedSpecs({});
-              }}
-            >
-              Сбросить фильтры
-            </Button>
-          </aside>
-
-          <div className="flex-1">
-            <div className="flex justify-between items-center mb-6">
-              <h1 className="text-3xl font-bold">{selectedCategory}</h1>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="px-4 py-2 rounded-lg border border-input bg-background"
-              >
-                <option value="default">По умолчанию</option>
-                <option value="price-asc">Сначала дешевле</option>
-                <option value="price-desc">Сначала дороже</option>
-                <option value="name">По названию</option>
-              </select>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredProducts.map(product => {
-                const getProductImage = (product: any) => {
-                  if (product.image || product.image_url || product.image_filename) {
-                    const img = product.image || product.image_url || product.image_filename;
-                    if (img.startsWith('http')) return img;
-                    if (img.startsWith('files/')) return `https://cdn.poehali.dev/${img}`;
-                    return `https://cdn.poehali.dev/images/${img}`;
-                  }
-                  
-                  const images = [
-                    'https://cdn.poehali.dev/projects/f7df5c93-3ffb-476e-bc55-4da98f7f2c0a/files/bb10f9c9-ec03-4dae-852d-ab8eb7cb81c7.jpg',
-                    'https://cdn.poehali.dev/projects/f7df5c93-3ffb-476e-bc55-4da98f7f2c0a/files/11810e39-9f5c-43b4-979a-e723f231c489.jpg',
-                    'https://cdn.poehali.dev/projects/f7df5c93-3ffb-476e-bc55-4da98f7f2c0a/files/825e48c1-6cd6-4d1f-9d28-ff9464fff64f.jpg',
-                  ];
-                  return images[product.id % images.length];
-                };
-
-                const productSpecs = product.specifications || [];
-                const specsToShow = Array.isArray(productSpecs) 
-                  ? productSpecs.map((s: any) => typeof s === 'string' ? s : `${s.spec_name || s.name}: ${s.spec_value || s.value}`)
-                  : [];
-                
-                return (
-                  <Card key={product.id} className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col">
-                    <CardContent className="p-4 flex-1">
-                      <div className="aspect-square rounded-lg mb-4 relative overflow-hidden bg-gradient-to-br from-primary/5 to-secondary/5">
-                        <img 
-                          src={getProductImage(product)} 
-                          alt={product.name}
-                          className="w-full h-full object-cover"
-                        />
-                        <Button
-                          size="icon"
-                          variant="secondary"
-                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={() => addToFavorites(product)}
-                        >
-                          <Icon name="Heart" size={18} />
-                        </Button>
-                      </div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <Badge>{product.brand}</Badge>
-                        {product.in_stock && (
-                          <Badge variant="outline" className="border-green-500 text-green-600">
-                            В наличии
-                          </Badge>
-                        )}
-                        {!product.in_stock && (
-                          <Badge variant="outline" className="border-gray-400 text-gray-500">
-                            Нет в наличии
-                          </Badge>
-                        )}
-                      </div>
-                      <h3 className="font-semibold mb-2 line-clamp-2 min-h-[3em]">{product.name}</h3>
-                      
-                      {product.description && (
-                        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{product.description}</p>
-                      )}
-                      
-                      <div className="mb-3 space-y-1">
-                        {specsToShow.slice(0, 3).map((spec: string, idx: number) => (
-                          <div key={idx} className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <Icon name="Check" size={14} className="text-primary flex-shrink-0" />
-                            <span className="line-clamp-1">{spec}</span>
-                          </div>
-                        ))}
-                      </div>
-                      
-                      <p className="text-2xl font-bold text-primary">{product.price.toLocaleString()} ₽</p>
-                    </CardContent>
-                    <CardFooter className="p-4 pt-0">
-                      <Button 
-                        className="w-full gradient-teal"
-                        onClick={() => addToCart(product)}
-                      >
-                        <Icon name="ShoppingCart" size={18} className="mr-2" />
-                        В корзину
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const renderHomePage = () => {
-    const popularProducts = featuredProducts.length > 0 ? featuredProducts : allProducts.slice(0, 20);
-    const duplicatedProducts = [...popularProducts, ...popularProducts, ...popularProducts];
-
-    return (
-      <div className="min-h-screen">
-        <section 
-          className="relative text-white py-32 bg-cover bg-center"
-          style={{
-            backgroundImage: 'linear-gradient(rgba(13, 71, 161, 0.85), rgba(21, 101, 192, 0.85)), url(https://cdn.poehali.dev/projects/f7df5c93-3ffb-476e-bc55-4da98f7f2c0a/files/aace088c-460f-4ba7-b0f1-3f2975047791.jpg)',
-          }}
-        >
-          <div className="container mx-auto px-4 text-center relative z-10">
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 animate-fade-in drop-shadow-lg">
-              MIX PC - Ваш надежный поставщик компьютерной техники
-            </h1>
-            <p className="text-xl md:text-2xl mb-8 opacity-90 drop-shadow-md">
-              Широкий ассортимент комплектующих и готовых решений по выгодным ценам
-            </p>
-            <Button 
-              size="lg" 
-              className="bg-white text-primary hover:bg-white/90 h-14 px-8 text-lg shadow-2xl"
-              onClick={() => setCurrentPage('catalog')}
-            >
-              Перейти в каталог
-              <Icon name="ArrowRight" className="ml-2" size={20} />
-            </Button>
-          </div>
-        </section>
-
-
-
-        <section className="container mx-auto px-4 py-16">
-          <h2 className="text-3xl font-bold mb-8 text-center">Почему выбирают нас?</h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            <Card className="text-center p-6 hover:shadow-lg transition-shadow">
-              <div className="w-16 h-16 gradient-teal rounded-full flex items-center justify-center mx-auto mb-4">
-                <Icon name="Truck" size={32} className="text-white" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Быстрая доставка</h3>
-              <p className="text-muted-foreground">Доставим ваш заказ в течение 1-3 дней</p>
-            </Card>
-            <Card className="text-center p-6 hover:shadow-lg transition-shadow">
-              <div className="w-16 h-16 gradient-teal rounded-full flex items-center justify-center mx-auto mb-4">
-                <Icon name="Shield" size={32} className="text-white" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Гарантия качества</h3>
-              <p className="text-muted-foreground">Официальная гарантия на все товары</p>
-            </Card>
-            <Card className="text-center p-6 hover:shadow-lg transition-shadow">
-              <div className="w-16 h-16 gradient-teal rounded-full flex items-center justify-center mx-auto mb-4">
-                <Icon name="Headphones" size={32} className="text-white" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Поддержка 24/7</h3>
-              <p className="text-muted-foreground">Всегда готовы помочь с выбором</p>
-            </Card>
-          </div>
-        </section>
-      </div>
-    );
-  };
-
-  const renderCatalogPage = () => (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold mb-8 text-center">Каталог товаров</h1>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {categories.map(category => (
-          <Card 
-            key={category.id} 
-            className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-2 group"
-            onClick={() => {
-              setSelectedCategory(category.name);
-              setCurrentPage('category');
-              setPriceRange([0, 200000]);
-              setSelectedBrands([]);
-              setSortBy('default');
-            }}
-          >
-            <CardContent className="p-6 text-center">
-              <div className="w-20 h-20 gradient-teal rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                <Icon name={category.icon as any} size={40} className="text-white" />
-              </div>
-              <h3 className="font-semibold text-lg">{category.name}</h3>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    </div>
-  );
-
-  const renderContactPage = () => (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <h1 className="text-4xl font-bold mb-8 text-center">Контакты</h1>
-      <div className="grid md:grid-cols-2 gap-8 mb-8">
-        <Card>
-          <CardContent className="p-6">
-            <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
-              <Icon name="MapPin" className="text-primary" />
-              Адрес
-            </h3>
-            <p className="text-muted-foreground mb-4">г. Ростов-на-дону, Ворошиловский проспект, д. 123</p>
-            <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
-              <Icon name="Phone" className="text-primary" />
-              Телефон
-            </h3>
-            <p className="text-muted-foreground mb-4">
-              8 (800) 555-35-35
-            </p>
-            <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
-              <Icon name="Mail" className="text-primary" />
-              Email
-            </h3>
-            <p className="text-muted-foreground">
-              info@mixpc.ru
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <h3 className="text-xl font-semibold mb-4">Напишите нам</h3>
-            
-            {!currentUser ? (
-              <div className="text-center py-8 space-y-4">
-                <Icon name="Lock" size={48} className="mx-auto text-muted-foreground" />
-                <p className="text-lg text-muted-foreground">
-                  Для отправки сообщений необходимо войти в систему
-                </p>
-                <Button onClick={() => setLoginOpen(true)} className="gradient-teal">
-                  <Icon name="LogIn" size={18} className="mr-2" />
-                  Войти
-                </Button>
-              </div>
-            ) : (
-              <form className="space-y-4" onSubmit={async (e) => {
-                e.preventDefault();
-                const formData = new FormData(e.target as HTMLFormElement);
-                
-                try {
-                  const response = await fetch('https://functions.poehali.dev/cef89039-b240-4ef5-bb82-eade4c24411b', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                      fullName: formData.get('fullName') as string,
-                      phone: formData.get('phone') as string,
-                      email: currentUser.email,
-                      message: formData.get('message') as string
-                    })
-                  });
-                  
-                  if (response.ok) {
-                    alert('Сообщение успешно отправлено! Мы свяжемся с вами в ближайшее время.');
-                    (e.target as HTMLFormElement).reset();
-                  } else {
-                    alert('Ошибка при отправке сообщения');
-                  }
-                } catch (error) {
-                  alert('Ошибка подключения к серверу');
-                }
-              }}>
-                <div>
-                  <Label>Имя</Label>
-                  <Input name="fullName" placeholder="Ваше имя" required />
-                </div>
-                <div>
-                  <Label>Телефон</Label>
-                  <Input name="phone" type="tel" placeholder="+7 (___) ___-__-__" required />
-                </div>
-                <div>
-                  <Label>Email</Label>
-                  <Input value={currentUser.email} disabled className="bg-muted" />
-                </div>
-                <div>
-                  <Label>Сообщение</Label>
-                  <Textarea name="message" placeholder="Ваше сообщение..." rows={4} required />
-                </div>
-                <Button type="submit" className="w-full gradient-teal">
-                  Отправить
-                </Button>
-              </form>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
-
-  const renderAboutPage = () => (
-    <div className="container mx-auto px-4 py-8">
-      <div className="relative h-[300px] gradient-teal rounded-2xl mb-12 flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0iZ3JpZCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNIDQwIDAgTCAwIDAgMCA0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLW9wYWNpdHk9IjAuMSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-30"></div>
-        <div className="relative z-10 text-center text-white">
-          <h1 className="text-5xl font-bold mb-4">О компании MIX PC</h1>
-          <p className="text-xl opacity-90">Ваш надежный партнер в мире компьютерных технологий</p>
-        </div>
-      </div>
-
-      <div className="max-w-6xl mx-auto space-y-12">
-        <div className="grid md:grid-cols-3 gap-6">
-          <Card className="text-center p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-2">
-            <div className="w-20 h-20 gradient-teal rounded-full flex items-center justify-center mx-auto mb-4">
-              <Icon name="Users" size={40} className="text-white" />
-            </div>
-            <div className="text-4xl font-bold text-primary mb-2">50 000+</div>
-            <div className="text-muted-foreground text-lg">Довольных клиентов</div>
-          </Card>
-          <Card className="text-center p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-2">
-            <div className="w-20 h-20 gradient-teal rounded-full flex items-center justify-center mx-auto mb-4">
-              <Icon name="Package" size={40} className="text-white" />
-            </div>
-            <div className="text-4xl font-bold text-primary mb-2">10 000+</div>
-            <div className="text-muted-foreground text-lg">Товаров в каталоге</div>
-          </Card>
-          <Card className="text-center p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-2">
-            <div className="w-20 h-20 gradient-teal rounded-full flex items-center justify-center mx-auto mb-4">
-              <Icon name="Award" size={40} className="text-white" />
-            </div>
-            <div className="text-4xl font-bold text-primary mb-2">8 лет</div>
-            <div className="text-muted-foreground text-lg">На рынке</div>
-          </Card>
-        </div>
-
-        <Card>
-          <CardContent className="p-8">
-            <h2 className="text-3xl font-bold mb-6 flex items-center gap-3">
-              <Icon name="Building2" className="text-primary" size={32} />
-              О компании
-            </h2>
-            <div className="space-y-4 text-lg leading-relaxed">
-              <p>
-                <span className="font-semibold text-primary">MIX PC</span> — это современный интернет-магазин компьютерной техники и комплектующих, 
-                который работает на рынке с 2017 года. За это время мы завоевали доверие тысяч клиентов 
-                по всей России благодаря качественному сервису и широкому ассортименту.
-              </p>
-              <p>
-                Мы специализируемся на продаже высококачественных комплектующих для сборки компьютеров, 
-                готовых игровых систем, ноутбуков, периферии и игровых устройств. Наша миссия — предоставить 
-                каждому клиенту доступ к современным технологиям по доступным ценам.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <div className="grid md:grid-cols-2 gap-6">
-          <Card>
-            <CardContent className="p-6">
-              <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                <Icon name="Target" className="text-primary" />
-                Наши преимущества
-              </h3>
-              <ul className="space-y-3">
-                <li className="flex items-start gap-3">
-                  <Icon name="CheckCircle2" className="text-green-500 mt-1 flex-shrink-0" />
-                  <span>Официальная гарантия на все товары от производителей</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Icon name="CheckCircle2" className="text-green-500 mt-1 flex-shrink-0" />
-                  <span>Только оригинальная продукция, никаких подделок</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Icon name="CheckCircle2" className="text-green-500 mt-1 flex-shrink-0" />
-                  <span>Профессиональная консультация по подбору комплектующих</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Icon name="CheckCircle2" className="text-green-500 mt-1 flex-shrink-0" />
-                  <span>Услуги по сборке и настройке компьютеров</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Icon name="CheckCircle2" className="text-green-500 mt-1 flex-shrink-0" />
-                  <span>Быстрая доставка по всей России</span>
-                </li>
-              </ul>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                <Icon name="Store" className="text-primary" />
-                Наши партнеры
-              </h3>
-              <p className="mb-4 text-muted-foreground">
-                Мы работаем напрямую с ведущими мировыми производителями:
-              </p>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="p-3 border rounded-lg text-center font-semibold hover:border-primary transition-colors">
-                  AMD
-                </div>
-                <div className="p-3 border rounded-lg text-center font-semibold hover:border-primary transition-colors">
-                  Intel
-                </div>
-                <div className="p-3 border rounded-lg text-center font-semibold hover:border-primary transition-colors">
-                  NVIDIA
-                </div>
-                <div className="p-3 border rounded-lg text-center font-semibold hover:border-primary transition-colors">
-                  ASUS
-                </div>
-                <div className="p-3 border rounded-lg text-center font-semibold hover:border-primary transition-colors">
-                  MSI
-                </div>
-                <div className="p-3 border rounded-lg text-center font-semibold hover:border-primary transition-colors">
-                  Corsair
-                </div>
-                <div className="p-3 border rounded-lg text-center font-semibold hover:border-primary transition-colors">
-                  Kingston
-                </div>
-                <div className="p-3 border rounded-lg text-center font-semibold hover:border-primary transition-colors">
-                  Samsung
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="grid md:grid-cols-3 gap-6">
-          <Card className="p-6 text-center hover:shadow-lg transition-shadow">
-            <Icon name="Truck" size={48} className="mx-auto text-primary mb-3" />
-            <h4 className="font-semibold text-lg mb-2">Быстрая доставка</h4>
-            <p className="text-muted-foreground">Доставим ваш заказ в кратчайшие сроки по всей России</p>
-          </Card>
-          <Card className="p-6 text-center hover:shadow-lg transition-shadow">
-            <Icon name="Shield" size={48} className="mx-auto text-primary mb-3" />
-            <h4 className="font-semibold text-lg mb-2">Гарантия качества</h4>
-            <p className="text-muted-foreground">Официальная гарантия от производителей на все товары</p>
-          </Card>
-          <Card className="p-6 text-center hover:shadow-lg transition-shadow">
-            <Icon name="Headphones" size={48} className="mx-auto text-primary mb-3" />
-            <h4 className="font-semibold text-lg mb-2">Поддержка 24/7</h4>
-            <p className="text-muted-foreground">Наши специалисты всегда готовы помочь с выбором</p>
-          </Card>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderDeliveryPage = () => (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <h1 className="text-4xl font-bold mb-8 text-center">Доставка и оплата</h1>
-      <div className="space-y-6">
-        <Card>
-          <CardContent className="p-6">
-            <h3 className="text-2xl font-semibold mb-4 flex items-center gap-2">
-              <Icon name="Truck" className="text-primary" />
-              Способы доставки
-            </h3>
-            <div className="space-y-4">
-              <div>
-                <h4 className="font-semibold mb-2">Курьерская доставка по Ростову-на-Дону</h4>
-                <p className="text-muted-foreground">Стоимость: 500 ₽ | Срок: 1-2 дня</p>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-2">Доставка по России (СДЭК, Boxberry)</h4>
-                <p className="text-muted-foreground">Стоимость: от 300 ₽ | Срок: 3-7 дней</p>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-2">Самовывоз из пункта выдачи</h4>
-                <p className="text-muted-foreground">Бесплатно | г. Ростов-на-Дону, Ворошиловский проспект, д. 123</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <h3 className="text-2xl font-semibold mb-4 flex items-center gap-2">
-              <Icon name="CreditCard" className="text-primary" />
-              Способы оплаты
-            </h3>
-            <div className="space-y-2">
-              <p>• Банковской картой онлайн (Visa, MasterCard, МИР)</p>
-              <p>• Наличными при получении</p>
-              <p>• Банковским переводом (для юридических лиц)</p>
-              <p>• Электронными деньгами (ЮMoney, QIWI)</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
-
-  const renderWarrantyPage = () => (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <h1 className="text-4xl font-bold mb-8 text-center">Гарантия и возврат</h1>
-      <div className="space-y-6">
-        <Card>
-          <CardContent className="p-6">
-            <h3 className="text-2xl font-semibold mb-4 flex items-center gap-2">
-              <Icon name="Shield" className="text-primary" />
-              Гарантийные обязательства
-            </h3>
-            <div className="space-y-4">
-              <p>
-                На все товары, приобретенные в нашем магазине, распространяется официальная гарантия производителя.
-              </p>
-              <div>
-                <h4 className="font-semibold mb-2">Сроки гарантии:</h4>
-                <p>• Комплектующие (процессоры, видеокарты, память) — от 1 до 3 лет</p>
-                <p>• Периферия (клавиатуры, мыши, мониторы) — от 1 до 2 лет</p>
-                <p>• Готовые компьютеры — 1 год</p>
-              </div>
-              <p>
-                Гарантийный ремонт осуществляется в авторизованных сервисных центрах производителей.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <h3 className="text-2xl font-semibold mb-4 flex items-center gap-2">
-              <Icon name="RotateCcw" className="text-primary" />
-              Возврат товара
-            </h3>
-            <div className="space-y-4">
-              <p>
-                Вы можете вернуть товар надлежащего качества в течение 14 дней с момента покупки, 
-                если товар не был в употреблении, сохранены его товарный вид, потребительские свойства, 
-                пломбы, ярлыки.
-              </p>
-              <p>
-                Товар ненадлежащего качества может быть возвращен в течение всего гарантийного срока.
-              </p>
-              <p className="text-sm text-muted-foreground">
-                * Подробные условия возврата и обмена товаров регулируются Законом РФ "О защите прав потребителей".
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
-
-  const renderCheckoutPage = () => (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <h1 className="text-4xl font-bold mb-8">Оформление заказа</h1>
-      
-      <div className="grid lg:grid-cols-2 gap-8">
-        <Card>
-          <CardContent className="p-6">
-            <h2 className="text-2xl font-semibold mb-6">Ваши данные</h2>
-            <form className="space-y-4" onSubmit={async (e) => {
-              e.preventDefault();
-              
-              if (!currentUser) {
-                alert('Войдите в систему для оформления заказа');
-                return;
-              }
-              
-              try {
-                const response = await fetch('https://functions.poehali.dev/55d2462d-02a8-4732-91f6-95271b22efe9', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    user_id: currentUser.id,
-                    full_name: checkoutData.fullName,
-                    email: checkoutData.email,
-                    phone: checkoutData.phone,
-                    delivery_type: checkoutData.deliveryType,
-                    delivery_address: checkoutData.address,
-                    total_amount: cart.reduce((sum, p) => sum + p.price, 0),
-                    items: cart
-                  })
-                });
-                
-                const data = await response.json();
-                
-                if (response.ok) {
-                  alert(`Заказ №${data.order_id} успешно оформлен!`);
-                  setCart([]);
-                  setCurrentPage('home');
-                } else {
-                  alert('Ошибка при оформлении заказа');
-                }
-              } catch (error) {
-                console.error('Order error:', error);
-                alert('Ошибка при оформлении заказа');
-              }
-            }}>
-              <div>
-                <Label>ФИО</Label>
-                <Input 
-                  value={checkoutData.fullName}
-                  onChange={(e) => setCheckoutData({...checkoutData, fullName: e.target.value})}
-                  placeholder="Иванов Иван Иванович"
-                  required 
-                />
-              </div>
-              
-              <div>
-                <Label>Email</Label>
-                <Input 
-                  type="email"
-                  value={checkoutData.email}
-                  onChange={(e) => setCheckoutData({...checkoutData, email: e.target.value})}
-                  placeholder="your@email.com"
-                  required 
-                />
-              </div>
-              
-              <div>
-                <Label>Номер телефона</Label>
-                <Input 
-                  type="tel"
-                  value={checkoutData.phone}
-                  onChange={(e) => setCheckoutData({...checkoutData, phone: e.target.value})}
-                  placeholder="+7 (999) 123-45-67"
-                  required 
-                />
-              </div>
-              
-              <div>
-                <Label>Способ получения</Label>
-                <div className="flex gap-4 mt-2">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input 
-                      type="radio" 
-                      name="delivery" 
-                      value="delivery"
-                      checked={checkoutData.deliveryType === 'delivery'}
-                      onChange={(e) => setCheckoutData({...checkoutData, deliveryType: e.target.value})}
-                    />
-                    <span>Доставка</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input 
-                      type="radio" 
-                      name="delivery" 
-                      value="pickup"
-                      checked={checkoutData.deliveryType === 'pickup'}
-                      onChange={(e) => setCheckoutData({...checkoutData, deliveryType: e.target.value})}
-                    />
-                    <span>Самовывоз</span>
-                  </label>
-                </div>
-              </div>
-              
-              {checkoutData.deliveryType === 'delivery' && (
-                <div>
-                  <Label>Адрес доставки</Label>
-                  <Textarea 
-                    value={checkoutData.address}
-                    onChange={(e) => setCheckoutData({...checkoutData, address: e.target.value})}
-                    placeholder="г. Москва, ул. Примерная, д. 1, кв. 1"
-                    rows={3}
-                    required 
-                  />
-                </div>
+                  </DialogContent>
+                </Dialog>
               )}
-              
-              <Button type="submit" className="w-full h-12 gradient-teal">
-                Оформить заказ
+
+              <Button 
+                variant="outline" 
+                onClick={() => setCurrentPage('favorites')}
+              >
+                <Icon name="Heart" size={18} />
+                {favorites.length > 0 && <Badge className="ml-2">{favorites.length}</Badge>}
               </Button>
-            </form>
-          </CardContent>
-        </Card>
-        
-        <div className="space-y-4">
-          <Card>
-            <CardContent className="p-6">
-              <h2 className="text-2xl font-semibold mb-4">Ваш заказ</h2>
-              <div className="space-y-3 mb-4">
-                {cart.map(product => (
-                  <div key={product.id} className="flex justify-between">
-                    <span className="text-sm">{product.name}</span>
-                    <span className="font-semibold">{product.price.toLocaleString()} ₽</span>
-                  </div>
-                ))}
-              </div>
-              <div className="border-t pt-4">
-                <div className="flex justify-between text-xl font-bold">
-                  <span>Итого:</span>
-                  <span className="text-primary">{cart.reduce((sum, p) => sum + p.price, 0).toLocaleString()} ₽</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-6">
-              <h3 className="font-semibold mb-2 flex items-center gap-2">
-                <Icon name="Info" size={18} className="text-primary" />
-                Информация
-              </h3>
-              <div className="text-sm text-muted-foreground space-y-1">
-                <p>• Доставка по Москве — 1-2 дня</p>
-                <p>• Самовывоз — бесплатно</p>
-                <p>• Гарантия на все товары</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    </div>
-  );
 
-  const renderFooter = () => (
-    <footer className="footer-dark text-white mt-16">
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid md:grid-cols-4 gap-8 mb-8">
-          <div>
-            <h3 className="font-bold text-xl mb-4">MIX PC</h3>
-            <p className="text-white/70 text-sm">Ваш надежный поставщик компьютерных комплектующих с 2025 года</p>
-          </div>
-          <div>
-            <h4 className="font-semibold mb-4">Информация</h4>
-            <div className="space-y-2 text-sm">
-              <button onClick={() => setCurrentPage('about')} className="block text-white/70 hover:text-white transition-colors">О нас</button>
-              <button onClick={() => setCurrentPage('delivery')} className="block text-white/70 hover:text-white transition-colors">Доставка и оплата</button>
-              <button onClick={() => setCurrentPage('warranty')} className="block text-white/70 hover:text-white transition-colors">Гарантия и возврат</button>
-              <button onClick={() => setCurrentPage('contact')} className="block text-white/70 hover:text-white transition-colors">Контакты</button>
-            </div>
-          </div>
-          <div>
-            <h4 className="font-semibold mb-4">Каталог</h4>
-            <div className="space-y-2 text-sm">
-              <button onClick={() => { setSelectedCategory('Процессоры'); setCurrentPage('category'); }} className="block text-white/70 hover:text-white transition-colors">Процессоры</button>
-              <button onClick={() => { setSelectedCategory('Видеокарты'); setCurrentPage('category'); }} className="block text-white/70 hover:text-white transition-colors">Видеокарты</button>
-              <button onClick={() => { setSelectedCategory('Материнские платы'); setCurrentPage('category'); }} className="block text-white/70 hover:text-white transition-colors">Материнские платы</button>
-              <button onClick={() => { setSelectedCategory('Оперативная память'); setCurrentPage('category'); }} className="block text-white/70 hover:text-white transition-colors">Оперативная память</button>
-            </div>
-          </div>
-          <div>
-            <h4 className="font-semibold mb-4">Контакты</h4>
-            <div className="space-y-2 text-sm text-white/70">
-              <p>8 (800) 555-77-30</p>
-              <p>info@mixpc.ru</p>
-              <p>г. Ростов-на-дону, Ворошиловский проспект, д. 123</p>
-              <div className="flex gap-3 mt-4">
-                <a href="https://t.me" target="_blank" rel="noopener" className="text-white hover:opacity-80 transition-opacity">
-                  <Icon name="Send" size={20} />
-                </a>
-                <a href="https://wa.me" target="_blank" rel="noopener" className="text-white hover:opacity-80 transition-opacity">
-                  <Icon name="MessageCircle" size={20} />
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="border-t border-white/10 pt-8 text-center text-sm text-white/60">
-          <p>© 2025 MIX PC. Все права защищены.
-Создатель Рыбачёк С .С. ВЗПИ 51</p>
-        </div>
-      </div>
-    </footer>
-  );
-
-  const renderAdminPage = () => {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold mb-8">Админ-панель</h1>
-        
-        <Tabs value={adminActiveTab} onValueChange={setAdminActiveTab}>
-          <TabsList className="grid w-full grid-cols-3 max-w-2xl">
-            <TabsTrigger value="products">Товары</TabsTrigger>
-            <TabsTrigger value="orders">Заказы ({adminOrders.length})</TabsTrigger>
-            <TabsTrigger value="messages">Сообщения ({adminMessages.length})</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="products" className="mt-6">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-semibold">Управление товарами</h2>
-              <Button onClick={() => setEditingProduct({ name: '', price: 0, brand: '', category: '', image_url: '', description: '', is_featured: false, in_stock: true, stock_quantity: 0, specifications: [] })} className="gradient-teal">
-                <Icon name="Plus" size={18} className="mr-2" />
-                Добавить товар
+              <Button 
+                onClick={() => setCurrentPage('cart')}
+              >
+                <Icon name="ShoppingCart" size={18} />
+                {cart.length > 0 && <Badge className="ml-2">{cart.length}</Badge>}
               </Button>
             </div>
+          </div>
+        </div>
+      </header>
 
-            {editingProduct && (
-              <Card className="mb-6">
-                <CardContent className="p-6">
-                  <h3 className="text-xl font-semibold mb-4">{editingProduct.id ? 'Редактировать товар' : 'Новый товар'}</h3>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <Label>Название</Label>
-                      <Input 
-                        value={editingProduct.name} 
-                        onChange={(e) => setEditingProduct({...editingProduct, name: e.target.value})}
-                      />
-                    </div>
-                    <div>
-                      <Label>Цена</Label>
-                      <Input 
-                        type="number"
-                        value={editingProduct.price} 
-                        onChange={(e) => setEditingProduct({...editingProduct, price: Number(e.target.value)})}
-                      />
-                    </div>
-                    <div>
-                      <Label>Бренд</Label>
-                      <Input 
-                        value={editingProduct.brand} 
-                        onChange={(e) => setEditingProduct({...editingProduct, brand: e.target.value})}
-                      />
-                    </div>
-                    <div>
-                      <Label>Категория</Label>
-                      <select 
-                        className="w-full h-11 rounded-md border border-input bg-background px-3"
-                        value={editingProduct.category}
-                        onChange={(e) => setEditingProduct({...editingProduct, category: e.target.value})}
-                      >
-                        <option value="">Выберите категорию</option>
-                        {categories.map(cat => (
-                          <option key={cat.id} value={cat.name}>{cat.name}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="md:col-span-2">
-                      <Label>Изображение товара</Label>
-                      <div className="space-y-3">
-                        <Input 
-                          type="url"
-                          placeholder="https://example.com/image.jpg"
-                          value={editingProduct.image_url || ''}
-                          onChange={(e) => setEditingProduct({...editingProduct, image_url: e.target.value})}
-                        />
-                        
-                        {editingProduct.image_url && (
-                          <div className="flex items-center gap-2 text-sm text-green-600">
-                            <Icon name="Check" size={16} />
-                            <span>URL указан</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <div className="md:col-span-2">
-                      <Label>Описание</Label>
-                      <Textarea 
-                        value={editingProduct.description || ''} 
-                        onChange={(e) => setEditingProduct({...editingProduct, description: e.target.value})}
-                        placeholder="Краткое описание товара"
-                        rows={3}
-                      />
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        id="in-stock"
-                        checked={editingProduct.in_stock !== false}
-                        onChange={(e) => setEditingProduct({...editingProduct, in_stock: e.target.checked})}
-                        className="w-4 h-4"
-                      />
-                      <Label htmlFor="in-stock" className="cursor-pointer">Товар в наличии</Label>
-                    </div>
-                    
-                    <div>
-                      <Label>Количество товара (шт)</Label>
-                      <Input 
-                        type="number"
-                        min="0"
-                        value={editingProduct.stock_quantity || 0} 
-                        onChange={(e) => setEditingProduct({...editingProduct, stock_quantity: Number(e.target.value)})}
-                      />
-                    </div>
+      <main className="container mx-auto px-4 py-8">
+        {currentPage === 'home' && (
+          <div>
+            <section className="text-white py-32 bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg mb-8">
+              <div className="text-center">
+                <h1 className="text-5xl font-bold mb-6">MIX PC</h1>
+                <p className="text-xl mb-8">Интернет-магазин компьютерной техники</p>
+                <Button 
+                  size="lg" 
+                  className="bg-white text-blue-600"
+                  onClick={() => setCurrentPage('catalog')}
+                >
+                  Перейти в каталог
+                </Button>
+              </div>
+            </section>
 
-                    
-                    <div className="md:col-span-2">
-                      <div className="flex justify-between items-center mb-2">
-                        <Label>Характеристики товара</Label>
-                        <Button 
-                          size="sm"
-                          type="button"
-                          variant="outline"
-                          onClick={() => {
-                            const specs = editingProduct.specifications || [];
-                            setEditingProduct({
-                              ...editingProduct, 
-                              specifications: [...specs, { name: '', value: '' }]
-                            });
-                          }}
-                        >
-                          <Icon name="Plus" size={16} className="mr-1" />
-                          Добавить характеристику
-                        </Button>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        {(editingProduct.specifications || []).map((spec: any, idx: number) => (
-                          <div key={idx} className="flex gap-2">
-                            <Input 
-                              placeholder="Название (например, Гарантия)"
-                              value={spec.spec_name || spec.name || ''}
-                              onChange={(e) => {
-                                const specs = [...(editingProduct.specifications || [])];
-                                specs[idx] = { ...specs[idx], name: e.target.value, spec_name: e.target.value };
-                                setEditingProduct({...editingProduct, specifications: specs});
-                              }}
-                              className="flex-1"
-                            />
-                            <Input 
-                              placeholder="Значение (например, 36 мес.)"
-                              value={spec.spec_value || spec.value || ''}
-                              onChange={(e) => {
-                                const specs = [...(editingProduct.specifications || [])];
-                                specs[idx] = { ...specs[idx], value: e.target.value, spec_value: e.target.value };
-                                setEditingProduct({...editingProduct, specifications: specs});
-                              }}
-                              className="flex-1"
-                            />
-                            <Button 
-                              size="icon"
-                              type="button"
-                              variant="ghost"
-                              onClick={() => {
-                                const specs = [...(editingProduct.specifications || [])];
-                                specs.splice(idx, 1);
-                                setEditingProduct({...editingProduct, specifications: specs});
-                              }}
-                            >
-                              <Icon name="Trash2" size={16} />
-                            </Button>
-                          </div>
-                        ))}
-                        
-                        {(!editingProduct.specifications || editingProduct.specifications.length === 0) && (
-                          <p className="text-sm text-muted-foreground">
-                            Характеристик пока нет. Нажмите "Добавить характеристику" чтобы добавить.
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex gap-2 mt-4">
-                    <Button onClick={() => handleSaveProduct(editingProduct)} className="gradient-teal">
-                      Сохранить
-                    </Button>
-                    <Button onClick={() => setEditingProduct(null)} variant="outline">
-                      Отмена
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            <div className="grid gap-4">
-              {adminProducts.map(product => (
+            <h2 className="text-3xl font-bold mb-6">Популярные товары</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {allProductsFromDB.filter(p => p.is_featured).slice(0, 8).map(product => (
                 <Card key={product.id}>
                   <CardContent className="p-4">
-                    <div className="flex gap-4 items-center">
-                      <div className="w-20 h-20 bg-muted rounded-lg flex items-center justify-center flex-shrink-0">
-                        <Icon name="Package" size={32} className="text-muted-foreground" />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold">{product.name}</h3>
-                        <p className="text-sm text-muted-foreground">{product.brand} • {product.category}</p>
-                        <p className="text-lg font-bold text-primary">{Number(product.price).toLocaleString()} ₽</p>
-                        <div className="flex items-center gap-2 mt-2">
-                          <Badge variant={product.in_stock ? "default" : "secondary"}>
-                            {product.in_stock ? "В наличии" : "Нет в наличии"}
-                          </Badge>
-                          <span className="text-sm text-muted-foreground">
-                            Кол-во: <span className="font-semibold">{product.stock_quantity || 0} шт</span>
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button 
-                          size="icon" 
-                          variant="outline"
-                          onClick={() => setEditingProduct(product)}
-                        >
-                          <Icon name="Pencil" size={18} />
-                        </Button>
-                        <Button 
-                          size="icon" 
-                          variant="destructive"
-                          onClick={() => handleDeleteProduct(product.id)}
-                        >
-                          <Icon name="Trash2" size={18} />
-                        </Button>
-                      </div>
+                    <div className="aspect-square rounded-lg mb-4 bg-gray-100 overflow-hidden">
+                      <img 
+                        src={product.image} 
+                        alt={product.name}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
+                    <Badge className="mb-2">{product.brand}</Badge>
+                    <h3 className="font-semibold mb-2 line-clamp-2">{product.name}</h3>
+                    <p className="text-2xl font-bold text-primary">{product.price.toLocaleString()} ₽</p>
+                  </CardContent>
+                  <CardFooter className="p-4 pt-0">
+                    <Button 
+                      className="w-full"
+                      onClick={() => addToCart(product)}
+                    >
+                      <Icon name="ShoppingCart" size={18} className="mr-2" />
+                      В корзину
+                    </Button>
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {currentPage === 'catalog' && (
+          <div>
+            <h1 className="text-4xl font-bold mb-8">Каталог товаров</h1>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {categories.map(category => (
+                <Card 
+                  key={category.id} 
+                  className="cursor-pointer hover:shadow-xl transition-all"
+                  onClick={() => {
+                    setSelectedCategory(category.name);
+                    setCurrentPage('category');
+                  }}
+                >
+                  <CardContent className="p-6 text-center">
+                    <Icon name={category.icon as any} size={40} className="mx-auto mb-4" />
+                    <h3 className="font-semibold">{category.name}</h3>
                   </CardContent>
                 </Card>
               ))}
             </div>
-          </TabsContent>
+          </div>
+        )}
 
-          <TabsContent value="orders" className="mt-6">
-            <h2 className="text-2xl font-semibold mb-6">Заказы клиентов</h2>
-            
-            <div className="grid gap-4">
-              {adminOrders.length === 0 ? (
-                <Card>
-                  <CardContent className="p-8 text-center text-muted-foreground">
-                    Заказов пока нет
+        {currentPage === 'category' && selectedCategory && (
+          <div>
+            <h1 className="text-3xl font-bold mb-6">{selectedCategory}</h1>
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {filteredProducts.map(product => (
+                <Card key={product.id}>
+                  <CardContent className="p-4">
+                    <div className="aspect-square rounded-lg mb-4 bg-gray-100 overflow-hidden">
+                      <img 
+                        src={product.image} 
+                        alt={product.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <Badge className="mb-2">{product.brand}</Badge>
+                    <h3 className="font-semibold mb-2 line-clamp-2">{product.name}</h3>
+                    <p className="text-2xl font-bold text-primary">{product.price.toLocaleString()} ₽</p>
                   </CardContent>
+                  <CardFooter className="p-4 pt-0">
+                    <Button 
+                      className="w-full"
+                      onClick={() => addToCart(product)}
+                    >
+                      <Icon name="ShoppingCart" size={18} className="mr-2" />
+                      В корзину
+                    </Button>
+                  </CardFooter>
                 </Card>
-              ) : (
-                adminOrders.map(order => (
-                  <Card key={order.id}>
-                    <CardContent className="p-6">
-                      <div className="flex justify-between items-start mb-4">
-                        <div>
-                          <h3 className="font-semibold text-lg">Заказ №{order.id}</h3>
-                          <p className="text-sm text-muted-foreground">
-                            {new Date(order.created_at).toLocaleString('ru-RU')}
-                          </p>
-                        </div>
-                        <Badge 
-                          className={
-                            order.status === 'pending' 
-                              ? 'bg-red-500 hover:bg-red-600 text-white' 
-                              : order.status === 'completed'
-                              ? 'bg-green-500 hover:bg-green-600 text-white'
-                              : 'bg-gray-500 text-white'
-                          }
-                        >
-                          {order.status === 'pending' ? 'Новый' : order.status === 'completed' ? 'Выполнен' : order.status}
-                        </Badge>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {currentPage === 'cart' && (
+          <div>
+            <h1 className="text-3xl font-bold mb-6">Корзина</h1>
+            {cart.length === 0 ? (
+              <p>Корзина пуста</p>
+            ) : (
+              <div>
+                {cart.map((product, idx) => (
+                  <Card key={idx} className="mb-4">
+                    <CardContent className="p-4 flex justify-between items-center">
+                      <div>
+                        <h3 className="font-semibold">{product.name}</h3>
+                        <p className="text-lg font-bold">{product.price.toLocaleString()} ₽</p>
                       </div>
-                      
-                      <div className="grid md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Клиент</p>
-                          <p className="font-semibold">{order.full_name}</p>
-                          <p className="text-sm">{order.email}</p>
-                          <p className="text-sm">{order.phone}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-muted-foreground">Доставка</p>
-                          <p className="font-semibold">
-                            {order.delivery_type === 'delivery' ? 'Доставка' : 'Самовывоз'}
-                          </p>
-                          {order.delivery_address && (
-                            <p className="text-sm">{order.delivery_address}</p>
-                          )}
-                        </div>
-                      </div>
-                      
-                      <div className="border-t pt-4">
-                        <p className="text-sm text-muted-foreground mb-2">Товары:</p>
-                        {order.items && order.items.map((item: any, idx: number) => (
-                          <div key={idx} className="flex justify-between text-sm mb-1">
-                            <span>{item.product_name}</span>
-                            <span className="font-semibold">{Number(item.product_price).toLocaleString()} ₽</span>
-                          </div>
-                        ))}
-                        <div className="flex justify-between font-bold text-lg mt-3 pt-3 border-t">
-                          <span>Итого:</span>
-                          <span className="text-primary">{Number(order.total_amount).toLocaleString()} ₽</span>
-                        </div>
-                      </div>
-                      
-                      {order.status !== 'completed' && (
-                        <div className="mt-4 flex gap-2">
-                          <Button 
-                            size="sm" 
-                            className="bg-green-600 hover:bg-green-700 text-white"
-                            onClick={async () => {
-                              await fetch('https://functions.poehali.dev/55d2462d-02a8-4732-91f6-95271b22efe9', {
-                                method: 'PUT',
-                                headers: {
-                                  'Content-Type': 'application/json',
-                                  'X-Admin-Auth': 'admin:123'
-                                },
-                                body: JSON.stringify({ id: order.id, status: 'completed' })
-                              });
-                              loadAdminData();
-                            }}
-                          >
-                            <Icon name="CheckCircle" size={16} className="mr-2" />
-                            Отметить выполненным
-                          </Button>
-                        </div>
-                      )}
+                      <Button 
+                        variant="outline" 
+                        onClick={() => setCart(cart.filter((_, i) => i !== idx))}
+                      >
+                        <Icon name="X" size={18} />
+                      </Button>
                     </CardContent>
                   </Card>
-                ))
-              )}
-            </div>
-          </TabsContent>
+                ))}
+                <div className="mt-6 text-right">
+                  <p className="text-2xl font-bold">
+                    Итого: {cart.reduce((sum, p) => sum + p.price, 0).toLocaleString()} ₽
+                  </p>
+                  <Button className="mt-4" size="lg">
+                    Оформить заказ
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
-          <TabsContent value="messages" className="mt-6">
-            <h2 className="text-2xl font-semibold mb-6">Сообщения от пользователей</h2>
-            
-            <div className="grid gap-4">
-              {adminMessages.length === 0 ? (
-                <Card>
-                  <CardContent className="p-8 text-center text-muted-foreground">
-                    Сообщений пока нет
-                  </CardContent>
-                </Card>
-              ) : (
-                adminMessages.map(msg => (
-                  <Card key={msg.id}>
-                    <CardContent className="p-6">
-                      <div className="flex justify-between items-start mb-2">
-                        <div>
-                          <h3 className="font-semibold text-lg">{msg.fullName}</h3>
-                          <p className="text-sm text-muted-foreground">{msg.email}</p>
-                          {msg.phone && <p className="text-sm text-muted-foreground">{msg.phone}</p>}
-                        </div>
-                        <Badge 
-                          className={
-                            msg.isRead
-                              ? 'bg-green-500 hover:bg-green-600 text-white'
-                              : 'bg-red-500 hover:bg-red-600 text-white'
-                          }
-                        >
-                          {msg.isRead ? 'Прочитано' : 'Новое'}
-                        </Badge>
+        {currentPage === 'favorites' && (
+          <div>
+            <h1 className="text-3xl font-bold mb-6">Избранное</h1>
+            {favorites.length === 0 ? (
+              <p>Избранное пусто</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {favorites.map(product => (
+                  <Card key={product.id}>
+                    <CardContent className="p-4">
+                      <div className="aspect-square rounded-lg mb-4 bg-gray-100 overflow-hidden">
+                        <img 
+                          src={product.image} 
+                          alt={product.name}
+                          className="w-full h-full object-cover"
+                        />
                       </div>
-                      <p className="mt-4 whitespace-pre-wrap">{msg.message}</p>
-                      <p className="text-xs text-muted-foreground mt-4">
-                        {new Date(msg.createdAt).toLocaleString('ru-RU')}
-                      </p>
-                      
-                      {!msg.isRead && (
-                        <div className="mt-4">
-                          <Button 
-                            size="sm"
-                            className="bg-green-600 hover:bg-green-700 text-white"
-                            onClick={async () => {
-                              try {
-                                const response = await fetch('https://functions.poehali.dev/cef89039-b240-4ef5-bb82-eade4c24411b', {
-                                  method: 'PATCH',
-                                  headers: { 'Content-Type': 'application/json' },
-                                  body: JSON.stringify({ id: msg.id })
-                                });
-                                
-                                if (response.ok) {
-                                  loadAdminData();
-                                }
-                              } catch (error) {
-                                console.error('Failed to mark message as read:', error);
-                              }
-                            }}
-                          >
-                            <Icon name="CheckCircle" size={16} className="mr-2" />
-                            Отметить прочитанным
-                          </Button>
-                        </div>
-                      )}
+                      <Badge className="mb-2">{product.brand}</Badge>
+                      <h3 className="font-semibold mb-2 line-clamp-2">{product.name}</h3>
+                      <p className="text-2xl font-bold text-primary">{product.price.toLocaleString()} ₽</p>
                     </CardContent>
+                    <CardFooter className="p-4 pt-0 gap-2">
+                      <Button 
+                        className="flex-1"
+                        onClick={() => addToCart(product)}
+                      >
+                        <Icon name="ShoppingCart" size={18} />
+                      </Button>
+                      <Button 
+                        variant="outline"
+                        onClick={() => toggleFavorite(product)}
+                      >
+                        <Icon name="X" size={18} />
+                      </Button>
+                    </CardFooter>
                   </Card>
-                ))
-              )}
-            </div>
-          </TabsContent>
-        </Tabs>
-      </div>
-    );
-  };
-
-
-
-  return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {renderHeader()}
-      <div className="flex-1">
-        {currentPage === 'admin' && isAdmin ? renderAdminPage() :
-         currentPage === 'checkout' ? renderCheckoutPage() :
-         selectedCategory ? renderCategoryPage() :
-         currentPage === 'home' ? renderHomePage() :
-         currentPage === 'catalog' ? renderCatalogPage() :
-         currentPage === 'about' ? renderAboutPage() :
-         currentPage === 'delivery' ? renderDeliveryPage() :
-         currentPage === 'warranty' ? renderWarrantyPage() :
-         currentPage === 'contact' ? renderContactPage() : null}
-      </div>
-      {renderFooter()}
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </main>
     </div>
   );
 }
