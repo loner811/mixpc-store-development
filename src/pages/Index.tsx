@@ -323,6 +323,8 @@ export default function Index() {
           image_url: p.image_url,
           description: p.description,
           is_featured: p.is_featured,
+          in_stock: p.in_stock,
+          stock_quantity: p.stock_quantity || 0,
           specifications: p.specifications || []
         };
       });
@@ -577,14 +579,15 @@ export default function Index() {
               </div>
             </div>
 
-            <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
-              <DialogTrigger asChild>
-                <Button className="gap-2 gradient-teal text-white hover:opacity-90">
-                  <Icon name="User" size={18} />
-                  <span className="hidden sm:inline">Войти</span>
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
+            {!isLoggedIn ? (
+              <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
+                <DialogTrigger asChild>
+                  <Button className="gap-2 gradient-teal text-white hover:opacity-90">
+                    <Icon name="User" size={18} />
+                    <span className="hidden sm:inline">Войти</span>
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                   <DialogTitle className="text-2xl">Личный кабинет</DialogTitle>
                 </DialogHeader>
@@ -704,6 +707,25 @@ export default function Index() {
                 </Tabs>
               </DialogContent>
             </Dialog>
+            ) : (
+              <Button 
+                variant="outline"
+                className="gap-2"
+                onClick={() => {
+                  setIsLoggedIn(false);
+                  setIsAdmin(false);
+                  setCurrentUser(null);
+                  localStorage.removeItem('userId');
+                  localStorage.removeItem('userName');
+                  localStorage.removeItem('adminAuth');
+                  setCurrentPage('home');
+                  alert('Вы успешно вышли из системы');
+                }}
+              >
+                <Icon name="LogOut" size={18} />
+                <span className="hidden sm:inline">Выйти</span>
+              </Button>
+            )}
 
             <Sheet>
               <SheetTrigger asChild>
@@ -1149,12 +1171,12 @@ export default function Index() {
                       </div>
                       <div className="flex items-center gap-2 mb-2">
                         <Badge>{product.brand}</Badge>
-                        {product.in_stock && (
+                        {(product.in_stock || product.stock_quantity > 0) && (
                           <Badge variant="outline" className="border-green-500 text-green-600">
-                            В наличии
+                            В наличии {product.stock_quantity > 0 ? `(${product.stock_quantity} шт)` : ''}
                           </Badge>
                         )}
-                        {!product.in_stock && (
+                        {!product.in_stock && (!product.stock_quantity || product.stock_quantity === 0) && (
                           <Badge variant="outline" className="border-gray-400 text-gray-500">
                             Нет в наличии
                           </Badge>
