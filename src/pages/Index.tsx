@@ -77,36 +77,681 @@ const getProductSpecs = (productId: number, productName: string, category: strin
 export default function Index() {
   const [currentPage, setCurrentPage] = useState('home');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  { id: 25, name: 'NVIDIA GeForce RTX 4070 Ti', price: 79990, brand: 'NVIDIA', category: 'Видеокарты', image: '/images/products/25.jpg' },
-  { id: 26, name: 'AMD Radeon RX 7800 XT', price: 59990, brand: 'AMD', category: 'Видеокарты', image: '/images/products/26.jpg' },
-  { id: 27, name: 'NVIDIA GeForce RTX 4070', price: 64990, brand: 'NVIDIA', category: 'Видеокарты', image: '/images/products/27.jpg' },
-  { id: 28, name: 'AMD Radeon RX 7700 XT', price: 49990, brand: 'AMD', category: 'Видеокарты', image: '/images/products/28.jpg' },
-  { id: 29, name: 'NVIDIA GeForce RTX 4060 Ti', price: 44990, brand: 'NVIDIA', category: 'Видеокарты', image: '/images/products/29.jpg' },
-  { id: 30, name: 'AMD Radeon RX 7600', price: 29990, brand: 'AMD', category: 'Видеокарты', image: '/images/products/30.jpg' },
+  const [cart, setCart] = useState<any[]>([]);
+  const [favorites, setFavorites] = useState<any[]>([]);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  
+  // Checkout
+  const [checkoutData, setCheckoutData] = useState({
+    fullName: '',
+    email: '',
+    phone: '',
+    deliveryType: 'delivery',
+    address: ''
+  });
+  
+  // Admin
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminProducts, setAdminProducts] = useState<any[]>([]);
+  const [adminMessages, setAdminMessages] = useState<any[]>([]);
+  const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [adminActiveTab, setAdminActiveTab] = useState('products');
+  const [adminOrders, setAdminOrders] = useState<any[]>([]);
+  
+  // Featured products
+  const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
+  
+  // All products from database
+  const [allProductsFromDB, setAllProductsFromDB] = useState<any[]>([]);
+  const [productsLoading, setProductsLoading] = useState(true);
+  
+  // Categories from database
+  const [categories, setCategories] = useState<any[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+  
+  // Filters
+  const [priceRange, setPriceRange] = useState([0, 200000]);
+  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
+  const [sortBy, setSortBy] = useState('default');
+  const [showInStockOnly, setShowInStockOnly] = useState(false);
+  const [selectedSpecs, setSelectedSpecs] = useState<Record<string, string[]>>({});
 
-  // Материнские платы
-  { id: 31, name: 'ASUS ROG Strix B650-E', price: 24990, brand: 'ASUS', category: 'Материнские платы', image: '/images/products/31.jpg' },
-  { id: 32, name: 'MSI MAG B760 Tomahawk', price: 18990, brand: 'MSI', category: 'Материнские платы', image: '/images/products/32.jpg' },
-  { id: 33, name: 'Gigabyte X670 AORUS Elite', price: 29990, brand: 'Gigabyte', category: 'Материнские платы', image: '/images/products/33.jpg' },
-  { id: 34, name: 'ASRock Z790 Steel Legend', price: 21990, brand: 'ASRock', category: 'Материнские платы', image: '/images/products/34.jpg' },
-  { id: 35, name: 'ASUS TUF Gaming B650', price: 16990, brand: 'ASUS', category: 'Материнские платы', image: '/images/products/35.jpg' },
-  { id: 36, name: 'MSI MPG Z790 Carbon', price: 34990, brand: 'MSI', category: 'Материнские платы', image: '/images/products/36.jpg' },
-  { id: 37, name: 'Gigabyte B660M DS3H', price: 12990, brand: 'Gigabyte', category: 'Материнские платы', image: '/images/products/37.jpg' },
-  { id: 38, name: 'ASUS Prime X670-P', price: 27990, brand: 'ASUS', category: 'Материнские платы', image: '/images/products/38.jpg' },
-  { id: 39, name: 'MSI PRO B650-P', price: 14990, brand: 'MSI', category: 'Материнские платы', image: '/images/products/39.jpg' },
-  { id: 40, name: 'ASRock B760M Pro RS', price: 11990, brand: 'ASRock', category: 'Материнские платы', image: '/images/products/40.jpg' },
+  // Auto-slider
+  const [sliderOffset, setSliderOffset] = useState(0);
 
-  // Оперативная память
-  { id: 41, name: 'Kingston Fury 32GB DDR5', price: 12990, brand: 'Kingston', category: 'Оперативная память', image: '/images/products/41.jpg' },
-  { id: 42, name: 'Corsair Vengeance 32GB DDR5', price: 14990, brand: 'Corsair', category: 'Оперативная память', image: '/images/products/42.jpg' },
-  { id: 43, name: 'G.Skill Trident Z5 32GB DDR5', price: 16990, brand: 'G.Skill', category: 'Оперативная память', image: '/images/products/43.jpg' },
-  { id: 44, name: 'Kingston Fury 16GB DDR4', price: 5990, brand: 'Kingston', category: 'Оперативная память', image: '/images/products/44.jpg' },
-  { id: 45, name: 'Corsair Vengeance RGB 32GB DDR4', price: 9990, brand: 'Corsair', category: 'Оперативная память', image: '/images/products/45.jpg' },
-  { id: 46, name: 'G.Skill Ripjaws V 16GB DDR4', price: 4990, brand: 'G.Skill', category: 'Оперативная память', image: '/images/products/46.jpg' },
-  { id: 47, name: 'Crucial 32GB DDR5', price: 11990, brand: 'Crucial', category: 'Оперативная память', image: '/images/products/47.jpg' },
-  { id: 48, name: 'TeamGroup T-Force 32GB DDR4', price: 8990, brand: 'TeamGroup', category: 'Оперативная память', image: '/images/products/48.jpg' },
-  { id: 49, name: 'Kingston Fury Beast 64GB DDR5', price: 24990, brand: 'Kingston', category: 'Оперативная память', image: '/images/products/49.jpg' },
-  { id: 50, name: 'Corsair Dominator 64GB DDR5', price: 29990, brand: 'Corsair', category: 'Оперативная память', image: '/images/products/50.jpg' },
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setSliderOffset((prev) => prev - 1);
+    }, 30);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (isAdmin) {
+      loadAdminData();
+    }
+  }, [isAdmin]);
+  
+  useEffect(() => {
+    loadFeaturedProducts();
+    loadAllProducts();
+    loadCategories();
+    checkAuth();
+  }, []);
+
+  
+  const checkAuth = async () => {
+    const token = localStorage.getItem('authToken');
+    if (!token) return;
+    
+    try {
+      const response = await fetch('https://functions.poehali.dev/9b2ca161-5453-49a5-959c-0d611720a876', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok && data.user) {
+        setCurrentUser(data.user);
+        setIsLoggedIn(true);
+        setIsAdmin(data.user.role === 'admin');
+      } else {
+        localStorage.removeItem('authToken');
+      }
+    } catch (error) {
+      localStorage.removeItem('authToken');
+    }
+  };
+  
+  const loadCategories = async () => {
+    try {
+      setCategoriesLoading(true);
+      const response = await fetch('https://functions.poehali.dev/899eeac8-8b43-4e8b-9430-3ba1b8c0ac0b');
+      const data = await response.json();
+      setCategories(data.categories || []);
+    } catch (error) {
+      console.error('Failed to load categories:', error);
+      setCategories([]);
+    } finally {
+      setCategoriesLoading(false);
+    }
+  };
+  
+  const loadAllProducts = async () => {
+    try {
+      setProductsLoading(true);
+      const response = await fetch('https://functions.poehali.dev/66eafcf6-38e4-415c-b1ff-ad6d420b564e');
+      const products = await response.json();
+      
+      const formattedProducts = products.map((p: any) => {
+        let imageUrl = '/placeholder.jpg';
+        
+        if (p.image_url || p.image_filename) {
+          const img = p.image_url || p.image_filename;
+          if (img.startsWith('http')) {
+            imageUrl = img;
+          } else if (img.startsWith('files/')) {
+            imageUrl = `https://cdn.poehali.dev/${img}`;
+          } else {
+            imageUrl = `https://cdn.poehali.dev/images/${img}`;
+          }
+        }
+        
+        return {
+          id: p.id,
+          name: p.name,
+          price: p.price,
+          brand: p.brand,
+          category: p.category,
+          image: imageUrl,
+          image_filename: p.image_filename,
+          image_url: p.image_url,
+          description: p.description,
+          is_featured: p.is_featured,
+          specifications: p.specifications || []
+        };
+      });
+      
+      setAllProductsFromDB(formattedProducts);
+    } catch (error) {
+      console.error('Failed to load products:', error);
+      setAllProductsFromDB([]);
+    } finally {
+      setProductsLoading(false);
+    }
+  };
+  
+  const loadFeaturedProducts = async () => {
+    try {
+      const response = await fetch('https://functions.poehali.dev/cceb4ca9-48f7-4a28-a301-3dd14baa0d71?featured=true');
+      const products = await response.json();
+      setFeaturedProducts(products);
+    } catch (error) {
+      console.error('Failed to load featured products:', error);
+    }
+  };
+
+  const loadAdminData = async () => {
+    try {
+      const productsRes = await fetch('https://functions.poehali.dev/66eafcf6-38e4-415c-b1ff-ad6d420b564e', {
+        headers: { 'X-Admin-Auth': 'admin:123' }
+      });
+      const products = await productsRes.json();
+      console.log('Загружено товаров для админки:', products.length);
+      setAdminProducts(products);
+
+      const ordersRes = await fetch('https://functions.poehali.dev/55d2462d-02a8-4732-91f6-95271b22efe9', {
+        headers: { 'X-Admin-Auth': 'admin:123' }
+      });
+      const ordersData = await ordersRes.json();
+      console.log('Данные заказов:', ordersData);
+      console.log('Тип ordersData:', Array.isArray(ordersData) ? 'array' : typeof ordersData);
+      const orders = Array.isArray(ordersData) ? ordersData : [];
+      console.log('Установлено заказов:', orders.length);
+      setAdminOrders(orders);
+
+      const messagesRes = await fetch('https://functions.poehali.dev/cef89039-b240-4ef5-bb82-eade4c24411b');
+      const messagesData = await messagesRes.json();
+      console.log('Данные сообщений:', messagesData);
+      const msgs = messagesData.messages || (Array.isArray(messagesData) ? messagesData : []);
+      console.log('Установлено сообщений:', msgs.length);
+      setAdminMessages(msgs);
+    } catch (error) {
+      console.error('Failed to load admin data:', error);
+    }
+  };
+
+
+  const handleSaveProduct = async (product: any) => {
+    const url = 'https://functions.poehali.dev/66eafcf6-38e4-415c-b1ff-ad6d420b564e';
+    const method = product.id ? 'PUT' : 'POST';
+    
+    try {
+      console.log('Отправка товара:', product);
+      
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Admin-Auth': 'admin:123'
+        },
+        body: JSON.stringify(product)
+      });
+      
+      console.log('Статус ответа:', response.status);
+      
+      const result = await response.json();
+      console.log('Результат:', result);
+      
+      if (!response.ok) {
+        alert(`Ошибка: ${result.error || 'Не удалось сохранить товар'}`);
+        return;
+      }
+      
+      alert(product.id ? 'Товар обновлён!' : 'Товар добавлен!');
+      await loadAdminData();
+      await loadAllProducts();
+      setEditingProduct(null);
+    } catch (error) {
+      console.error('Ошибка при сохранении товара:', error);
+      alert('Ошибка при сохранении товара');
+    }
+  };
+
+  const handleDeleteProduct = async (id: number) => {
+    if (!confirm('Удалить товар?')) return;
+    
+    await fetch(`https://functions.poehali.dev/66eafcf6-38e4-415c-b1ff-ad6d420b564e?id=${id}`, {
+      method: 'DELETE',
+      headers: { 'X-Admin-Auth': 'admin:123' }
+    });
+    
+    await loadAdminData();
+    await loadAllProducts();
+  };
+
+  const getFilteredProducts = () => {
+    const productsSource = allProductsFromDB;
+    
+    let products = selectedCategory 
+      ? productsSource.filter(p => p.category === selectedCategory)
+      : productsSource;
+
+
+    if (selectedCategory) {
+      products = products.filter(p => 
+        p.price >= priceRange[0] && p.price <= priceRange[1]
+      );
+
+      if (selectedBrands.length > 0) {
+        products = products.filter(p => selectedBrands.includes(p.brand));
+      }
+
+      if (showInStockOnly) {
+        products = products.filter(p => p.in_stock === true);
+      }
+
+      if (Object.keys(selectedSpecs).length > 0) {
+        products = products.filter(p => {
+          const specs = p.specifications || [];
+          return Object.entries(selectedSpecs).every(([specName, specValues]) => {
+            return specs.some((spec: any) => {
+              const name = spec.spec_name || spec.name || '';
+              const value = spec.spec_value || spec.value || '';
+              return name === specName && specValues.includes(value);
+            });
+          });
+        });
+      }
+
+      if (sortBy === 'price-asc') {
+        products.sort((a, b) => a.price - b.price);
+      } else if (sortBy === 'price-desc') {
+        products.sort((a, b) => b.price - a.price);
+      } else if (sortBy === 'name') {
+        products.sort((a, b) => a.name.localeCompare(b.name));
+      }
+    }
+
+    return products;
+  };
+
+  const filteredProducts = getFilteredProducts();
+
+  const getBrandsForCategory = () => {
+    if (!selectedCategory) return [];
+    const products = allProductsFromDB.filter(p => p.category === selectedCategory);
+    const brands = [...new Set(products.map(p => p.brand))];
+    return brands.sort();
+  };
+
+  const toggleBrand = (brand: string) => {
+    setSelectedBrands(prev => 
+      prev.includes(brand) 
+        ? prev.filter(b => b !== brand)
+        : [...prev, brand]
+    );
+  };
+
+  const getSpecsForCategory = () => {
+    if (!selectedCategory) return {};
+    const products = allProductsFromDB.filter(p => p.category === selectedCategory);
+    
+    const specsMap: Record<string, Set<string>> = {};
+    
+    products.forEach(product => {
+      const specs = product.specifications || [];
+      specs.forEach((spec: any) => {
+        const name = spec.spec_name || spec.name || '';
+        const value = spec.spec_value || spec.value || '';
+        if (name && value) {
+          if (!specsMap[name]) {
+            specsMap[name] = new Set();
+          }
+          specsMap[name].add(value);
+        }
+      });
+    });
+    
+    const result: Record<string, string[]> = {};
+    Object.keys(specsMap).forEach(key => {
+      result[key] = Array.from(specsMap[key]).sort();
+    });
+    
+    return result;
+  };
+
+
+  const toggleSpec = (specName: string, specValue: string) => {
+    setSelectedSpecs(prev => {
+      const current = prev[specName] || [];
+      const updated = current.includes(specValue)
+        ? current.filter(v => v !== specValue)
+        : [...current, specValue];
+      
+      if (updated.length === 0) {
+        const { [specName]: _, ...rest } = prev;
+        return rest;
+      }
+      
+      return { ...prev, [specName]: updated };
+    });
+  };
+
+  const addToCart = (product: any) => {
+    setCart(prev => [...prev, product]);
+    alert('Товар добавлен в корзину!');
+  };
+
+  const removeFromCart = (productId: number) => {
+    setCart(prev => prev.filter(p => p.id !== productId));
+  };
+
+  const toggleFavorite = (product: any) => {
+    setFavorites(prev => {
+      const exists = prev.some(f => f.id === product.id);
+      const newFavorites = exists 
+        ? prev.filter(f => f.id !== product.id)
+        : [...prev, product];
+      
+      localStorage.setItem('favorites', JSON.stringify(newFavorites));
+      return newFavorites;
+    });
+  };
+
+  useEffect(() => {
+    const saved = localStorage.getItem('favorites');
+    if (saved) {
+      setFavorites(JSON.parse(saved));
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    setCurrentUser(null);
+    setIsLoggedIn(false);
+    setIsAdmin(false);
+    alert('Вы вышли из аккаунта');
+  };
+
+  const handleCheckout = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (cart.length === 0) {
+      alert('Корзина пуста!');
+      return;
+    }
+    
+    const formData = new FormData(e.target as HTMLFormElement);
+    const orderData = {
+      user_id: currentUser?.id || null,
+      full_name: formData.get('fullName'),
+      email: formData.get('email'),
+      phone: formData.get('phone'),
+      delivery_type: formData.get('deliveryType'),
+      delivery_address: formData.get('address') || '',
+      total_amount: cart.reduce((sum, item) => sum + item.price, 0),
+      items: cart
+    };
+    
+    try {
+      const response = await fetch('https://functions.poehali.dev/55d2462d-02a8-4732-91f6-95271b22efe9', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderData)
+      });
+      
+      if (response.ok) {
+        alert('Заказ успешно оформлен!');
+        setCart([]);
+        setCheckoutData({ fullName: '', email: '', phone: '', deliveryType: 'delivery', address: '' });
+      } else {
+        alert('Ошибка при оформлении заказа');
+      }
+    } catch (error) {
+      console.error('Checkout error:', error);
+      alert('Ошибка при оформлении заказа');
+    }
+  };
+
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target as HTMLFormElement);
+    const messageData = {
+      name: formData.get('name'),
+      email: formData.get('email'),
+      subject: formData.get('subject'),
+      message: formData.get('message')
+    };
+    
+    try {
+      const response = await fetch('https://functions.poehali.dev/cef89039-b240-4ef5-bb82-eade4c24411b', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(messageData)
+      });
+      
+      if (response.ok) {
+        alert('Сообщение отправлено!');
+        (e.target as HTMLFormElement).reset();
+      } else {
+        alert('Ошибка отправки');
+      }
+    } catch (error) {
+      console.error('Message error:', error);
+      alert('Ошибка отправки');
+    }
+  };
+
+
+  const removeFromFavorites = (productId: number) => {
+    setFavorites(favorites.filter(p => p.id !== productId));
+  };
+
+  const renderHeader = () => (
+    <header className="sticky top-0 z-50 bg-white shadow-lg border-b border-gray-200">
+      <div className="container mx-auto px-4 py-4">
+        <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-center gap-2">
+            <div 
+              className="bg-white text-primary px-6 py-3 rounded-xl font-bold text-2xl shadow-lg cursor-pointer hover:scale-105 transition-transform"
+              onClick={() => {
+                setCurrentPage('home');
+                setSelectedCategory(null);
+              }}
+            >
+              MIX PC
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <div className="text-sm text-center hidden md:block">
+              <div className="font-semibold text-base text-primary">8 (800) 555-77-30</div>
+              <div className="flex gap-2 mt-1 justify-center">
+                <a href="https://t.me" target="_blank" rel="noopener" className="text-primary hover:opacity-80 transition-opacity">
+                  <Icon name="Send" size={20} />
+                </a>
+                <a href="https://wa.me" target="_blank" rel="noopener" className="text-primary hover:opacity-80 transition-opacity">
+                  <Icon name="MessageCircle" size={20} />
+                </a>
+              </div>
+            </div>
+
+            {isLoggedIn ? (
+              <div className="flex items-center gap-3">
+                <div className="hidden sm:flex flex-col items-end">
+                  <span className="text-sm font-semibold">{currentUser?.username}</span>
+                  <span className="text-xs text-muted-foreground">{currentUser?.email}</span>
+                </div>
+                <Button 
+                  onClick={() => {
+                    localStorage.removeItem('authToken');
+                    setIsLoggedIn(false);
+                    setIsAdmin(false);
+                    setCurrentUser(null);
+                    alert('Вы вышли из аккаунта');
+                  }}
+                  variant="outline" 
+                  className="gap-2"
+                >
+                  <Icon name="LogOut" size={18} />
+                  <span className="hidden sm:inline">Выход</span>
+                </Button>
+              </div>
+            ) : (
+              <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
+                <DialogTrigger asChild>
+                  <Button className="gap-2 gradient-teal text-white hover:opacity-90">
+                    <Icon name="User" size={18} />
+                    <span className="hidden sm:inline">Войти</span>
+                  </Button>
+                </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle className="text-2xl">Личный кабинет</DialogTitle>
+                </DialogHeader>
+                <Tabs defaultValue="login">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="login">Вход</TabsTrigger>
+                    <TabsTrigger value="register">Регистрация</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="login" className="space-y-4 mt-4">
+                    <form onSubmit={async (e) => {
+                      e.preventDefault();
+                      const formData = new FormData(e.target as HTMLFormElement);
+                      const username = formData.get('login') as string;
+                      const password = formData.get('password') as string;
+                      
+                      try {
+                        const response = await fetch('https://functions.poehali.dev/9b2ca161-5453-49a5-959c-0d611720a876', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ username, password })
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (response.ok && data.token) {
+                          localStorage.setItem('authToken', data.token);
+                          setCurrentUser(data.user);
+                          setIsLoggedIn(true);
+                          setIsAdmin(data.user.role === 'admin');
+                          setLoginOpen(false);
+                          alert(`Добро пожаловать, ${data.user.username}!`);
+                        } else {
+                          alert(data.error || 'Неверный логин или пароль');
+                        }
+                      } catch (error) {
+                        alert('Ошибка подключения к серверу');
+                      }
+                    }}>
+                      <div className="space-y-2">
+                        <Label>Логин</Label>
+                        <Input name="login" placeholder="Введите логин" required />
+                      </div>
+                      <div className="space-y-2 mt-4">
+                        <Label>Пароль</Label>
+                        <Input name="password" type="password" placeholder="Введите пароль" required />
+                      </div>
+                      <Button 
+                        type="submit"
+                        className="w-full bg-primary hover:bg-primary/90 h-11 mt-4"
+                      >
+                        Войти
+                      </Button>
+                    </form>
+                  </TabsContent>
+                  <TabsContent value="register" className="space-y-4 mt-4">
+                    <form onSubmit={async (e) => {
+                      e.preventDefault();
+                      const formData = new FormData(e.target as HTMLFormElement);
+                      const email = formData.get('email') as string;
+                      const username = formData.get('username') as string;
+                      const password = formData.get('password') as string;
+                      
+                      try {
+                        const response = await fetch('https://functions.poehali.dev/9b2ca161-5453-49a5-959c-0d611720a876', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ action: 'register', email, username, password })
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (response.ok && data.success) {
+                          alert('Регистрация успешна! Теперь можете войти.');
+                        } else {
+                          alert(data.error || 'Ошибка регистрации');
+                        }
+                      } catch (error) {
+                        alert('Ошибка подключения к серверу');
+                      }
+                    }}>
+                      <div className="space-y-2">
+                        <Label>Email</Label>
+                        <Input name="email" type="email" placeholder="Введите email" required />
+                      </div>
+                      <div className="space-y-2 mt-4">
+                        <Label>Логин</Label>
+                        <Input name="username" placeholder="Введите логин" required />
+                      </div>
+                      <div className="space-y-2 mt-4">
+                        <Label>Пароль</Label>
+                        <Input name="password" type="password" placeholder="Введите пароль" required />
+                      </div>
+                      <Button 
+                        type="submit"
+                        className="w-full bg-primary hover:bg-primary/90 h-11 mt-4"
+                      >
+                        Зарегистрироваться
+                      </Button>
+                    </form>
+                  </TabsContent>
+                </Tabs>
+              </DialogContent>
+            </Dialog>
+            )}
+
+            {isAdmin && (
+              <Button 
+                onClick={() => setCurrentPage('admin')}
+                className="gap-2"
+                variant="outline"
+              >
+                <Icon name="Settings" size={18} />
+                <span className="hidden sm:inline">Админ-панель</span>
+              </Button>
+            )}
+
+            <Button 
+              variant="outline" 
+              className="relative gap-2" 
+              onClick={() => setCurrentPage('favorites')}
+            >
+              <Icon name="Heart" size={18} />
+              <span className="hidden sm:inline">Избранное</span>
+              {favorites.length > 0 && (
+                <Badge variant="destructive" className="absolute -top-2 -right-2 px-2 py-0.5 h-5 min-w-5 flex items-center justify-center">
+                  {favorites.length}
+                </Badge>
+              )}
+            </Button>
+
+            <Button 
+              variant="default" 
+              className="relative gap-2 gradient-blue text-white hover:opacity-90" 
+              onClick={() => setCurrentPage('cart')}
+            >
+              <Icon name="ShoppingCart" size={18} />
+              <span className="hidden sm:inline">Корзина</span>
+              {cart.length > 0 && (
+                <Badge className="absolute -top-2 -right-2 bg-white text-primary px-2 py-0.5 h-5 min-w-5 flex items-center justify-center">
+                  {cart.length}
+                </Badge>
+              )}
+            </Button>
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {renderHeader()}
+      <main className="container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold mb-4">MIX PC - Интернет-магазин компьютерной техники</h1>
+        <p>Загрузка...</p>
+      </main>
+    </div>
+  );
+}
+
+// HARDCODE TO DELETE
 
   // Накопители SSD
   { id: 51, name: 'Samsung 980 PRO 2TB', price: 18990, brand: 'Samsung', category: 'Накопители SSD', image: '/images/products/51.jpg' },
