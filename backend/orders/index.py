@@ -79,12 +79,12 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         elif method == 'POST':
             body_data = json.loads(event.get('body', '{}'))
             user_id = body_data.get('user_id')
-            full_name = body_data.get('full_name')
-            email = body_data.get('email')
-            phone = body_data.get('phone')
+            customer_name = body_data.get('customer_name') or body_data.get('full_name')
+            customer_email = body_data.get('customer_email') or body_data.get('email')
+            customer_phone = body_data.get('customer_phone') or body_data.get('phone')
             delivery_type = body_data.get('delivery_type')
             delivery_address = body_data.get('delivery_address', '')
-            total_amount = body_data.get('total_amount')
+            total_amount = body_data.get('total') or body_data.get('total_amount')
             items = body_data.get('items', [])
             
             cursor.execute('''
@@ -92,23 +92,27 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 (user_id, full_name, email, phone, delivery_type, delivery_address, total_amount)
                 VALUES (%s, %s, %s, %s, %s, %s, %s)
                 RETURNING id
-            ''', (user_id, full_name, email, phone, delivery_type, delivery_address, total_amount))
+            ''', (user_id, customer_name, customer_email, customer_phone, delivery_type, delivery_address, total_amount))
             
             order_id = cursor.fetchone()['id']
             
             for item in items:
-                product_id = item.get('id')
+                product_id = item.get('product_id') or item.get('id')
+                product_name = item.get('product_name') or item.get('name')
+                product_price = item.get('price')
+                quantity = item.get('quantity', 1)
+                
                 cursor.execute('''
                     INSERT INTO t_p58610579_mixpc_store_developm.order_items
                     (order_id, product_id, product_name, product_price, quantity)
                     VALUES (%s, %s, %s, %s, %s)
-                ''', (order_id, product_id, item.get('name'), item.get('price'), 1))
+                ''', (order_id, product_id, product_name, product_price, quantity))
                 
                 cursor.execute('''
                     UPDATE t_p58610579_mixpc_store_developm.products
-                    SET stock_quantity = GREATEST(stock_quantity - 1, 0)
+                    SET stock_quantity = GREATEST(stock_quantity - %s, 0)
                     WHERE id = %s
-                ''', (product_id,))
+                ''', (quantity, product_id))
             
             conn.commit()
             
