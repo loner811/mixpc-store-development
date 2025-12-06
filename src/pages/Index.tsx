@@ -72,38 +72,11 @@ const getProductSpecs = (productId: number, productName: string, category: strin
   return ['Премиум качество', 'Гарантия 1 год', 'В наличии'];
 };
 
-// Удалён хардкод массив товаров - все товары грузятся из БД
-const allProducts: any[] = [];
-const OLD_REMOVED_HARDCODE = [
-  // Компьютеры
-  { id: 1, name: 'Игровой ПК AMD Ryzen 7', price: 89990, brand: 'Custom Build', category: 'Компьютеры', image: '/images/products/1.jpg' },
-  { id: 2, name: 'Офисный ПК Intel Core i5', price: 45990, brand: 'Custom Build', category: 'Компьютеры', image: '/images/products/2.jpg' },
-  { id: 3, name: 'Рабочая станция Intel Xeon', price: 159990, brand: 'HP', category: 'Компьютеры', image: '/images/products/3.jpg' },
-  { id: 4, name: 'Игровой ПК Intel Core i9', price: 189990, brand: 'MSI', category: 'Компьютеры', image: '/images/products/4.jpg' },
-  { id: 5, name: 'Мини-ПК AMD Ryzen 5', price: 39990, brand: 'ASUS', category: 'Компьютеры', image: '/images/products/5.jpg' },
-  { id: 6, name: 'Игровой ПК AMD Ryzen 9', price: 219990, brand: 'Custom Build', category: 'Компьютеры', image: '/images/products/6.jpg' },
-  { id: 7, name: 'Офисный ПК Intel Core i3', price: 29990, brand: 'Dell', category: 'Компьютеры', image: '/images/products/7.jpg' },
-  { id: 8, name: 'Стример ПК AMD Ryzen 7', price: 129990, brand: 'Custom Build', category: 'Компьютеры', image: '/images/products/8.jpg' },
-  { id: 9, name: 'Рабочий ПК Intel Core i7', price: 79990, brand: 'Lenovo', category: 'Компьютеры', image: '/images/products/9.jpg' },
-  { id: 10, name: 'Игровой ПК RTX 4090', price: 349990, brand: 'Custom Build', category: 'Компьютеры', image: '/images/products/10.jpg' },
+// Все товары загружаются из БД через API
 
-  // Процессоры
-  { id: 11, name: 'AMD Ryzen 9 7950X', price: 45990, brand: 'AMD', category: 'Процессоры', image: '/images/products/11.jpg' },
-  { id: 12, name: 'Intel Core i9-13900K', price: 52990, brand: 'Intel', category: 'Процессоры', image: '/images/products/12.jpg' },
-  { id: 13, name: 'AMD Ryzen 7 7700X', price: 29990, brand: 'AMD', category: 'Процессоры', image: '/images/products/13.jpg' },
-  { id: 14, name: 'Intel Core i7-13700K', price: 38990, brand: 'Intel', category: 'Процессоры', image: '/images/products/14.jpg' },
-  { id: 15, name: 'AMD Ryzen 5 7600X', price: 22990, brand: 'AMD', category: 'Процессоры', image: '/images/products/15.jpg' },
-  { id: 16, name: 'Intel Core i5-13600K', price: 28990, brand: 'Intel', category: 'Процессоры', image: '/images/products/16.jpg' },
-  { id: 17, name: 'AMD Ryzen 9 7900X', price: 39990, brand: 'AMD', category: 'Процессоры', image: '/images/products/17.jpg' },
-  { id: 18, name: 'Intel Core i9-12900K', price: 44990, brand: 'Intel', category: 'Процессоры', image: '/images/products/18.jpg' },
-  { id: 19, name: 'AMD Ryzen 7 5800X3D', price: 31990, brand: 'AMD', category: 'Процессоры', image: '/images/products/19.jpg' },
-  { id: 20, name: 'Intel Core i5-12400F', price: 15990, brand: 'Intel', category: 'Процессоры', image: '/images/products/20.jpg' },
-
-  // Видеокарты
-  { id: 21, name: 'NVIDIA GeForce RTX 4090', price: 159990, brand: 'NVIDIA', category: 'Видеокарты', image: '/images/products/21.jpg' },
-  { id: 22, name: 'AMD Radeon RX 7900 XTX', price: 89990, brand: 'AMD', category: 'Видеокарты', image: '/images/products/22.jpg' },
-  { id: 23, name: 'NVIDIA GeForce RTX 4080', price: 119990, brand: 'NVIDIA', category: 'Видеокарты', image: '/images/products/23.jpg' },
-  { id: 24, name: 'AMD Radeon RX 7900 XT', price: 74990, brand: 'AMD', category: 'Видеокарты', image: '/images/products/24.jpg' },
+export default function Index() {
+  const [currentPage, setCurrentPage] = useState('home');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   { id: 25, name: 'NVIDIA GeForce RTX 4070 Ti', price: 79990, brand: 'NVIDIA', category: 'Видеокарты', image: '/images/products/25.jpg' },
   { id: 26, name: 'AMD Radeon RX 7800 XT', price: 59990, brand: 'AMD', category: 'Видеокарты', image: '/images/products/26.jpg' },
   { id: 27, name: 'NVIDIA GeForce RTX 4070', price: 64990, brand: 'NVIDIA', category: 'Видеокарты', image: '/images/products/27.jpg' },
@@ -362,17 +335,24 @@ export default function Index() {
         headers: { 'X-Admin-Auth': 'admin:123' }
       });
       const products = await productsRes.json();
+      console.log('Загружено товаров для админки:', products.length);
       setAdminProducts(products);
 
       const ordersRes = await fetch('https://functions.poehali.dev/55d2462d-02a8-4732-91f6-95271b22efe9', {
         headers: { 'X-Admin-Auth': 'admin:123' }
       });
       const ordersData = await ordersRes.json();
-      setAdminOrders(Array.isArray(ordersData) ? ordersData : []);
+      console.log('Данные заказов:', ordersData);
+      console.log('Тип ordersData:', Array.isArray(ordersData) ? 'array' : typeof ordersData);
+      const orders = Array.isArray(ordersData) ? ordersData : [];
+      console.log('Установлено заказов:', orders.length);
+      setAdminOrders(orders);
 
       const messagesRes = await fetch('https://functions.poehali.dev/cef89039-b240-4ef5-bb82-eade4c24411b');
       const messagesData = await messagesRes.json();
+      console.log('Данные сообщений:', messagesData);
       const msgs = messagesData.messages || (Array.isArray(messagesData) ? messagesData : []);
+      console.log('Установлено сообщений:', msgs.length);
       setAdminMessages(msgs);
     } catch (error) {
       console.error('Failed to load admin data:', error);
@@ -428,7 +408,7 @@ export default function Index() {
   };
 
   const getFilteredProducts = () => {
-    const productsSource = allProductsFromDB.length > 0 ? allProductsFromDB : allProducts;
+    const productsSource = allProductsFromDB;
     
     let products = selectedCategory 
       ? productsSource.filter(p => p.category === selectedCategory)
