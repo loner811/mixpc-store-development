@@ -2211,10 +2211,10 @@ export default function Index() {
           <div>
             <h4 className="font-semibold mb-4">Информация</h4>
             <div className="space-y-2 text-sm">
-              <button onClick={() => setCurrentPage('about')} className="block text-white/70 hover:text-white transition-colors">О нас</button>
-              <button onClick={() => setCurrentPage('delivery')} className="block text-white/70 hover:text-white transition-colors">Доставка и оплата</button>
-              <button onClick={() => setCurrentPage('warranty')} className="block text-white/70 hover:text-white transition-colors">Гарантия и возврат</button>
-              <button onClick={() => setCurrentPage('contact')} className="block text-white/70 hover:text-white transition-colors">Контакты</button>
+              <button onClick={() => { setSelectedCategory(null); setCurrentPage('about'); }} className="block text-white/70 hover:text-white transition-colors">О нас</button>
+              <button onClick={() => { setSelectedCategory(null); setCurrentPage('delivery'); }} className="block text-white/70 hover:text-white transition-colors">Доставка и оплата</button>
+              <button onClick={() => { setSelectedCategory(null); setCurrentPage('warranty'); }} className="block text-white/70 hover:text-white transition-colors">Гарантия и возврат</button>
+              <button onClick={() => { setSelectedCategory(null); setCurrentPage('contact'); }} className="block text-white/70 hover:text-white transition-colors">Контакты</button>
             </div>
           </div>
           <div>
