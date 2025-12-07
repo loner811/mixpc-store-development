@@ -232,7 +232,10 @@ const allProducts = [
 ];
 
 export default function Index() {
-  const [currentPage, setCurrentPage] = useState('home');
+  const [currentPage, setCurrentPage] = useState(() => {
+    const isAdminStored = !!localStorage.getItem('adminAuth');
+    return isAdminStored ? 'admin' : 'home';
+  });
   const [userOrders, setUserOrders] = useState<any[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [cart, setCart] = useState<any[]>(() => {
@@ -2542,8 +2545,15 @@ export default function Index() {
             )}
 
             <div className="grid gap-4">
-              {adminProducts.map(product => (
-                <Card key={product.id}>
+              {!adminProducts || adminProducts.length === 0 ? (
+                <Card>
+                  <CardContent className="p-8 text-center text-muted-foreground">
+                    Товаров пока нет
+                  </CardContent>
+                </Card>
+              ) : (
+                adminProducts.map(product => (
+                  <Card key={product.id}>
                   <CardContent className="p-4">
                     <div className="flex gap-4 items-center">
                       <div className="w-20 h-20 bg-muted rounded-lg flex items-center justify-center flex-shrink-0">
@@ -2586,7 +2596,8 @@ export default function Index() {
                     </div>
                   </CardContent>
                 </Card>
-              ))}
+                ))
+              )}
             </div>
           </TabsContent>
 
