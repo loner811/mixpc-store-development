@@ -11,7 +11,7 @@
       "bodyMatcher": "partial"
     },
     {
-      "name": "Create new order",
+      "name": "Validation: insufficient stock",
       "method": "POST",
       "path": "/",
       "headers": {
@@ -28,14 +28,14 @@
         "items": [
           {
             "id": 1,
-            "name": "AMD Ryzen 7 7700X",
+            "quantity": 999999,
             "price": 29990
           }
         ]
       },
-      "expectedStatus": 201,
+      "expectedStatus": 400,
       "expectedBody": {
-        "message": "string"
+        "error": "string"
       },
       "bodyMatcher": "partial"
     }

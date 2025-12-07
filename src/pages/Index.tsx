@@ -233,6 +233,7 @@ const allProducts = [
 
 export default function Index() {
   const [currentPage, setCurrentPage] = useState('home');
+  const [userOrders, setUserOrders] = useState<any[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [cart, setCart] = useState<any[]>(() => {
     const saved = localStorage.getItem('cart');
@@ -308,6 +309,7 @@ export default function Index() {
   useEffect(() => {
     if (isLoggedIn && currentUser?.id) {
       loadUserMessages();
+      loadUserOrders();
     }
   }, [isLoggedIn, currentUser]);
   
@@ -328,6 +330,7 @@ export default function Index() {
     // Загрузка сообщений при инициализации если пользователь авторизован
     if (isLoggedIn && currentUser?.id) {
       loadUserMessages();
+      loadUserOrders();
     }
   }, []);
   
@@ -470,6 +473,20 @@ export default function Index() {
       setUserMessages(messages);
     } catch (error) {
       console.error('Ошибка загрузки сообщений:', error);
+    }
+  };
+
+  const loadUserOrders = async () => {
+    if (!isLoggedIn || !currentUser?.id) return;
+    
+    try {
+      const res = await fetch('https://functions.poehali.dev/55d2462d-02a8-4732-91f6-95271b22efe9', {
+        headers: { 'X-User-Id': currentUser.id.toString() }
+      });
+      const orders = await res.json();
+      setUserOrders(orders);
+    } catch (error) {
+      console.error('Ошибка загрузки заказов:', error);
     }
   };
 
@@ -817,6 +834,7 @@ export default function Index() {
                   setCart([]);
                   setFavorites([]);
                   setUserMessages([]);
+                  setUserOrders([]);
                   localStorage.removeItem('userId');
                   localStorage.removeItem('userName');
                   localStorage.removeItem('userEmail');
@@ -1187,6 +1205,19 @@ export default function Index() {
             <Icon name="Phone" size={16} className="mr-2" />
             Контакты
           </Button>
+          {isLoggedIn && !isAdmin && (
+            <Button
+              variant={currentPage === 'my-orders' ? 'default' : 'outline'}
+              onClick={() => {
+                setCurrentPage('my-orders');
+                loadUserOrders();
+              }}
+              className={currentPage === 'my-orders' ? 'gradient-teal' : ''}
+            >
+              <Icon name="PackageCheck" size={16} className="mr-2" />
+              Мои заказы
+            </Button>
+          )}
           {isAdmin && (
             <Button
               variant={currentPage === 'admin' ? 'default' : 'outline'}
@@ -1904,9 +1935,11 @@ export default function Index() {
                 if (response.ok) {
                   alert(`Заказ №${data.order_id} успешно оформлен!`);
                   setCart([]);
-                  setCurrentPage('home');
+                  await loadUserOrders();
+                  await loadAllProducts();
+                  setCurrentPage('my-orders');
                 } else {
-                  alert('Ошибка при оформлении заказа');
+                  alert(data.error || 'Ошибка при оформлении заказа');
                 }
               } catch (error) {
                 console.error('Order error:', error);
@@ -2032,6 +2065,133 @@ export default function Index() {
       </div>
     </div>
   );
+
+  const renderMyOrdersPage = () => {
+    const getStatusColor = (status: string) => {
+      switch (status) {
+        case 'pending': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+        case 'processing': return 'bg-blue-100 text-blue-800 border-blue-300';
+        case 'shipped': return 'bg-purple-100 text-purple-800 border-purple-300';
+        case 'delivered': return 'bg-green-100 text-green-800 border-green-300';
+        case 'cancelled': return 'bg-red-100 text-red-800 border-red-300';
+        default: return 'bg-gray-100 text-gray-800 border-gray-300';
+      }
+    };
+
+    const getStatusText = (status: string) => {
+      switch (status) {
+        case 'pending': return 'Ожидает обработки';
+        case 'processing': return 'В обработке';
+        case 'shipped': return 'Отправлен';
+        case 'delivered': return 'Доставлен';
+        case 'cancelled': return 'Отменён';
+        default: return status;
+      }
+    };
+
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-4xl font-bold mb-8">Мои заказы</h1>
+        
+        {userOrders.length === 0 ? (
+          <Card>
+            <CardContent className="p-12 text-center">
+              <Icon name="PackageOpen" size={64} className="mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-2xl font-semibold mb-2">У вас пока нет заказов</h3>
+              <p className="text-muted-foreground mb-6">Начните делать покупки в нашем каталоге</p>
+              <Button onClick={() => setCurrentPage('catalog')} className="gradient-teal">
+                <Icon name="Package" size={18} className="mr-2" />
+                Перейти в каталог
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-6">
+            {userOrders.map(order => (
+              <Card key={order.id} className="overflow-hidden">
+                <CardContent className="p-6">
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 pb-4 border-b">
+                    <div>
+                      <h3 className="text-2xl font-bold mb-2">Заказ №{order.id}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Оформлен: {new Date(order.created_at).toLocaleDateString('ru-RU', {
+                          day: '2-digit',
+                          month: 'long',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </p>
+                    </div>
+                    <Badge className={`${getStatusColor(order.status)} border text-base px-4 py-2`}>
+                      {getStatusText(order.status)}
+                    </Badge>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                      <h4 className="font-semibold mb-3 flex items-center gap-2">
+                        <Icon name="User" className="text-primary" size={18} />
+                        Получатель
+                      </h4>
+                      <div className="text-sm space-y-1 text-muted-foreground">
+                        <p><span className="font-medium">ФИО:</span> {order.full_name}</p>
+                        <p><span className="font-medium">Email:</span> {order.email}</p>
+                        <p><span className="font-medium">Телефон:</span> {order.phone}</p>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 className="font-semibold mb-3 flex items-center gap-2">
+                        <Icon name="MapPin" className="text-primary" size={18} />
+                        Доставка
+                      </h4>
+                      <div className="text-sm space-y-1 text-muted-foreground">
+                        <p>
+                          <span className="font-medium">Способ:</span>{' '}
+                          {order.delivery_type === 'delivery' ? 'Доставка курьером' : 'Самовывоз'}
+                        </p>
+                        {order.delivery_address && (
+                          <p><span className="font-medium">Адрес:</span> {order.delivery_address}</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="font-semibold mb-3 flex items-center gap-2">
+                      <Icon name="Package" className="text-primary" size={18} />
+                      Состав заказа
+                    </h4>
+                    <div className="space-y-2">
+                      {order.items && order.items.map((item: any, idx: number) => (
+                        <div key={idx} className="flex justify-between items-center py-2 px-4 bg-muted rounded-lg">
+                          <div className="flex-1">
+                            <p className="font-medium">{item.product_name}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {item.quantity} шт × {item.product_price.toLocaleString()} ₽
+                            </p>
+                          </div>
+                          <p className="text-lg font-semibold text-primary">
+                            {(item.quantity * item.product_price).toLocaleString()} ₽
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="mt-6 pt-4 border-t flex justify-between items-center">
+                    <span className="text-xl font-semibold">Итого:</span>
+                    <span className="text-3xl font-bold text-primary">{order.total_amount.toLocaleString()} ₽</span>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const renderFooter = () => (
     <footer className="footer-dark text-white mt-16">
@@ -2541,6 +2701,7 @@ export default function Index() {
       <div className="flex-1">
         {currentPage === 'admin' && isAdmin ? renderAdminPage() :
          currentPage === 'checkout' ? renderCheckoutPage() :
+         currentPage === 'my-orders' ? renderMyOrdersPage() :
          selectedCategory ? renderCategoryPage() :
          currentPage === 'home' ? renderHomePage() :
          currentPage === 'catalog' ? renderCatalogPage() :
