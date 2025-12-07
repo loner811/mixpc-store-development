@@ -234,11 +234,24 @@ const allProducts = [
 export default function Index() {
   const [currentPage, setCurrentPage] = useState('home');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [cart, setCart] = useState<any[]>([]);
-  const [favorites, setFavorites] = useState<any[]>([]);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [cart, setCart] = useState<any[]>(() => {
+    const saved = localStorage.getItem('cart');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [favorites, setFavorites] = useState<any[]>(() => {
+    const saved = localStorage.getItem('favorites');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    return !!localStorage.getItem('userId');
+  });
   const [loginOpen, setLoginOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<any>(() => {
+    const userId = localStorage.getItem('userId');
+    const userName = localStorage.getItem('userName');
+    const userEmail = localStorage.getItem('userEmail');
+    return userId ? { id: parseInt(userId), name: userName, email: userEmail } : null;
+  });
   
   // Checkout
   const [checkoutData, setCheckoutData] = useState({
@@ -298,9 +311,24 @@ export default function Index() {
     }
   }, [isLoggedIn, currentUser]);
   
+  // Сохранение корзины в localStorage
+  useEffect(() => {
+    localStorage.setItem('cart', JSON.stringify(cart));
+  }, [cart]);
+  
+  // Сохранение избранного в localStorage
+  useEffect(() => {
+    localStorage.setItem('favorites', JSON.stringify(favorites));
+  }, [favorites]);
+  
   useEffect(() => {
     loadFeaturedProducts();
     loadAllProducts();
+    
+    // Загрузка сообщений при инициализации если пользователь авторизован
+    if (isLoggedIn && currentUser?.id) {
+      loadUserMessages();
+    }
   }, []);
   
   const loadAllProducts = async () => {
@@ -672,11 +700,13 @@ export default function Index() {
                       const password = formData.get('password') as string;
                       
                       if (username === 'admin' && password === '123') {
-                        setCurrentUser({ id: 1, username: 'admin', role: 'admin', email: 'admin@mixpc.ru' });
+                        const adminUser = { id: 1, username: 'admin', role: 'admin', email: 'admin@mixpc.ru' };
+                        setCurrentUser(adminUser);
                         setIsLoggedIn(true);
                         setIsAdmin(true);
                         localStorage.setItem('userId', '1');
                         localStorage.setItem('userName', 'admin');
+                        localStorage.setItem('userEmail', 'admin@mixpc.ru');
                         localStorage.setItem('adminAuth', 'admin:123');
                         setLoginOpen(false);
                         alert('Добро пожаловать, администратор!');
@@ -698,6 +728,7 @@ export default function Index() {
                           setIsAdmin(data.user.role === 'admin');
                           localStorage.setItem('userId', String(data.user.id));
                           localStorage.setItem('userName', data.user.username);
+                          localStorage.setItem('userEmail', data.user.email);
                           if (data.user.role === 'admin') {
                             localStorage.setItem('adminAuth', 'admin:123');
                           }
@@ -783,9 +814,15 @@ export default function Index() {
                   setIsLoggedIn(false);
                   setIsAdmin(false);
                   setCurrentUser(null);
+                  setCart([]);
+                  setFavorites([]);
+                  setUserMessages([]);
                   localStorage.removeItem('userId');
                   localStorage.removeItem('userName');
+                  localStorage.removeItem('userEmail');
                   localStorage.removeItem('adminAuth');
+                  localStorage.removeItem('cart');
+                  localStorage.removeItem('favorites');
                   setCurrentPage('home');
                   alert('Вы успешно вышли из системы');
                 }}
@@ -796,12 +833,16 @@ export default function Index() {
             )}
 
             {isLoggedIn && (
-              <Sheet open={messagesOpen} onOpenChange={setMessagesOpen}>
+              <Sheet open={messagesOpen} onOpenChange={(open) => {
+                setMessagesOpen(open);
+                if (open) {
+                  loadUserMessages();
+                }
+              }}>
                 <SheetTrigger asChild>
                   <Button 
                     size="icon" 
                     className="relative gradient-blue text-white hover:opacity-90"
-                    onClick={loadUserMessages}
                   >
                     <Icon name="Mail" size={20} />
                     {userMessages.filter(m => m.replies && m.replies.length > 0 && !m.is_read).length > 0 && (
