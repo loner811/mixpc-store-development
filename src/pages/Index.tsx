@@ -236,11 +236,15 @@ export default function Index() {
   const [userOrders, setUserOrders] = useState<any[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [cart, setCart] = useState<any[]>(() => {
-    const saved = localStorage.getItem('cart');
+    const userId = localStorage.getItem('userId');
+    if (!userId) return [];
+    const saved = localStorage.getItem(`cart_${userId}`);
     return saved ? JSON.parse(saved) : [];
   });
   const [favorites, setFavorites] = useState<any[]>(() => {
-    const saved = localStorage.getItem('favorites');
+    const userId = localStorage.getItem('userId');
+    if (!userId) return [];
+    const saved = localStorage.getItem(`favorites_${userId}`);
     return saved ? JSON.parse(saved) : [];
   });
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
@@ -264,7 +268,9 @@ export default function Index() {
   });
   
   // Admin
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(() => {
+    return !!localStorage.getItem('adminAuth');
+  });
   const [adminProducts, setAdminProducts] = useState<any[]>([]);
   const [adminMessages, setAdminMessages] = useState<any[]>([]);
   const [editingProduct, setEditingProduct] = useState<any>(null);
@@ -313,15 +319,30 @@ export default function Index() {
     }
   }, [isLoggedIn, currentUser]);
   
-  // Сохранение корзины в localStorage
+  // Сохранение корзины в localStorage с привязкой к пользователю
   useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(cart));
-  }, [cart]);
+    if (currentUser?.id) {
+      localStorage.setItem(`cart_${currentUser.id}`, JSON.stringify(cart));
+    }
+  }, [cart, currentUser]);
   
-  // Сохранение избранного в localStorage
+  // Сохранение избранного в localStorage с привязкой к пользователю
   useEffect(() => {
-    localStorage.setItem('favorites', JSON.stringify(favorites));
-  }, [favorites]);
+    if (currentUser?.id) {
+      localStorage.setItem(`favorites_${currentUser.id}`, JSON.stringify(favorites));
+    }
+  }, [favorites, currentUser]);
+  
+  // Загрузка корзины и избранного при авторизации
+  useEffect(() => {
+    if (isLoggedIn && currentUser?.id) {
+      const savedCart = localStorage.getItem(`cart_${currentUser.id}`);
+      const savedFavorites = localStorage.getItem(`favorites_${currentUser.id}`);
+      
+      if (savedCart) setCart(JSON.parse(savedCart));
+      if (savedFavorites) setFavorites(JSON.parse(savedFavorites));
+    }
+  }, [isLoggedIn, currentUser?.id]);
   
   useEffect(() => {
     loadFeaturedProducts();
@@ -433,13 +454,19 @@ export default function Index() {
     try {
       console.log('Отправка товара:', product);
       
+      const productData = {
+        ...product,
+        image_url: product.image_url || product.image_filename || '',
+        image_base64: product.image_base64 || ''
+      };
+      
       const response = await fetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
           'X-Admin-Auth': 'admin:123'
         },
-        body: JSON.stringify(product)
+        body: JSON.stringify(productData)
       });
       
       console.log('Статус ответа:', response.status);
@@ -841,6 +868,7 @@ export default function Index() {
                 variant="outline"
                 className="gap-2"
                 onClick={() => {
+                  const userId = currentUser?.id;
                   setIsLoggedIn(false);
                   setIsAdmin(false);
                   setCurrentUser(null);
@@ -852,8 +880,10 @@ export default function Index() {
                   localStorage.removeItem('userName');
                   localStorage.removeItem('userEmail');
                   localStorage.removeItem('adminAuth');
-                  localStorage.removeItem('cart');
-                  localStorage.removeItem('favorites');
+                  if (userId) {
+                    localStorage.removeItem(`cart_${userId}`);
+                    localStorage.removeItem(`favorites_${userId}`);
+                  }
                   setCurrentPage('home');
                   alert('Вы успешно вышли из системы');
                 }}
@@ -2288,7 +2318,7 @@ export default function Index() {
           <TabsContent value="products" className="mt-6">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-semibold">Управление товарами</h2>
-              <Button onClick={() => setEditingProduct({ name: '', price: 0, brand: '', category: '', image_url: '', description: '', is_featured: false, in_stock: true, stock_quantity: 0, specifications: [] })} className="gradient-teal">
+              <Button onClick={() => setEditingProduct({ name: '', price: 0, brand: '', category: '', image_url: '', image_filename: '', image_base64: '', description: '', is_featured: false, in_stock: true, stock_quantity: 0, specifications: [] })} className="gradient-teal">
                 <Icon name="Plus" size={18} className="mr-2" />
                 Добавить товар
               </Button>
@@ -2337,17 +2367,64 @@ export default function Index() {
                     <div className="md:col-span-2">
                       <Label>Изображение товара</Label>
                       <div className="space-y-3">
-                        <Input 
-                          type="url"
-                          placeholder="https://example.com/image.jpg"
-                          value={editingProduct.image_url || ''}
-                          onChange={(e) => setEditingProduct({...editingProduct, image_url: e.target.value})}
-                        />
+                        <div>
+                          <Label className="text-sm text-muted-foreground">Вариант 1: Ссылка на изображение</Label>
+                          <Input 
+                            type="url"
+                            placeholder="https://example.com/image.jpg"
+                            value={editingProduct.image_url || editingProduct.image_filename || ''}
+                            onChange={(e) => setEditingProduct({...editingProduct, image_url: e.target.value, image_filename: e.target.value})}
+                          />
+                        </div>
                         
-                        {editingProduct.image_url && (
+                        <div>
+                          <Label className="text-sm text-muted-foreground">Вариант 2: Загрузить файл с компьютера</Label>
+                          <Input 
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                const reader = new FileReader();
+                                reader.onloadend = () => {
+                                  const base64String = reader.result as string;
+                                  setEditingProduct({
+                                    ...editingProduct, 
+                                    image_base64: base64String,
+                                    image_url: '',
+                                    image_filename: ''
+                                  });
+                                };
+                                reader.readAsDataURL(file);
+                              }
+                            }}
+                            className="cursor-pointer"
+                          />
+                        </div>
+                        
+                        {(editingProduct.image_url || editingProduct.image_filename || editingProduct.image_base64) && (
                           <div className="flex items-center gap-2 text-sm text-green-600">
                             <Icon name="Check" size={16} />
-                            <span>URL указан</span>
+                            <span>
+                              {editingProduct.image_base64 ? 'Файл загружен' : 
+                               (editingProduct.image_url || editingProduct.image_filename ? 'Изображение установлено' : '')}
+                            </span>
+                          </div>
+                        )}
+                        
+                        {(editingProduct.image_url || editingProduct.image_filename) && !editingProduct.image_base64 && (
+                          <div className="mt-2">
+                            <img 
+                              src={editingProduct.image_url || 
+                                   (editingProduct.image_filename?.startsWith('http') ? editingProduct.image_filename : 
+                                    editingProduct.image_filename?.startsWith('files/') ? `https://cdn.poehali.dev/${editingProduct.image_filename}` : 
+                                    `https://cdn.poehali.dev/images/${editingProduct.image_filename}`)}
+                              alt="Превью"
+                              className="w-32 h-32 object-cover rounded-lg border"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).style.display = 'none';
+                              }}
+                            />
                           </div>
                         )}
                       </div>
@@ -2489,7 +2566,12 @@ export default function Index() {
                         <Button 
                           size="icon" 
                           variant="outline"
-                          onClick={() => setEditingProduct(product)}
+                          onClick={() => setEditingProduct({
+                            ...product,
+                            image_url: product.image_url || product.image_filename || '',
+                            image_filename: product.image_filename || product.image_url || '',
+                            image_base64: ''
+                          })}
                         >
                           <Icon name="Pencil" size={18} />
                         </Button>
