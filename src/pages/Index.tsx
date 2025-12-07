@@ -2166,28 +2166,34 @@ export default function Index() {
                       Состав заказа
                     </h4>
                     <div className="space-y-2">
-                      {order.items && order.items.map((item: any, idx: number) => (
-                        <div key={idx} className="flex justify-between items-center py-2 px-4 bg-muted rounded-lg">
-                          <div className="flex-1">
-                            <p className="font-medium">{item.product_name || 'Товар'}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {item.quantity || 1} шт × {(item.product_price || 0).toLocaleString()} ₽
+                      {order.items && order.items.filter((item: any) => item.product_name).length > 0 ? (
+                        order.items.filter((item: any) => item.product_name).map((item: any, idx: number) => (
+                          <div key={idx} className="flex justify-between items-center py-2 px-4 bg-muted rounded-lg">
+                            <div className="flex-1">
+                              <p className="font-medium">{item.product_name}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {item.quantity || 1} шт × {(item.product_price || 0).toLocaleString()} ₽
+                              </p>
+                            </div>
+                            <p className="text-lg font-semibold text-primary">
+                              {((item.quantity || 1) * (item.product_price || 0)).toLocaleString()} ₽
                             </p>
                           </div>
-                          <p className="text-lg font-semibold text-primary">
-                            {((item.quantity || 1) * (item.product_price || 0)).toLocaleString()} ₽
-                          </p>
+                        ))
+                      ) : (
+                        <div className="py-4 px-4 bg-muted rounded-lg text-center text-muted-foreground">
+                          <p>Информация о товарах недоступна</p>
                         </div>
-                      ))}
+                      )}
                     </div>
                   </div>
 
                   <div className="mt-6 pt-4 border-t flex justify-between items-center">
                     <span className="text-xl font-semibold">Итого:</span>
                     <span className="text-3xl font-bold text-primary">
-                      {order.items && order.items.length > 0
-                        ? order.items.reduce((sum: number, item: any) => sum + ((item.quantity || 1) * (item.product_price || 0)), 0).toLocaleString()
-                        : (order.total_amount || 0).toLocaleString()
+                      {order.items && order.items.filter((item: any) => item.product_name).length > 0
+                        ? order.items.filter((item: any) => item.product_name).reduce((sum: number, item: any) => sum + ((item.quantity || 1) * (item.product_price || 0)), 0).toLocaleString()
+                        : (parseFloat(order.total_amount) || 0).toLocaleString()
                       } ₽
                     </span>
                   </div>
