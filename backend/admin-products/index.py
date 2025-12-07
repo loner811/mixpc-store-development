@@ -47,7 +47,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute("""
                     SELECT p.id, p.name, p.price, p.brand, c.name as category, 
-                           p.image_filename, p.description, p.is_featured, p.created_at
+                           p.image_filename, p.description, p.is_featured, p.in_stock, p.stock_quantity, p.created_at
                     FROM t_p58610579_mixpc_store_developm.products p
                     LEFT JOIN t_p58610579_mixpc_store_developm.categories c ON p.category_id = c.id
                     ORDER BY p.created_at DESC
