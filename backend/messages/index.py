@@ -140,7 +140,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         
         elif method == 'POST':
             body = json.loads(event.get('body', '{}'))
-            user_id = headers.get('x-user-id') or headers.get('X-User-Id')
+            user_id_str = headers.get('x-user-id') or headers.get('X-User-Id')
+            user_id = int(user_id_str) if user_id_str else None
             
             cur.execute('''
                 INSERT INTO t_p58610579_mixpc_store_developm.contact_messages (full_name, phone, email, message, user_id)

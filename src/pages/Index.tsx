@@ -1577,9 +1577,9 @@ export default function Index() {
                       'X-User-Id': currentUser.id?.toString() || ''
                     },
                     body: JSON.stringify({
-                      fullName: currentUser.name,
+                      fullName: currentUser.name || currentUser.username,
                       email: currentUser.email,
-                      phone: currentUser.phone || '—',
+                      phone: 'Не указан',
                       message: formData.get('message') as string
                     })
                   });
@@ -1597,7 +1597,7 @@ export default function Index() {
               }}>
                 <div>
                   <Label>Имя</Label>
-                  <Input value={currentUser.name} disabled className="bg-muted" />
+                  <Input value={currentUser.name || currentUser.username} disabled className="bg-muted" />
                 </div>
                 <div>
                   <Label>Email</Label>
