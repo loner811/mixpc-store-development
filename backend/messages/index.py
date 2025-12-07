@@ -22,8 +22,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'statusCode': 200,
             'headers': {
                 'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Auth',
+                'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Auth, X-User-Id',
                 'Access-Control-Max-Age': '86400'
             },
             'body': '',
@@ -38,50 +38,120 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     
     try:
         if method == 'GET':
-            if auth_token != 'admin:123':
+            user_id = headers.get('x-user-id') or headers.get('X-User-Id')
+            
+            if auth_token == 'admin:123':
+                cur.execute('''
+                    SELECT cm.id, cm.full_name, cm.phone, cm.email, cm.message, cm.is_read, cm.created_at, cm.user_id
+                    FROM t_p58610579_mixpc_store_developm.contact_messages cm
+                    ORDER BY cm.created_at DESC
+                ''')
+                
+                messages = []
+                for row in cur.fetchall():
+                    msg_id = row[0]
+                    cur.execute('''
+                        SELECT id, reply_text, admin_name, created_at
+                        FROM t_p58610579_mixpc_store_developm.message_replies
+                        WHERE message_id = %s
+                        ORDER BY created_at ASC
+                    ''', (msg_id,))
+                    
+                    replies = []
+                    for reply_row in cur.fetchall():
+                        replies.append({
+                            'id': reply_row[0],
+                            'reply_text': reply_row[1],
+                            'admin_name': reply_row[2],
+                            'created_at': reply_row[3].isoformat() if reply_row[3] else None
+                        })
+                    
+                    messages.append({
+                        'id': msg_id,
+                        'name': row[1],
+                        'phone': row[2],
+                        'email': row[3],
+                        'message': row[4],
+                        'is_read': row[5],
+                        'created_at': row[6].isoformat() if row[6] else None,
+                        'user_id': row[7],
+                        'replies': replies
+                    })
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'isBase64Encoded': False,
+                    'body': json.dumps(messages)
+                }
+            
+            elif user_id:
+                cur.execute('''
+                    SELECT cm.id, cm.full_name, cm.phone, cm.email, cm.message, cm.is_read, cm.created_at
+                    FROM t_p58610579_mixpc_store_developm.contact_messages cm
+                    WHERE cm.user_id = %s
+                    ORDER BY cm.created_at DESC
+                ''', (user_id,))
+                
+                messages = []
+                for row in cur.fetchall():
+                    msg_id = row[0]
+                    cur.execute('''
+                        SELECT id, reply_text, admin_name, created_at
+                        FROM t_p58610579_mixpc_store_developm.message_replies
+                        WHERE message_id = %s
+                        ORDER BY created_at ASC
+                    ''', (msg_id,))
+                    
+                    replies = []
+                    for reply_row in cur.fetchall():
+                        replies.append({
+                            'id': reply_row[0],
+                            'reply_text': reply_row[1],
+                            'admin_name': reply_row[2],
+                            'created_at': reply_row[3].isoformat() if reply_row[3] else None
+                        })
+                    
+                    messages.append({
+                        'id': msg_id,
+                        'name': row[1],
+                        'phone': row[2],
+                        'email': row[3],
+                        'message': row[4],
+                        'is_read': row[5],
+                        'created_at': row[6].isoformat() if row[6] else None,
+                        'replies': replies
+                    })
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'isBase64Encoded': False,
+                    'body': json.dumps(messages)
+                }
+            
+            else:
                 return {
                     'statusCode': 401,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
                     'isBase64Encoded': False,
                     'body': json.dumps({'error': 'Unauthorized'})
                 }
-            cur.execute('''
-                SELECT id, full_name, phone, email, message, is_read, created_at 
-                FROM t_p58610579_mixpc_store_developm.contact_messages 
-                ORDER BY created_at DESC
-            ''')
-            
-            messages = []
-            for row in cur.fetchall():
-                messages.append({
-                    'id': row[0],
-                    'name': row[1],
-                    'phone': row[2],
-                    'email': row[3],
-                    'message': row[4],
-                    'is_read': row[5],
-                    'created_at': row[6].isoformat() if row[6] else None
-                })
-            
-            return {
-                'statusCode': 200,
-                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                'isBase64Encoded': False,
-                'body': json.dumps(messages)
-            }
         
         elif method == 'POST':
             body = json.loads(event.get('body', '{}'))
+            user_id = headers.get('x-user-id') or headers.get('X-User-Id')
             
             cur.execute('''
-                INSERT INTO t_p58610579_mixpc_store_developm.contact_messages (full_name, phone, email, message)
-                VALUES (%s, %s, %s, %s)
+                INSERT INTO t_p58610579_mixpc_store_developm.contact_messages (full_name, phone, email, message, user_id)
+                VALUES (%s, %s, %s, %s, %s)
                 RETURNING id
             ''', (
                 body['fullName'],
                 body['phone'],
                 body['email'],
-                body['message']
+                body['message'],
+                user_id
             ))
             
             message_id = cur.fetchone()[0]
@@ -92,6 +162,51 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
                 'isBase64Encoded': False,
                 'body': json.dumps({'id': message_id, 'message': 'Message sent'})
+            }
+        
+        elif method == 'PUT':
+            if auth_token != 'admin:123':
+                return {
+                    'statusCode': 401,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'isBase64Encoded': False,
+                    'body': json.dumps({'error': 'Unauthorized'})
+                }
+            
+            body = json.loads(event.get('body', '{}'))
+            message_id = body.get('message_id')
+            reply_text = body.get('reply_text')
+            admin_name = body.get('admin_name', 'Администратор')
+            
+            if not message_id or not reply_text:
+                return {
+                    'statusCode': 400,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'isBase64Encoded': False,
+                    'body': json.dumps({'error': 'message_id and reply_text required'})
+                }
+            
+            cur.execute('''
+                INSERT INTO t_p58610579_mixpc_store_developm.message_replies (message_id, reply_text, admin_name)
+                VALUES (%s, %s, %s)
+                RETURNING id
+            ''', (message_id, reply_text, admin_name))
+            
+            reply_id = cur.fetchone()[0]
+            
+            cur.execute('''
+                UPDATE t_p58610579_mixpc_store_developm.contact_messages
+                SET is_read = true
+                WHERE id = %s
+            ''', (message_id,))
+            
+            conn.commit()
+            
+            return {
+                'statusCode': 201,
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'isBase64Encoded': False,
+                'body': json.dumps({'id': reply_id, 'message': 'Reply sent'})
             }
     
     except Exception as e:

@@ -257,6 +257,11 @@ export default function Index() {
   const [adminActiveTab, setAdminActiveTab] = useState('products');
   const [adminOrders, setAdminOrders] = useState<any[]>([]);
   
+  // User messages
+  const [userMessages, setUserMessages] = useState<any[]>([]);
+  const [messagesOpen, setMessagesOpen] = useState(false);
+  const [replyingToMessage, setReplyingToMessage] = useState<number | null>(null);
+  
   // Featured products
   const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
   
@@ -286,6 +291,12 @@ export default function Index() {
       loadAdminData();
     }
   }, [isAdmin]);
+  
+  useEffect(() => {
+    if (isLoggedIn && currentUser?.id) {
+      loadUserMessages();
+    }
+  }, [isLoggedIn, currentUser]);
   
   useEffect(() => {
     loadFeaturedProducts();
@@ -362,8 +373,11 @@ export default function Index() {
       const orders = await ordersRes.json();
       setAdminOrders(orders);
 
-      const localMessages = JSON.parse(localStorage.getItem('contactMessages') || '[]');
-      setAdminMessages(localMessages);
+      const messagesRes = await fetch('https://functions.poehali.dev/cef89039-b240-4ef5-bb82-eade4c24411b', {
+        headers: { 'X-Admin-Auth': 'admin:123' }
+      });
+      const messages = await messagesRes.json();
+      setAdminMessages(messages);
     } catch (error) {
       console.error('Failed to load admin data:', error);
     }
@@ -415,6 +429,39 @@ export default function Index() {
     
     await loadAdminData();
     await loadAllProducts();
+  };
+
+  const loadUserMessages = async () => {
+    if (!isLoggedIn || !currentUser?.id) return;
+    
+    try {
+      const res = await fetch('https://functions.poehali.dev/cef89039-b240-4ef5-bb82-eade4c24411b', {
+        headers: { 'X-User-Id': currentUser.id.toString() }
+      });
+      const messages = await res.json();
+      setUserMessages(messages);
+    } catch (error) {
+      console.error('Ошибка загрузки сообщений:', error);
+    }
+  };
+
+  const handleSendReply = async (messageId: number, replyText: string) => {
+    try {
+      await fetch('https://functions.poehali.dev/cef89039-b240-4ef5-bb82-eade4c24411b', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Admin-Auth': 'admin:123'
+        },
+        body: JSON.stringify({
+          message_id: messageId,
+          reply_text: replyText
+        })
+      });
+      await loadAdminData();
+    } catch (error) {
+      console.error('Ошибка отправки ответа:', error);
+    }
   };
 
   const getFilteredProducts = () => {
@@ -746,6 +793,89 @@ export default function Index() {
                 <Icon name="LogOut" size={18} />
                 <span className="hidden sm:inline">Выйти</span>
               </Button>
+            )}
+
+            {isLoggedIn && (
+              <Sheet open={messagesOpen} onOpenChange={setMessagesOpen}>
+                <SheetTrigger asChild>
+                  <Button 
+                    size="icon" 
+                    className="relative gradient-blue text-white hover:opacity-90"
+                    onClick={loadUserMessages}
+                  >
+                    <Icon name="Mail" size={20} />
+                    {userMessages.filter(m => m.replies && m.replies.length > 0 && !m.is_read).length > 0 && (
+                      <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center bg-red-500 text-white">
+                        {userMessages.filter(m => m.replies && m.replies.length > 0 && !m.is_read).length}
+                      </Badge>
+                    )}
+                  </Button>
+                </SheetTrigger>
+                <SheetContent className="w-full sm:max-w-2xl overflow-y-auto">
+                  <SheetHeader>
+                    <SheetTitle>Мои сообщения</SheetTitle>
+                  </SheetHeader>
+                  <div className="mt-6 space-y-4">
+                    {userMessages.length === 0 ? (
+                      <div className="text-center py-12">
+                        <Icon name="Mail" size={64} className="mx-auto text-muted-foreground mb-4" />
+                        <p className="text-muted-foreground">У вас пока нет сообщений</p>
+                      </div>
+                    ) : (
+                      userMessages.map(msg => (
+                        <Card key={msg.id}>
+                          <CardContent className="p-4 space-y-3">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <p className="text-xs text-muted-foreground">
+                                  {new Date(msg.created_at).toLocaleDateString('ru-RU', {
+                                    day: '2-digit',
+                                    month: 'long',
+                                    year: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                  })}
+                                </p>
+                                <p className="font-semibold mt-1">{msg.name}</p>
+                              </div>
+                              {msg.replies && msg.replies.length > 0 && (
+                                <Badge variant="secondary">
+                                  {msg.replies.length} {msg.replies.length === 1 ? 'ответ' : 'ответа'}
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="bg-muted p-3 rounded-lg">
+                              <p className="text-sm font-medium mb-1">Ваше сообщение:</p>
+                              <p className="text-sm">{msg.message}</p>
+                            </div>
+                            {msg.replies && msg.replies.length > 0 && (
+                              <div className="space-y-2 pl-4 border-l-2 border-primary">
+                                {msg.replies.map((reply: any) => (
+                                  <div key={reply.id} className="bg-primary/10 p-3 rounded-lg">
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <Icon name="UserCheck" size={14} className="text-primary" />
+                                      <p className="text-xs font-semibold text-primary">{reply.admin_name}</p>
+                                      <span className="text-xs text-muted-foreground">
+                                        {new Date(reply.created_at).toLocaleDateString('ru-RU', {
+                                          day: '2-digit',
+                                          month: 'short',
+                                          hour: '2-digit',
+                                          minute: '2-digit'
+                                        })}
+                                      </span>
+                                    </div>
+                                    <p className="text-sm">{reply.reply_text}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      ))
+                    )}
+                  </div>
+                </SheetContent>
+              </Sheet>
             )}
 
             <Sheet>
@@ -1394,23 +1524,35 @@ export default function Index() {
                 </Button>
               </div>
             ) : (
-              <form className="space-y-4" onSubmit={(e) => {
+              <form className="space-y-4" onSubmit={async (e) => {
                 e.preventDefault();
                 const formData = new FormData(e.target as HTMLFormElement);
-                const message = {
-                  name: currentUser.name,
-                  email: currentUser.email,
-                  message: formData.get('message') as string,
-                  created_at: new Date().toISOString(),
-                  is_read: false
-                };
                 
-                const messages = JSON.parse(localStorage.getItem('contactMessages') || '[]');
-                messages.push(message);
-                localStorage.setItem('contactMessages', JSON.stringify(messages));
-                
-                alert('Сообщение отправлено!');
-                (e.target as HTMLFormElement).reset();
+                try {
+                  const response = await fetch('https://functions.poehali.dev/cef89039-b240-4ef5-bb82-eade4c24411b', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'X-User-Id': currentUser.id?.toString() || ''
+                    },
+                    body: JSON.stringify({
+                      fullName: currentUser.name,
+                      email: currentUser.email,
+                      phone: currentUser.phone || '—',
+                      message: formData.get('message') as string
+                    })
+                  });
+                  
+                  if (response.ok) {
+                    alert('Сообщение отправлено! Мы ответим вам в ближайшее время.');
+                    (e.target as HTMLFormElement).reset();
+                  } else {
+                    alert('Ошибка при отправке сообщения');
+                  }
+                } catch (error) {
+                  console.error('Ошибка отправки сообщения:', error);
+                  alert('Ошибка при отправке сообщения');
+                }
               }}>
                 <div>
                   <Label>Имя</Label>
@@ -2248,7 +2390,7 @@ export default function Index() {
                       <div className="flex justify-between items-start mb-2">
                         <div>
                           <h3 className="font-semibold text-lg">{msg.name}</h3>
-                          <p className="text-sm text-muted-foreground">{msg.email}</p>
+                          <p className="text-sm text-muted-foreground">{msg.email} • {msg.phone}</p>
                         </div>
                         <Badge 
                           className={
@@ -2260,27 +2402,82 @@ export default function Index() {
                           {msg.is_read ? 'Прочитано' : 'Новое'}
                         </Badge>
                       </div>
-                      <p className="mt-4 whitespace-pre-wrap">{msg.message}</p>
-                      <p className="text-xs text-muted-foreground mt-4">
+                      
+                      <div className="mt-4 bg-muted p-3 rounded-lg">
+                        <p className="text-sm font-medium mb-1">Сообщение клиента:</p>
+                        <p className="whitespace-pre-wrap">{msg.message}</p>
+                      </div>
+                      
+                      <p className="text-xs text-muted-foreground mt-2">
                         {new Date(msg.created_at).toLocaleString('ru-RU')}
                       </p>
                       
-                      {!msg.is_read && (
-                        <div className="mt-4">
+                      {msg.replies && msg.replies.length > 0 && (
+                        <div className="mt-4 space-y-2 pl-4 border-l-2 border-primary">
+                          <p className="text-sm font-semibold">Ваши ответы:</p>
+                          {msg.replies.map((reply: any) => (
+                            <div key={reply.id} className="bg-primary/10 p-3 rounded-lg">
+                              <div className="flex items-center gap-2 mb-1">
+                                <Icon name="UserCheck" size={14} className="text-primary" />
+                                <p className="text-xs font-semibold text-primary">{reply.admin_name}</p>
+                                <span className="text-xs text-muted-foreground">
+                                  {new Date(reply.created_at).toLocaleDateString('ru-RU', {
+                                    day: '2-digit',
+                                    month: 'short',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                  })}
+                                </span>
+                              </div>
+                              <p className="text-sm">{reply.reply_text}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      
+                      <div className="mt-4">
+                        {replyingToMessage === msg.id ? (
+                          <div className="space-y-2">
+                            <textarea
+                              id={`reply-${msg.id}`}
+                              className="w-full p-3 border rounded-lg min-h-[100px]"
+                              placeholder="Введите ваш ответ..."
+                            />
+                            <div className="flex gap-2">
+                              <Button 
+                                size="sm"
+                                className="bg-primary text-white"
+                                onClick={async () => {
+                                  const textarea = document.getElementById(`reply-${msg.id}`) as HTMLTextAreaElement;
+                                  const replyText = textarea?.value;
+                                  if (!replyText) {
+                                    alert('Введите текст ответа');
+                                    return;
+                                  }
+                                  await handleSendReply(msg.id, replyText);
+                                  setReplyingToMessage(null);
+                                }}
+                              >
+                                <Icon name="Send" size={16} className="mr-2" />
+                                Отправить
+                              </Button>
+                              <Button 
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setReplyingToMessage(null)}
+                              >
+                                Отмена
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
                           <Button 
                             size="sm"
-                            className="bg-green-600 hover:bg-green-700 text-white"
-                            onClick={() => {
-                              const messages = JSON.parse(localStorage.getItem('contactMessages') || '[]');
-                              const updated = messages.map((m: any) => 
-                                m.id === msg.id ? {...m, is_read: true} : m
-                              );
-                              localStorage.setItem('contactMessages', JSON.stringify(updated));
-                              setAdminMessages(updated);
-                            }}
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                            onClick={() => setReplyingToMessage(msg.id)}
                           >
-                            <Icon name="CheckCircle" size={16} className="mr-2" />
-                            Отметить прочитанным
+                            <Icon name="Reply" size={16} className="mr-2" />
+                            Ответить клиенту
                           </Button>
                         </div>
                       )}
