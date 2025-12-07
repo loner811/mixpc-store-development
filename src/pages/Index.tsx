@@ -334,6 +334,18 @@ export default function Index() {
     }
   }, []);
   
+  // Автоматическая установка диапазона цен при смене категории
+  useEffect(() => {
+    if (selectedCategory && allProductsFromDB.length > 0) {
+      const productsSource = allProductsFromDB.length > 0 ? allProductsFromDB : allProducts;
+      const categoryProducts = productsSource.filter(p => p.category === selectedCategory);
+      if (categoryProducts.length > 0) {
+        const maxPrice = Math.max(...categoryProducts.map(p => p.price));
+        setPriceRange([0, maxPrice]);
+      }
+    }
+  }, [selectedCategory, allProductsFromDB]);
+  
   const loadAllProducts = async () => {
     try {
       setProductsLoading(true);
@@ -558,7 +570,8 @@ export default function Index() {
 
   const getBrandsForCategory = () => {
     if (!selectedCategory) return [];
-    const products = allProducts.filter(p => p.category === selectedCategory);
+    const productsSource = allProductsFromDB.length > 0 ? allProductsFromDB : allProducts;
+    const products = productsSource.filter(p => p.category === selectedCategory);
     const brands = [...new Set(products.map(p => p.brand))];
     return brands.sort();
   };
@@ -1235,8 +1248,10 @@ export default function Index() {
 
   const renderCategoryPage = () => {
     const brands = getBrandsForCategory();
-    const minPrice = Math.min(...allProducts.filter(p => p.category === selectedCategory).map(p => p.price));
-    const maxPrice = Math.max(...allProducts.filter(p => p.category === selectedCategory).map(p => p.price));
+    const productsSource = allProductsFromDB.length > 0 ? allProductsFromDB : allProducts;
+    const categoryProducts = productsSource.filter(p => p.category === selectedCategory);
+    const minPrice = categoryProducts.length > 0 ? Math.min(...categoryProducts.map(p => p.price)) : 0;
+    const maxPrice = categoryProducts.length > 0 ? Math.max(...categoryProducts.map(p => p.price)) : 200000;
 
     return (
       <div className="container mx-auto px-4 py-8">
@@ -1535,9 +1550,10 @@ export default function Index() {
             onClick={() => {
               setSelectedCategory(category.name);
               setCurrentPage('category');
-              setPriceRange([0, 200000]);
               setSelectedBrands([]);
               setSortBy('default');
+              setShowInStockOnly(false);
+              setSelectedSpecs({});
             }}
           >
             <CardContent className="p-6 text-center">
