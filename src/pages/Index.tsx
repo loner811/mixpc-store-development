@@ -2073,6 +2073,7 @@ export default function Index() {
         case 'processing': return 'bg-blue-100 text-blue-800 border-blue-300';
         case 'shipped': return 'bg-purple-100 text-purple-800 border-purple-300';
         case 'delivered': return 'bg-green-100 text-green-800 border-green-300';
+        case 'completed': return 'bg-green-100 text-green-800 border-green-300';
         case 'cancelled': return 'bg-red-100 text-red-800 border-red-300';
         default: return 'bg-gray-100 text-gray-800 border-gray-300';
       }
@@ -2084,6 +2085,7 @@ export default function Index() {
         case 'processing': return 'В обработке';
         case 'shipped': return 'Отправлен';
         case 'delivered': return 'Доставлен';
+        case 'completed': return 'Обработан';
         case 'cancelled': return 'Отменён';
         default: return status;
       }
@@ -2182,7 +2184,12 @@ export default function Index() {
 
                   <div className="mt-6 pt-4 border-t flex justify-between items-center">
                     <span className="text-xl font-semibold">Итого:</span>
-                    <span className="text-3xl font-bold text-primary">{(order.total_amount || 0).toLocaleString()} ₽</span>
+                    <span className="text-3xl font-bold text-primary">
+                      {order.items && order.items.length > 0
+                        ? order.items.reduce((sum: number, item: any) => sum + ((item.quantity || 1) * (item.product_price || 0)), 0).toLocaleString()
+                        : (order.total_amount || 0).toLocaleString()
+                      } ₽
+                    </span>
                   </div>
                 </CardContent>
               </Card>
