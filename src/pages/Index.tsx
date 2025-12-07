@@ -351,7 +351,7 @@ export default function Index() {
   
   const loadFeaturedProducts = async () => {
     try {
-      const response = await fetch('https://functions.poehali.dev/cceb4ca9-48f7-4a28-a301-3dd14baa0d71?featured=true');
+      const response = await fetch('https://functions.poehali.dev/66eafcf6-38e4-415c-b1ff-ad6d420b564e?featured=true');
       const products = await response.json();
       setFeaturedProducts(products);
     } catch (error) {
@@ -2479,8 +2479,8 @@ export default function Index() {
                             <Icon name="Reply" size={16} className="mr-2" />
                             Ответить клиенту
                           </Button>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </CardContent>
                   </Card>
                 ))
