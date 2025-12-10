@@ -47,28 +47,48 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute("""
                     SELECT p.id, p.name, p.price, p.brand, c.name as category, 
-                           p.image_filename, p.description, p.is_featured, p.in_stock, p.stock_quantity, p.created_at
+                           p.image_filename, p.description, p.is_featured, p.in_stock, p.stock_quantity, p.created_at,
+                           ps.spec_name, ps.spec_value
                     FROM t_p58610579_mixpc_store_developm.products p
                     LEFT JOIN t_p58610579_mixpc_store_developm.categories c ON p.category_id = c.id
-                    ORDER BY p.created_at DESC
+                    LEFT JOIN t_p58610579_mixpc_store_developm.product_specifications ps ON p.id = ps.product_id
+                    ORDER BY p.created_at DESC, ps.display_order
                 """)
-                products = cur.fetchall()
+                rows = cur.fetchall()
                 
-                for product in products:
-                    cur.execute("""
-                        SELECT spec_name, spec_value
-                        FROM t_p58610579_mixpc_store_developm.product_specifications
-                        WHERE product_id = %s
-                        ORDER BY display_order
-                    """, (product['id'],))
-                    specs = cur.fetchall()
-                    product['specifications'] = [dict(s) for s in specs]
+                products_dict = {}
+                for row in rows:
+                    product_id = row['id']
+                    
+                    if product_id not in products_dict:
+                        products_dict[product_id] = {
+                            'id': row['id'],
+                            'name': row['name'],
+                            'price': row['price'],
+                            'brand': row['brand'],
+                            'category': row['category'],
+                            'image_filename': row['image_filename'],
+                            'description': row['description'],
+                            'is_featured': row['is_featured'],
+                            'in_stock': row['in_stock'],
+                            'stock_quantity': row['stock_quantity'],
+                            'created_at': row['created_at'],
+                            'specifications': []
+                        }
+                    
+                    if row['spec_name'] and row['spec_value']:
+                        products_dict[product_id]['specifications'].append({
+                            'spec_name': row['spec_name'],
+                            'spec_value': row['spec_value']
+                        })
+                
+                products = list(products_dict.values())
                 
             return {
                 'statusCode': 200,
                 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
                 'isBase64Encoded': False,
-                'body': json.dumps([dict(p) for p in products], default=str)
+                'body': json.dumps(products, default=str)
             }
         
         elif method == 'POST':
@@ -232,6 +252,21 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'body': json.dumps({'success': True})
             }
     
+    except Exception as e:
+        conn.rollback()
+        if method == 'GET':
+            return {
+                'statusCode': 200,
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'isBase64Encoded': False,
+                'body': json.dumps([])
+            }
+        return {
+            'statusCode': 500,
+            'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+            'isBase64Encoded': False,
+            'body': json.dumps({'error': str(e)})
+        }
     finally:
         conn.close()
     

@@ -42,41 +42,39 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             if auth_token == 'admin:123':
                 cur.execute('''
-                    SELECT cm.id, cm.full_name, cm.phone, cm.email, cm.message, cm.is_read, cm.created_at, cm.user_id
+                    SELECT cm.id, cm.full_name, cm.phone, cm.email, cm.message, cm.is_read, cm.created_at, cm.user_id,
+                           mr.id as reply_id, mr.reply_text, mr.admin_name, mr.created_at as reply_created_at
                     FROM t_p58610579_mixpc_store_developm.contact_messages cm
-                    ORDER BY cm.created_at DESC
+                    LEFT JOIN t_p58610579_mixpc_store_developm.message_replies mr ON cm.id = mr.message_id
+                    ORDER BY cm.created_at DESC, mr.created_at ASC
                 ''')
                 
-                messages = []
+                messages_dict = {}
                 for row in cur.fetchall():
                     msg_id = row[0]
-                    cur.execute('''
-                        SELECT id, reply_text, admin_name, created_at
-                        FROM t_p58610579_mixpc_store_developm.message_replies
-                        WHERE message_id = %s
-                        ORDER BY created_at ASC
-                    ''', (msg_id,))
                     
-                    replies = []
-                    for reply_row in cur.fetchall():
-                        replies.append({
-                            'id': reply_row[0],
-                            'reply_text': reply_row[1],
-                            'admin_name': reply_row[2],
-                            'created_at': reply_row[3].isoformat() if reply_row[3] else None
+                    if msg_id not in messages_dict:
+                        messages_dict[msg_id] = {
+                            'id': msg_id,
+                            'name': row[1],
+                            'phone': row[2],
+                            'email': row[3],
+                            'message': row[4],
+                            'is_read': row[5],
+                            'created_at': row[6].isoformat() if row[6] else None,
+                            'user_id': row[7],
+                            'replies': []
+                        }
+                    
+                    if row[8]:
+                        messages_dict[msg_id]['replies'].append({
+                            'id': row[8],
+                            'reply_text': row[9],
+                            'admin_name': row[10],
+                            'created_at': row[11].isoformat() if row[11] else None
                         })
-                    
-                    messages.append({
-                        'id': msg_id,
-                        'name': row[1],
-                        'phone': row[2],
-                        'email': row[3],
-                        'message': row[4],
-                        'is_read': row[5],
-                        'created_at': row[6].isoformat() if row[6] else None,
-                        'user_id': row[7],
-                        'replies': replies
-                    })
+                
+                messages = list(messages_dict.values())
                 
                 return {
                     'statusCode': 200,
@@ -87,41 +85,39 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             elif user_id:
                 cur.execute('''
-                    SELECT cm.id, cm.full_name, cm.phone, cm.email, cm.message, cm.is_read, cm.created_at
+                    SELECT cm.id, cm.full_name, cm.phone, cm.email, cm.message, cm.is_read, cm.created_at,
+                           mr.id as reply_id, mr.reply_text, mr.admin_name, mr.created_at as reply_created_at
                     FROM t_p58610579_mixpc_store_developm.contact_messages cm
+                    LEFT JOIN t_p58610579_mixpc_store_developm.message_replies mr ON cm.id = mr.message_id
                     WHERE cm.user_id = %s
-                    ORDER BY cm.created_at DESC
+                    ORDER BY cm.created_at DESC, mr.created_at ASC
                 ''', (user_id,))
                 
-                messages = []
+                messages_dict = {}
                 for row in cur.fetchall():
                     msg_id = row[0]
-                    cur.execute('''
-                        SELECT id, reply_text, admin_name, created_at
-                        FROM t_p58610579_mixpc_store_developm.message_replies
-                        WHERE message_id = %s
-                        ORDER BY created_at ASC
-                    ''', (msg_id,))
                     
-                    replies = []
-                    for reply_row in cur.fetchall():
-                        replies.append({
-                            'id': reply_row[0],
-                            'reply_text': reply_row[1],
-                            'admin_name': reply_row[2],
-                            'created_at': reply_row[3].isoformat() if reply_row[3] else None
+                    if msg_id not in messages_dict:
+                        messages_dict[msg_id] = {
+                            'id': msg_id,
+                            'name': row[1],
+                            'phone': row[2],
+                            'email': row[3],
+                            'message': row[4],
+                            'is_read': row[5],
+                            'created_at': row[6].isoformat() if row[6] else None,
+                            'replies': []
+                        }
+                    
+                    if row[7]:
+                        messages_dict[msg_id]['replies'].append({
+                            'id': row[7],
+                            'reply_text': row[8],
+                            'admin_name': row[9],
+                            'created_at': row[10].isoformat() if row[10] else None
                         })
-                    
-                    messages.append({
-                        'id': msg_id,
-                        'name': row[1],
-                        'phone': row[2],
-                        'email': row[3],
-                        'message': row[4],
-                        'is_read': row[5],
-                        'created_at': row[6].isoformat() if row[6] else None,
-                        'replies': replies
-                    })
+                
+                messages = list(messages_dict.values())
                 
                 return {
                     'statusCode': 200,

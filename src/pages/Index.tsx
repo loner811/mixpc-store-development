@@ -374,7 +374,20 @@ export default function Index() {
     try {
       setProductsLoading(true);
       const response = await fetch('https://functions.poehali.dev/66eafcf6-38e4-415c-b1ff-ad6d420b564e');
+      
+      if (!response.ok) {
+        console.error('HTTP', response.status, ':', response.url);
+        setAllProductsFromDB([]);
+        return;
+      }
+      
       const products = await response.json();
+      
+      if (!Array.isArray(products)) {
+        console.error('Products is not an array:', products);
+        setAllProductsFromDB([]);
+        return;
+      }
       
       const formattedProducts = products.map((p: any) => {
         let imageUrl = '/placeholder.jpg';
@@ -419,10 +432,18 @@ export default function Index() {
   const loadFeaturedProducts = async () => {
     try {
       const response = await fetch('https://functions.poehali.dev/66eafcf6-38e4-415c-b1ff-ad6d420b564e?featured=true');
+      
+      if (!response.ok) {
+        console.error('HTTP', response.status, ':', response.url);
+        setFeaturedProducts([]);
+        return;
+      }
+      
       const products = await response.json();
-      setFeaturedProducts(products);
+      setFeaturedProducts(Array.isArray(products) ? products : []);
     } catch (error) {
       console.error('Failed to load featured products:', error);
+      setFeaturedProducts([]);
     }
   };
 
@@ -431,22 +452,41 @@ export default function Index() {
       const productsRes = await fetch('https://functions.poehali.dev/cf16c6f9-3e3e-4344-a46d-9b82a874939f', {
         headers: { 'X-Admin-Auth': 'admin:123' }
       });
-      const products = await productsRes.json();
-      setAdminProducts(products);
+      
+      if (productsRes.ok) {
+        const products = await productsRes.json();
+        setAdminProducts(Array.isArray(products) ? products : []);
+      } else {
+        console.error('HTTP', productsRes.status, ':', productsRes.url);
+        setAdminProducts([]);
+      }
 
       const ordersRes = await fetch('https://functions.poehali.dev/55d2462d-02a8-4732-91f6-95271b22efe9', {
         headers: { 'X-Admin-Auth': 'admin:123' }
       });
-      const orders = await ordersRes.json();
-      setAdminOrders(orders);
+      
+      if (ordersRes.ok) {
+        const orders = await ordersRes.json();
+        setAdminOrders(Array.isArray(orders) ? orders : []);
+      } else {
+        setAdminOrders([]);
+      }
 
       const messagesRes = await fetch('https://functions.poehali.dev/cef89039-b240-4ef5-bb82-eade4c24411b', {
         headers: { 'X-Admin-Auth': 'admin:123' }
       });
-      const messages = await messagesRes.json();
-      setAdminMessages(messages);
+      
+      if (messagesRes.ok) {
+        const messages = await messagesRes.json();
+        setAdminMessages(Array.isArray(messages) ? messages : []);
+      } else {
+        setAdminMessages([]);
+      }
     } catch (error) {
       console.error('Failed to load admin data:', error);
+      setAdminProducts([]);
+      setAdminOrders([]);
+      setAdminMessages([]);
     }
   };
 

@@ -45,9 +45,11 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             query = '''
                 SELECT p.id, p.name, p.description, p.price, p.brand, p.image_filename, 
-                       p.is_featured, p.in_stock, p.stock_quantity, c.name as category_name
+                       p.is_featured, p.in_stock, p.stock_quantity, c.name as category_name,
+                       ps.spec_name, ps.spec_value
                 FROM t_p58610579_mixpc_store_developm.products p
                 LEFT JOIN t_p58610579_mixpc_store_developm.categories c ON p.category_id = c.id
+                LEFT JOIN t_p58610579_mixpc_store_developm.product_specifications ps ON p.id = ps.product_id
                 WHERE 1=1
             '''
             
@@ -62,40 +64,36 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             if featured_only:
                 query += " AND p.is_featured = true"
             
-            query += " ORDER BY p.created_at DESC LIMIT 50"
+            query += " ORDER BY p.created_at DESC, ps.display_order"
             
             cur.execute(query)
-            products = []
+            
+            products_dict = {}
             for row in cur.fetchall():
                 product_id = row[0]
                 
-                cur.execute('''
-                    SELECT spec_name, spec_value
-                    FROM t_p58610579_mixpc_store_developm.product_specifications
-                    WHERE product_id = %s
-                    ORDER BY display_order
-                ''', (product_id,))
+                if product_id not in products_dict:
+                    products_dict[product_id] = {
+                        'id': row[0],
+                        'name': row[1],
+                        'description': row[2],
+                        'price': float(row[3]),
+                        'brand': row[4],
+                        'image_url': row[5],
+                        'is_featured': row[6],
+                        'in_stock': row[7],
+                        'stock_quantity': row[8],
+                        'category': row[9],
+                        'specifications': []
+                    }
                 
-                specifications = []
-                for spec_row in cur.fetchall():
-                    specifications.append({
-                        'spec_name': spec_row[0],
-                        'spec_value': spec_row[1]
+                if row[10] and row[11]:
+                    products_dict[product_id]['specifications'].append({
+                        'spec_name': row[10],
+                        'spec_value': row[11]
                     })
-                
-                products.append({
-                    'id': row[0],
-                    'name': row[1],
-                    'description': row[2],
-                    'price': float(row[3]),
-                    'brand': row[4],
-                    'image_url': row[5],
-                    'is_featured': row[6],
-                    'in_stock': row[7],
-                    'stock_quantity': row[8],
-                    'category': row[9],
-                    'specifications': specifications
-                })
+            
+            products = list(products_dict.values())[:50]
             
             return {
                 'statusCode': 200,
@@ -259,6 +257,13 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         
     except Exception as e:
         conn.rollback()
+        if method == 'GET':
+            return {
+                'statusCode': 200,
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'isBase64Encoded': False,
+                'body': json.dumps([])
+            }
         return {
             'statusCode': 500,
             'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
